@@ -17,13 +17,15 @@ import 'package:rent_car_app/presentation/pages/register_page.dart';
 import 'package:rent_car_app/presentation/pages/onboarding_page.dart';
 import 'package:rent_car_app/presentation/pages/splash_screen.dart';
 import 'package:rent_car_app/data/services/connectivity_service.dart';
+import 'package:rent_car_app/presentation/viewModels/auth_view_model.dart';
 import 'core/firebase_options.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  Get.put(ConnectivityService());
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  Get.put(ConnectivityService());
+  Get.put(AuthViewModel());
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
   ]).then((_) => runApp(const MyApp()));
@@ -100,10 +102,10 @@ class MyApp extends StatelessWidget {
           name: '/chatting',
           page: () {
             Map data = Get.arguments as Map;
-            Car product = data['product'];
+            Car car = data['product'];
             String uid = data['uid'];
             String username = data['username'];
-            return ChattingPage(car: product, uid: uid, username: username);
+            return ChattingPage(product: car, uid: uid, username: username);
           },
         ),
       ],

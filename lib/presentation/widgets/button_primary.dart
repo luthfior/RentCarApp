@@ -6,20 +6,24 @@ class ButtonPrimary extends StatelessWidget {
     super.key,
     required this.onTap,
     required this.text,
-    this.backgroundColor = const Color(0xffFFBC1C),
-    this.textColor = const Color(0xff070623),
+    this.customBackgroundColor = const Color(0xffFFBC1C),
+    this.customTextColor = const Color(0xff070623),
+    this.customTextSize = 16.0,
+    this.customBorderRadius = const BorderRadius.all(Radius.circular(50)),
   });
   final VoidCallback? onTap;
   final String text;
-  final Color backgroundColor;
-  final Color textColor;
+  final double customTextSize;
+  final Color customBackgroundColor;
+  final Color customTextColor;
+  final BorderRadius customBorderRadius;
 
   @override
   Widget build(BuildContext context) {
     final bool isDisabled = onTap == null;
     return Material(
-      borderRadius: BorderRadius.circular(50),
-      color: isDisabled ? Colors.grey[300] : backgroundColor,
+      borderRadius: customBorderRadius,
+      color: isDisabled ? Colors.grey[300] : customBackgroundColor,
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(50),
@@ -30,9 +34,9 @@ class ButtonPrimary extends StatelessWidget {
             child: Text(
               text,
               style: GoogleFonts.poppins(
-                fontSize: 16,
+                fontSize: customTextSize,
                 fontWeight: FontWeight.w700,
-                color: textColor,
+                color: customTextColor,
               ),
             ),
           ),

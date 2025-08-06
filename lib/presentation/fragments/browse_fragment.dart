@@ -47,12 +47,12 @@ class _BrowseFragmentState extends State<BrowseFragment> {
     return Stack(
       children: [
         Obx(() {
-          String status = browseVM.loadingStatus;
+          String status = browseVM.status;
           if (status == '') return const SizedBox();
           if (status == 'loading') {
             return const Center(child: CircularProgressIndicator());
           }
-          if (status != 'success' && status != '') {
+          if (status != 'success') {
             return Center(child: FailedUi(message: status));
           }
           return ListView(

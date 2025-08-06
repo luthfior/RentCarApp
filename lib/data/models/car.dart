@@ -7,6 +7,7 @@ class Car {
   final num priceProduct;
   final num ratingProduct;
   final num releaseProduct;
+  final num purchasedProduct;
   final String transmissionProduct;
   Car({
     required this.categoryProduct,
@@ -17,6 +18,7 @@ class Car {
     required this.priceProduct,
     required this.ratingProduct,
     required this.releaseProduct,
+    required this.purchasedProduct,
     required this.transmissionProduct,
   });
 
@@ -30,6 +32,7 @@ class Car {
       'priceProduct': priceProduct,
       'ratingProduct': ratingProduct,
       'releaseProduct': releaseProduct,
+      'purchasedProduct': purchasedProduct,
       'transmissionProduct': transmissionProduct,
     };
   }
@@ -44,6 +47,7 @@ class Car {
       priceProduct: json['priceProduct'] as num,
       ratingProduct: json['ratingProduct'] as num,
       releaseProduct: json['releaseProduct'] as num,
+      purchasedProduct: json['purchasedProduct'] as num,
       transmissionProduct: json['transmissionProduct'] as String,
     );
   }
@@ -57,6 +61,7 @@ class Car {
     priceProduct: 0,
     ratingProduct: 0,
     releaseProduct: 0,
+    purchasedProduct: 0,
     transmissionProduct: '',
   );
 }

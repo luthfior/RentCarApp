@@ -184,7 +184,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       ? null
                       : () => Get.toNamed('/login'),
                   text: 'Masuk',
-                  backgroundColor: const Color(0xffFFFFFF),
+                  customBackgroundColor: const Color(0xffFFFFFF),
                 ),
                 const Gap(50),
               ],

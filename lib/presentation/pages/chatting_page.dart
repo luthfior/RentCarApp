@@ -5,11 +5,11 @@ import '../../data/models/car.dart';
 class ChattingPage extends StatelessWidget {
   const ChattingPage({
     super.key,
-    required this.car,
+    required this.product,
     required this.uid,
     required this.username,
   });
-  final Car car;
+  final Car product;
   final String uid;
   final String username;
 

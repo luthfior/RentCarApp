@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'package:d_session/d_session.dart';
 import 'package:flutter/material.dart';
-import 'package:get/route_manager.dart';
+import 'package:get/get.dart';
+import 'package:rent_car_app/presentation/viewModels/auth_view_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -12,6 +13,8 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  final authVM = Get.find<AuthViewModel>();
+
   @override
   void initState() {
     super.initState();
@@ -26,6 +29,7 @@ class _SplashScreenState extends State<SplashScreen> {
     bool isFirstTime = prefs.getBool('is_first_time') ?? true;
 
     if (user != null) {
+      await authVM.loadUser();
       Get.offAllNamed('/discover');
     } else if (isFirstTime == true) {
       await prefs.setBool("is_first_time", false);

@@ -2,18 +2,10 @@ class Account {
   final String uid;
   final String name;
   final String email;
-  Account({
-    required this.uid,
-    required this.name,
-    required this.email,
-  });
+  Account({required this.uid, required this.name, required this.email});
 
   Map<String, dynamic> toJson() {
-    return <String, dynamic>{
-      'uid': uid,
-      'name': name,
-      'email': email,
-    };
+    return <String, dynamic>{'uid': uid, 'name': name, 'email': email};
   }
 
   factory Account.fromJson(Map<String, dynamic> json) {

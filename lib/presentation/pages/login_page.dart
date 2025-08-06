@@ -160,7 +160,7 @@ class _LoginPageState extends State<LoginPage> {
                       ? null
                       : () => Get.toNamed('/register'),
                   text: 'Daftar',
-                  backgroundColor: const Color(0xffFFFFFF),
+                  customBackgroundColor: const Color(0xffFFFFFF),
                 ),
                 const Gap(50),
               ],

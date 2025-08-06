@@ -7,19 +7,19 @@ class DetailsViewModel extends GetxController {
   Car get car => _car.value;
   set car(Car n) => _car.value = n;
 
-  final _loading = ''.obs;
-  String get loading => _loading.value;
-  set loading(String n) => _loading.value = n;
+  final _status = ''.obs;
+  String get status => _status.value;
+  set status(String n) => _status.value = n;
 
   Future<void> getDetail(String id) async {
-    loading = 'loading';
+    status = 'loading';
 
     final cars = await CarSource.fetchCar(id);
     if (cars != null) {
       car = cars;
-      loading = 'success';
+      status = 'success';
     } else {
-      loading = 'Failed to fetch cars';
+      status = 'Failed to fetch cars';
       return;
     }
   }

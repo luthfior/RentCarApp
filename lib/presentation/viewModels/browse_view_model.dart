@@ -12,9 +12,9 @@ class BrowseViewModel extends GetxController {
   List<Car> get newestList => _newestList;
   set newestList(List<Car> n) => _newestList.value = n;
 
-  final _loadingStatus = ''.obs;
-  String get loadingStatus => _loadingStatus.value;
-  set loadingStatus(String n) => _loadingStatus.value = n;
+  final _status = ''.obs;
+  String get status => _status.value;
+  set status(String n) => _status.value = n;
 
   var categories = <String>[].obs;
 
@@ -24,7 +24,7 @@ class BrowseViewModel extends GetxController {
   }
 
   Future<void> fetchAllCars() async {
-    loadingStatus = 'loading';
+    status = 'loading';
 
     final featuredCars = await CarSource.fetchFeatureCars();
     if (featuredCars != null) {
@@ -42,7 +42,7 @@ class BrowseViewModel extends GetxController {
       }
       featuredList = featuredCars;
     } else {
-      loadingStatus = 'Failed to fetch featured cars';
+      status = 'Failed to fetch featured cars';
       return;
     }
 
@@ -62,11 +62,11 @@ class BrowseViewModel extends GetxController {
       }
       newestList = newestCars;
     } else {
-      loadingStatus = 'Failed to fetch newest cars';
+      status = 'Failed to fetch newest cars';
       return;
     }
 
-    loadingStatus = 'success';
+    status = 'success';
   }
 
   // final _featuredStatus = ''.obs;
