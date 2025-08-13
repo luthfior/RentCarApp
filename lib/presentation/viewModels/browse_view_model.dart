@@ -4,19 +4,27 @@ import 'package:rent_car_app/data/sources/car_source.dart';
 import 'package:rent_car_app/data/models/car.dart';
 
 class BrowseViewModel extends GetxController {
+  final Rx<Car?> car = Rx<Car?>(null);
   final _featuredList = <Car>[].obs;
   List<Car> get featuredList => _featuredList;
-  set featuredList(List<Car> n) => _featuredList.value = n;
+  set featuredList(List<Car> value) => _featuredList.value = value;
 
   final _newestList = <Car>[].obs;
   List<Car> get newestList => _newestList;
-  set newestList(List<Car> n) => _newestList.value = n;
+  set newestList(List<Car> value) => _newestList.value = value;
 
   final _status = ''.obs;
   String get status => _status.value;
-  set status(String n) => _status.value = n;
+  set status(String value) => _status.value = value;
 
   var categories = <String>[].obs;
+
+  @override
+  void onInit() {
+    super.onInit();
+    fetchAllCars();
+    fetchCategories();
+  }
 
   Future<void> fetchCategories() async {
     final result = await CarSource.fetchCategories();
@@ -28,6 +36,14 @@ class BrowseViewModel extends GetxController {
 
     final featuredCars = await CarSource.fetchFeatureCars();
     if (featuredCars != null) {
+      featuredCars.sort((a, b) {
+        int comparePurchased = b.purchasedProduct.compareTo(a.purchasedProduct);
+        if (comparePurchased != 0) {
+          return comparePurchased;
+        }
+        return b.ratingProduct.compareTo(a.ratingProduct);
+      });
+
       for (var car in featuredCars) {
         if (car.imageProduct.isEmpty) {
           final imageUrl = await SerpApiService.fetchImageForCar(
@@ -68,67 +84,4 @@ class BrowseViewModel extends GetxController {
 
     status = 'success';
   }
-
-  // final _featuredStatus = ''.obs;
-  // String get featuredStatus => _featuredStatus.value;
-  // set featuredStatus(String n) => _featuredStatus.value = n;
-
-  // final _newestStatus = ''.obs;
-  // String get newestStatus => _newestStatus.value;
-  // set newestStatus(String n) => _newestStatus.value = n;
-
-  // fetchFeatured() async {
-  //   featuredStatus = 'loading';
-  //   final cars = await CarSource.fetchFeatureCars();
-  //   if (cars != null) {
-  //     for (var car in cars) {
-  //       if (car.imageProduct.isEmpty) {
-  //         final imageUrl = await SerpApiService.fetchImageForCar(
-  //           car.nameProduct,
-  //           car.releaseProduct.toString(),
-  //         );
-  //         if (imageUrl != null) {
-  //           await CarSource.updateImageProduct(car.id, imageUrl);
-  //           car.imageProduct = imageUrl;
-  //         }
-  //       }
-  //     }
-  //     featuredStatus = 'success';
-  //     featuredList = cars;
-  //   } else {
-  //     featuredStatus = 'something wrong';
-  //     return;
-  //   }
-  // }
-
-  // fetchNewest() async {
-  //   newestStatus = 'loading';
-  //   final cars = await CarSource.fetchNewestCars();
-  //   if (cars != null) {
-  //     bool isImageFetchFailed = false;
-  //     for (var car in cars) {
-  //       if (car.imageProduct.isEmpty) {
-  //         final imageUrl = await SerpApiService.fetchImageForCar(
-  //           car.nameProduct,
-  //           car.releaseProduct.toString(),
-  //         );
-  //         if (imageUrl != null) {
-  //           await CarSource.updateImageProduct(car.id, imageUrl);
-  //           car.imageProduct = imageUrl;
-  //         } else {
-  //           isImageFetchFailed = true;
-  //         }
-  //       }
-  //     }
-
-  //     if (isImageFetchFailed) {
-  //       newestStatus = 'Image not found';
-  //     } else {
-  //       newestStatus = 'success';
-  //       newestList = cars;
-  //     }
-  //   } else {
-  //     newestStatus = 'Failed to fetch data from database';
-  //   }
-  // }
 }

@@ -4,50 +4,22 @@ import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:rent_car_app/data/models/car.dart';
-import 'package:rent_car_app/presentation/viewModels/booking_view_model.dart';
 import 'package:rent_car_app/presentation/viewModels/browse_view_model.dart';
 import 'package:rent_car_app/presentation/widgets/chip_categories.dart';
 import 'package:rent_car_app/presentation/widgets/failed_ui.dart';
 import 'package:rent_car_app/presentation/widgets/item_featured_car.dart';
 import 'package:rent_car_app/presentation/widgets/item_newest_car.dart';
 import 'package:rent_car_app/presentation/widgets/offline_banner.dart';
-import 'package:rent_car_app/data/services/connectivity_service.dart';
 
-class BrowseFragment extends StatefulWidget {
+class BrowseFragment extends GetView<BrowseViewModel> {
   const BrowseFragment({super.key});
-
-  @override
-  State<BrowseFragment> createState() => _BrowseFragmentState();
-}
-
-class _BrowseFragmentState extends State<BrowseFragment> {
-  final browseVM = Get.put(BrowseViewModel());
-  final bookingVM = Get.put(BookingViewModel());
-  final connectivity = Get.find<ConnectivityService>();
-
-  @override
-  void initState() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      browseVM.fetchAllCars();
-      browseVM.fetchCategories();
-      bookingVM.setDummyBook();
-    });
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    Get.delete<BrowseViewModel>(force: true);
-    Get.delete<BookingViewModel>(force: true);
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
         Obx(() {
-          String status = browseVM.status;
+          String status = controller.status;
           if (status == '') return const SizedBox();
           if (status == 'loading') {
             return const Center(child: CircularProgressIndicator());
@@ -58,14 +30,14 @@ class _BrowseFragmentState extends State<BrowseFragment> {
           return ListView(
             padding: const EdgeInsets.all(0),
             children: [
-              Gap(20 + MediaQuery.of(context).padding.top),
+              Gap(10 + MediaQuery.of(context).padding.top),
               buildHeader(),
-              // buildBookingStatus(),
+              Obx(() => buildBookingStatus()),
               const Gap(20),
-              chipCategories(browseVM.categories),
-              const Gap(30),
+              chipCategories(controller.categories),
+              const Gap(20),
               buildPopular(),
-              const Gap(30),
+              const Gap(20),
               buildNewest(),
               const Gap(100),
             ],
@@ -106,78 +78,72 @@ class _BrowseFragmentState extends State<BrowseFragment> {
   }
 
   Widget buildBookingStatus() {
-    return Obx(() {
-      Map car = bookingVM.car;
-      if (car.isEmpty) return const SizedBox();
-      return Container(
-        height: 70,
-        margin: const EdgeInsets.fromLTRB(24, 30, 24, 0),
-        decoration: BoxDecoration(
-          color: const Color(0xff393e52),
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              offset: const Offset(0, 12),
-              blurRadius: 20,
-              color: const Color(0xff393e52).withAlpha(64),
+    final Car? car = controller.car.value;
+    if (car == null) return const SizedBox();
+
+    return Container(
+      height: 65,
+      margin: const EdgeInsets.fromLTRB(24, 14, 24, 0),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+      decoration: BoxDecoration(
+        color: const Color(0xff393e52),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 80,
+            height: 60,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
             ),
-          ],
-        ),
-        child: Stack(
-          children: [
-            Positioned(
-              left: -45,
-              top: 0,
-              bottom: 0,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(16),
               child: ExtendedImage.network(
-                car['image'],
-                width: 130,
-                height: 130,
-                fit: BoxFit.fitWidth,
+                car.imageProduct,
+                width: 80,
+                height: 80,
+                fit: BoxFit.cover,
               ),
             ),
-            Positioned(
-              top: 0,
-              bottom: 0,
-              left: 70,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: RichText(
+              overflow: TextOverflow.ellipsis,
+              maxLines: 2,
+              text: TextSpan(
+                text: 'Booking Produk ',
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
                 children: [
-                  RichText(
-                    text: TextSpan(
-                      text: 'Your booking ',
-                      style: GoogleFonts.poppins(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                      children: [
-                        TextSpan(
-                          text: car['name'],
-                          style: GoogleFonts.poppins(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xffFFBC1C),
-                          ),
-                        ),
-                        TextSpan(
-                          text: '\nhas been delivered to.',
-                          style: GoogleFonts.poppins(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
+                  TextSpan(
+                    text: car.nameProduct,
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xffFFBC1C),
+                    ),
+                  ),
+                  TextSpan(
+                    text: ' Anda telah diproses.',
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
                     ),
                   ),
                 ],
               ),
             ),
-          ],
-        ),
-      );
-    });
+          ),
+        ],
+      ),
+    );
   }
 
   Widget buildPopular() {
@@ -197,15 +163,15 @@ class _BrowseFragmentState extends State<BrowseFragment> {
         ),
         const Gap(10),
         SizedBox(
-          height: 295,
+          height: 250,
           child: ListView.builder(
-            itemCount: browseVM.featuredList.length,
+            itemCount: controller.featuredList.length,
             scrollDirection: Axis.horizontal,
             itemBuilder: (context, index) {
-              Car car = browseVM.featuredList[index];
+              Car car = controller.featuredList[index];
               final margin = EdgeInsets.only(
                 left: index == 0 ? 24 : 12,
-                right: index == browseVM.featuredList.length - 1 ? 24 : 12,
+                right: index == controller.featuredList.length - 1 ? 24 : 12,
               );
               bool isTrending = index == 0;
               return itemFeaturedCar(car, margin, isTrending);
@@ -235,12 +201,12 @@ class _BrowseFragmentState extends State<BrowseFragment> {
           physics: const NeverScrollableScrollPhysics(),
           shrinkWrap: true,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 0),
-          itemCount: browseVM.newestList.length,
+          itemCount: controller.newestList.length,
           itemBuilder: (context, index) {
-            Car car = browseVM.newestList[index];
+            Car car = controller.newestList[index];
             final margin = EdgeInsets.only(
               top: index == 0 ? 10 : 9,
-              bottom: index == browseVM.newestList.length - 1 ? 16 : 9,
+              bottom: index == controller.newestList.length - 1 ? 16 : 9,
             );
             return itemNewestCar(car, margin);
           },

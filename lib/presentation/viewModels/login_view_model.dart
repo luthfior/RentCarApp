@@ -18,6 +18,21 @@ class LoginViewModel extends GetxController {
   final isEmailTouched = false.obs;
   final isPasswordTouched = false.obs;
 
+  @override
+  void onInit() {
+    super.onInit();
+    resetForm();
+  }
+
+  @override
+  void onClose() {
+    emailController.dispose();
+    passwordController.dispose();
+    emailFocus.dispose();
+    passwordFocus.dispose();
+    super.onClose();
+  }
+
   void togglePasswordVisibility() {
     isPasswordVisible.value = !isPasswordVisible.value;
   }
@@ -67,6 +82,7 @@ class LoginViewModel extends GetxController {
       );
 
       if (response.isSuccess) {
+        resetForm();
         Get.offAllNamed('/discover');
       } else {
         Message.error(response.error.toString());

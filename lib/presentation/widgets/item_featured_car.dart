@@ -8,12 +8,16 @@ import 'package:intl/intl.dart';
 import 'package:rent_car_app/data/models/car.dart';
 
 Widget itemFeaturedCar(Car car, EdgeInsetsGeometry margin, bool isTrending) {
+  final String productName = car.nameProduct.length > 16
+      ? '${car.nameProduct.substring(0, 14)}...'
+      : car.nameProduct;
+
   return GestureDetector(
     onTap: () {
-      Get.toNamed('/detail', arguments: car.id);
+      Get.toNamed('/detail', arguments: car);
     },
     child: Container(
-      width: 252,
+      width: 245,
       margin: margin,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
@@ -21,24 +25,28 @@ Widget itemFeaturedCar(Car car, EdgeInsetsGeometry margin, bool isTrending) {
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Stack(
             children: [
-              ExtendedImage.network(
-                car.imageProduct,
-                width: 220,
-                height: 170,
-                fit: BoxFit.cover,
-                loadStateChanged: (state) {
-                  if (state.extendedImageLoadState == LoadState.failed) {
-                    return Image.asset(
-                      'assets/splash_screen.png',
-                      width: 220,
-                      height: 170,
-                    );
-                  }
-                  return null;
-                },
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: ExtendedImage.network(
+                  car.imageProduct,
+                  width: 175,
+                  height: 125,
+                  fit: BoxFit.cover,
+                  loadStateChanged: (state) {
+                    if (state.extendedImageLoadState == LoadState.failed) {
+                      return Image.asset(
+                        'assets/splash_screen.png',
+                        width: 220,
+                        height: 170,
+                      );
+                    }
+                    return null;
+                  },
+                ),
               ),
               if (isTrending)
                 Container(
@@ -68,15 +76,17 @@ Widget itemFeaturedCar(Car car, EdgeInsetsGeometry margin, bool isTrending) {
                 ),
             ],
           ),
-          const Spacer(),
+          const Gap(10),
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      car.nameProduct,
+                      productName,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.poppins(
@@ -85,7 +95,16 @@ Widget itemFeaturedCar(Car car, EdgeInsetsGeometry margin, bool isTrending) {
                         color: const Color(0xff070623),
                       ),
                     ),
-                    const Gap(4),
+                    Text(
+                      car.transmissionProduct,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w400,
+                        color: const Color(0xff838384),
+                      ),
+                    ),
                     Text(
                       car.categoryProduct,
                       maxLines: 1,
@@ -99,22 +118,44 @@ Widget itemFeaturedCar(Car car, EdgeInsetsGeometry margin, bool isTrending) {
                   ],
                 ),
               ),
-              RatingBar.builder(
-                initialRating: car.ratingProduct.toDouble(),
-                itemPadding: const EdgeInsetsGeometry.all(0),
-                itemSize: 16,
-                unratedColor: Colors.grey[300],
-                itemBuilder: (context, index) =>
-                    const Icon(Icons.star, color: Color(0xffFFBC1C)),
-                ignoreGestures: true,
-                allowHalfRating: true,
-                onRatingUpdate: (value) {},
+              Gap(16),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    '(${car.releaseProduct})',
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xff070623),
+                    ),
+                  ),
+                  const Gap(4),
+                  RatingBar.builder(
+                    initialRating: car.ratingProduct.toDouble(),
+                    itemPadding: const EdgeInsets.all(0),
+                    itemSize: 16,
+                    unratedColor: Colors.grey[300],
+                    itemBuilder: (context, index) =>
+                        const Icon(Icons.star, color: Color(0xffFFBC1C)),
+                    ignoreGestures: true,
+                    allowHalfRating: true,
+                    onRatingUpdate: (value) {},
+                  ),
+                  Text(
+                    '(${car.purchasedProduct}x disewa)',
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                      color: const Color(0xff838384),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
-          const Gap(16),
+          const Gap(10),
           Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
                 NumberFormat.currency(
@@ -122,14 +163,13 @@ Widget itemFeaturedCar(Car car, EdgeInsetsGeometry margin, bool isTrending) {
                   locale: 'id',
                   symbol: 'Rp.',
                 ).format(car.priceProduct),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
                 style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
                   color: const Color(0xff6747E9),
                 ),
               ),
+              const SizedBox(width: 4),
               Text(
                 '/hari',
                 style: GoogleFonts.poppins(

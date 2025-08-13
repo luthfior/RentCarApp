@@ -9,7 +9,7 @@ import 'package:rent_car_app/data/models/car.dart';
 Widget itemNewestCar(Car car, EdgeInsetsGeometry margin) {
   return GestureDetector(
     onTap: () {
-      Get.toNamed('/detail', arguments: car.id);
+      Get.toNamed('/detail', arguments: car);
     },
     child: Container(
       height: 98,

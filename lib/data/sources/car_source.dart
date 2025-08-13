@@ -9,14 +9,14 @@ class CarSource {
       final ref = FirebaseFirestore.instance
           .collection('Cars')
           .where('ratingProduct', isGreaterThan: 4.5)
-          .orderBy('ratingProduct', descending: true);
+          .orderBy('purchasedProduct', descending: true);
       final queryDocs = await ref.get();
       final getCars = queryDocs.docs
           .map((doc) => Car.fromJson(doc.data()))
           .toList();
       return getCars;
     } catch (e) {
-      log(e.toString());
+      log('Gagal fetching Feature Cars: $e');
       return null;
     }
   }
@@ -33,21 +33,21 @@ class CarSource {
         try {
           return Car.fromJson(doc.data());
         } catch (e) {
-          log('Error parsing document with ID ${doc.id}: $e');
-          throw Exception('Failed to parse car data');
+          log('Error dalam memparsing dokumen dengan ID ${doc.id}: $e');
+          throw Exception('Gagal memparsing data mobil');
         }
       }).toList();
 
       return getCars;
     } catch (e) {
-      log('Error fetching newest cars: $e');
+      log('Gagal fetching Newest Cars: $e');
       return null;
     }
   }
 
-  static Future<Car?> fetchCar(String productId) async {
+  static Future<Car?> fetchCar(String id) async {
     try {
-      final ref = FirebaseFirestore.instance.collection('Cars').doc(productId);
+      final ref = FirebaseFirestore.instance.collection('Cars').doc(id);
       final doc = await ref.get();
       if (doc.exists) {
         final getCar = Car.fromJson(doc.data()!);
@@ -56,7 +56,7 @@ class CarSource {
         return null;
       }
     } catch (e) {
-      log(e.toString());
+      log('Gagal fetching Car: $e');
       return null;
     }
   }
@@ -83,7 +83,20 @@ class CarSource {
         'imageProduct': url,
       });
     } catch (e) {
-      log('Failed to update imageProduct: $e');
+      log('Gagal memperbarui imageProduct: $e');
+      rethrow;
+    }
+  }
+
+  static Future<void> updatePurchasedProduct(String id) async {
+    try {
+      final docRef = FirebaseFirestore.instance.collection('Cars').doc(id);
+
+      await docRef.update({'purchasedProduct': FieldValue.increment(1)});
+      log('Berhasil memperbarui purchasedProduct untuk mobil dengan ID: $id');
+    } catch (e) {
+      log('Gagal memperbarui purchasedProduct: $e');
+      rethrow;
     }
   }
 }

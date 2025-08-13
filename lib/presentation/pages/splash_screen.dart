@@ -1,43 +1,9 @@
-import 'dart:async';
-import 'package:d_session/d_session.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rent_car_app/presentation/viewModels/auth_view_model.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-class SplashScreen extends StatefulWidget {
+class SplashScreen extends GetView<AuthViewModel> {
   const SplashScreen({super.key});
-
-  @override
-  State<SplashScreen> createState() => _SplashScreenState();
-}
-
-class _SplashScreenState extends State<SplashScreen> {
-  final authVM = Get.find<AuthViewModel>();
-
-  @override
-  void initState() {
-    super.initState();
-    _checkSession();
-  }
-
-  Future<void> _checkSession() async {
-    await Future.delayed(const Duration(seconds: 2));
-    var user = await DSession.getUser();
-
-    final prefs = await SharedPreferences.getInstance();
-    bool isFirstTime = prefs.getBool('is_first_time') ?? true;
-
-    if (user != null) {
-      await authVM.loadUser();
-      Get.offAllNamed('/discover');
-    } else if (isFirstTime == true) {
-      await prefs.setBool("is_first_time", false);
-      Get.offAllNamed('/onboarding');
-    } else {
-      Get.offAllNamed('/register');
-    }
-  }
 
   @override
   Widget build(BuildContext context) {

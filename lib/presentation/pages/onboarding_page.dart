@@ -46,7 +46,7 @@ class OnBoardingPage extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: ButtonPrimary(
               onTap: () {
-                Get.offAllNamed('/register');
+                Get.offAllNamed('/auth');
               },
               text: 'Jelajahi Sekarang',
             ),

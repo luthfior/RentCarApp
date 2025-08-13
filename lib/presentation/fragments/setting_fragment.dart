@@ -4,19 +4,12 @@ import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:rent_car_app/data/models/account.dart';
+import 'package:rent_car_app/presentation/viewModels/auth_view_model.dart';
 
 class SettingFragment extends StatelessWidget {
-  const SettingFragment({super.key});
+  SettingFragment({super.key});
 
-  Future<void> logout() async {
-    await DSession.removeUser().then((removed) {
-      if (!removed) {
-        return;
-      } else {
-        Get.offAllNamed('/login');
-      }
-    });
-  }
+  final authVM = Get.find<AuthViewModel>();
 
   @override
   Widget build(BuildContext context) {
@@ -70,7 +63,7 @@ class SettingFragment extends StatelessWidget {
               buildItemSettings(
                 icon: 'assets/ic_logout.png',
                 title: 'Keluar',
-                onTap: () => logout(),
+                onTap: () => authVM.logout(),
               ),
             ],
           ),

@@ -14,6 +14,7 @@ class CustomInput extends StatelessWidget {
     this.suffixIcon,
     this.errorText,
     this.focusNode,
+    this.customHintFontSize = 16,
   });
   final String icon;
   final String hint;
@@ -25,6 +26,7 @@ class CustomInput extends StatelessWidget {
   final Widget? suffixIcon;
   final String? errorText;
   final FocusNode? focusNode;
+  final double? customHintFontSize;
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +36,7 @@ class CustomInput extends StatelessWidget {
         controller: editingController,
         style: GoogleFonts.poppins(
           fontSize: 14,
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w400,
           color: const Color(0xff070623),
         ),
         obscureText: obsecure ?? false,
@@ -44,7 +46,7 @@ class CustomInput extends StatelessWidget {
           enabled: enable,
           hintText: hint,
           hintStyle: GoogleFonts.poppins(
-            fontSize: 16,
+            fontSize: customHintFontSize,
             fontWeight: FontWeight.w400,
             color: const Color(0xff070623),
           ),

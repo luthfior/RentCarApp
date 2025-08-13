@@ -56,6 +56,10 @@ class AuthSource {
       if (uid == null) return Result.failure('UID tidak ditemukan');
 
       final accountDoc = await _firestore.collection('Users').doc(uid).get();
+      if (!accountDoc.exists) {
+        return Result.failure('Pengguna tidak ditemukan di database');
+      }
+
       final account = Account.fromJson(accountDoc.data()!);
 
       await DSession.setUser(account.toJson());

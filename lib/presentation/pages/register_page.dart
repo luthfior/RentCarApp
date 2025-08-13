@@ -138,16 +138,16 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                 ),
                 const Gap(30),
-                Obx(
-                  () => ButtonPrimary(
-                    text: 'Daftar',
-                    onTap:
-                        (!connectivity.isOnline.value ||
-                            registerVM.isLoading.value)
-                        ? null
-                        : () => registerVM.handleRegister(context),
-                  ),
-                ),
+                // Obx(
+                //   () => ButtonPrimary(
+                //     text: 'Daftar',
+                //     onTap:
+                //         (!connectivity.isOnline.value ||
+                //             registerVM.isLoading.value)
+                //         ? null
+                //         : () => registerVM.handleRegister(context),
+                //   ),
+                // ),
                 const Gap(30),
                 Row(
                   children: [

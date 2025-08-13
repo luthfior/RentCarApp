@@ -22,6 +22,23 @@ class RegisterViewmodel extends GetxController {
   final isEmailTouched = false.obs;
   final isPasswordTouched = false.obs;
 
+  @override
+  void onInit() {
+    super.onInit();
+    resetForm();
+  }
+
+  @override
+  void onClose() {
+    nameController.dispose();
+    emailController.dispose();
+    passwordController.dispose();
+    nameFocus.dispose();
+    emailFocus.dispose();
+    passwordFocus.dispose();
+    super.onClose();
+  }
+
   void togglePasswordVisibility() {
     isPasswordVisible.value = !isPasswordVisible.value;
   }
@@ -50,7 +67,10 @@ class RegisterViewmodel extends GetxController {
     }
   }
 
-  void handleRegister(BuildContext context) {
+  void handleRegister(
+    BuildContext context, {
+    required VoidCallback onRegisterSuccess,
+  }) {
     isNameTouched.value = true;
     isEmailTouched.value = true;
     isPasswordTouched.value = true;
@@ -71,10 +91,10 @@ class RegisterViewmodel extends GetxController {
       return;
     }
 
-    createNewAccount();
+    createNewAccount(onRegisterSuccess);
   }
 
-  Future<void> createNewAccount() async {
+  Future<void> createNewAccount(VoidCallback onRegisterSuccess) async {
     validateInputs();
     if (nameError.value != null ||
         emailError.value != null ||
@@ -98,7 +118,8 @@ class RegisterViewmodel extends GetxController {
 
       if (response.isSuccess) {
         Get.snackbar('Berhasil', 'Akun Berhasil Dibuat');
-        Get.toNamed('/login');
+        resetForm();
+        onRegisterSuccess();
       } else {
         Message.error(response.error.toString());
       }
