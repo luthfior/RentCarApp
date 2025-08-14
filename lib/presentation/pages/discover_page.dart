@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rent_car_app/data/models/car.dart';
+import 'package:rent_car_app/data/sources/chat_source.dart';
 import 'package:rent_car_app/presentation/fragments/browse_fragment.dart';
 import 'package:rent_car_app/presentation/fragments/order_fragment.dart';
 import 'package:rent_car_app/presentation/fragments/setting_fragment.dart';
+import 'package:rent_car_app/presentation/viewModels/auth_view_model.dart';
 import 'package:rent_car_app/presentation/viewModels/browse_view_model.dart';
 import 'package:rent_car_app/presentation/viewModels/discover_view_model.dart';
 import 'package:rent_car_app/presentation/widgets/button_bottom_bar.dart';
@@ -34,6 +36,7 @@ class DiscoverPage extends GetView<DiscoverViewModel> {
 
   @override
   Widget build(BuildContext context) {
+    final authVM = Get.find<AuthViewModel>();
     return Scaffold(
       extendBody: true,
       body: Stack(
@@ -90,7 +93,20 @@ class DiscoverPage extends GetView<DiscoverViewModel> {
                 icon: 'assets/ic_chats.png',
                 iconOn: 'assets/ic_chats_on.png',
                 hasDot: true,
-                onTap: () {},
+                onTap: () {
+                  String uid = authVM.account.value!.uid;
+                  ChatSource.openChat(uid, authVM.account.value!.name).then((
+                    value,
+                  ) {
+                    Get.toNamed(
+                      '/chatting',
+                      arguments: {
+                        'uid': uid,
+                        'username': authVM.account.value!.name,
+                      },
+                    );
+                  });
+                },
               ),
               buildItemNav(
                 label: 'Settings',

@@ -10,6 +10,7 @@ import 'package:rent_car_app/data/models/car.dart';
 import 'package:rent_car_app/data/services/connectivity_service.dart';
 import 'package:rent_car_app/data/sources/chat_source.dart';
 import 'package:rent_car_app/data/models/chat.dart';
+import 'package:rent_car_app/presentation/viewModels/auth_view_model.dart';
 import 'package:rent_car_app/presentation/widgets/button_chat.dart';
 import 'package:rent_car_app/presentation/widgets/button_primary.dart';
 import 'package:rent_car_app/presentation/widgets/custom_header.dart';
@@ -23,6 +24,7 @@ class DetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final authVM = Get.find<AuthViewModel>();
     return Scaffold(
       body: Stack(
         children: [
@@ -222,7 +224,7 @@ class DetailPage extends StatelessWidget {
               onTap: () async {
                 if (connectivity.isOnline.value) {
                   try {
-                    String uid = 'sssss';
+                    String uid = authVM.account.value!.uid;
                     Chat chat = Chat(
                       chatId: uid,
                       message: 'Ready?',
@@ -237,14 +239,15 @@ class DetailPage extends StatelessWidget {
                         'transmissionProduct': car.transmissionProduct,
                       },
                     );
-                    ChatSource.openChat(uid, 'tes').then((value) {
+                    ChatSource.openChat(uid, authVM.account.value!.name).then((
+                      value,
+                    ) {
                       ChatSource.send(chat, uid).then((value) {
                         Get.toNamed(
                           '/chatting',
                           arguments: {
-                            'product': car,
                             'uid': uid,
-                            'username': 'tes',
+                            'username': authVM.account.value!.name,
                           },
                         );
                       });

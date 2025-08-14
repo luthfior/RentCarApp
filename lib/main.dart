@@ -69,16 +69,6 @@ class MyApp extends StatelessWidget {
           binding: BookingBinding(),
         ),
         GetPage(
-          name: '/chatting',
-          page: () {
-            Map data = Get.arguments as Map;
-            Car car = data['car'];
-            String uid = data['uid'];
-            String username = data['username'];
-            return ChattingPage(product: car, uid: uid, username: username);
-          },
-        ),
-        GetPage(
           name: '/checkout',
           page: () => CheckoutPage(),
           binding: CheckoutBinding(),
@@ -94,6 +84,15 @@ class MyApp extends StatelessWidget {
           page: () {
             Car car = Get.arguments as Car;
             return CompleteBookingPage(car: car);
+          },
+        ),
+        GetPage(
+          name: '/chatting',
+          page: () {
+            Map data = Get.arguments as Map;
+            String uid = data['uid'];
+            String username = data['username'];
+            return ChattingPage(uid: uid, username: username);
           },
         ),
       ],

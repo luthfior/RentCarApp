@@ -5,6 +5,7 @@ import 'package:rent_car_app/data/models/car.dart';
 
 class BrowseViewModel extends GetxController {
   final Rx<Car?> car = Rx<Car?>(null);
+
   final _featuredList = <Car>[].obs;
   List<Car> get featuredList => _featuredList;
   set featuredList(List<Car> value) => _featuredList.value = value;
@@ -13,11 +14,15 @@ class BrowseViewModel extends GetxController {
   List<Car> get newestList => _newestList;
   set newestList(List<Car> value) => _newestList.value = value;
 
+  List<Car> _allFeaturedList = [];
+  List<Car> _allNewestList = [];
+
   final _status = ''.obs;
   String get status => _status.value;
   set status(String value) => _status.value = value;
 
-  var categories = <String>[].obs;
+  final categories = <String>[].obs;
+  final selectedCategory = ''.obs;
 
   @override
   void onInit() {
@@ -33,55 +38,84 @@ class BrowseViewModel extends GetxController {
 
   Future<void> fetchAllCars() async {
     status = 'loading';
-
-    final featuredCars = await CarSource.fetchFeatureCars();
-    if (featuredCars != null) {
-      featuredCars.sort((a, b) {
-        int comparePurchased = b.purchasedProduct.compareTo(a.purchasedProduct);
-        if (comparePurchased != 0) {
-          return comparePurchased;
-        }
-        return b.ratingProduct.compareTo(a.ratingProduct);
-      });
-
-      for (var car in featuredCars) {
-        if (car.imageProduct.isEmpty) {
-          final imageUrl = await SerpApiService.fetchImageForCar(
-            car.nameProduct,
-            car.releaseProduct.toString(),
+    try {
+      final featuredCars = await CarSource.fetchFeatureCars();
+      final newestCars = await CarSource.fetchNewestCars();
+      if (featuredCars != null) {
+        _allFeaturedList = featuredCars;
+        _allFeaturedList.sort((a, b) {
+          int comparePurchased = b.purchasedProduct.compareTo(
+            a.purchasedProduct,
           );
-          if (imageUrl != null) {
-            await CarSource.updateImageProduct(car.id, imageUrl);
-            car.imageProduct = imageUrl;
+          if (comparePurchased != 0) {
+            return comparePurchased;
+          }
+          return b.ratingProduct.compareTo(a.ratingProduct);
+        });
+
+        for (var car in featuredCars) {
+          if (car.imageProduct.isEmpty) {
+            final imageUrl = await SerpApiService.fetchImageForCar(
+              car.nameProduct,
+              car.releaseProduct.toString(),
+            );
+            if (imageUrl != null) {
+              await CarSource.updateImageProduct(car.id, imageUrl);
+              car.imageProduct = imageUrl;
+            }
           }
         }
+        featuredList = _allFeaturedList;
+      } else {
+        status = 'Failed to fetch featured cars';
+        return;
       }
-      featuredList = featuredCars;
-    } else {
-      status = 'Failed to fetch featured cars';
-      return;
-    }
 
-    final newestCars = await CarSource.fetchNewestCars();
-    if (newestCars != null) {
-      for (var car in newestCars) {
-        if (car.imageProduct.isEmpty) {
-          final imageUrl = await SerpApiService.fetchImageForCar(
-            car.nameProduct,
-            car.releaseProduct.toString(),
-          );
-          if (imageUrl != null) {
-            await CarSource.updateImageProduct(car.id, imageUrl);
-            car.imageProduct = imageUrl;
+      if (newestCars != null) {
+        _allNewestList = newestCars;
+        for (var car in newestCars) {
+          if (car.imageProduct.isEmpty) {
+            final imageUrl = await SerpApiService.fetchImageForCar(
+              car.nameProduct,
+              car.releaseProduct.toString(),
+            );
+            if (imageUrl != null) {
+              await CarSource.updateImageProduct(car.id, imageUrl);
+              car.imageProduct = imageUrl;
+            }
           }
         }
+        newestList = _allNewestList;
+      } else {
+        status = 'Failed to fetch newest cars';
+        return;
       }
-      newestList = newestCars;
-    } else {
-      status = 'Failed to fetch newest cars';
-      return;
-    }
 
-    status = 'success';
+      status = 'success';
+    } catch (e) {
+      status = 'error';
+    }
+  }
+
+  void filterCars(String category) {
+    if (selectedCategory.value == category) {
+      selectedCategory.value = '';
+      featuredList = _allFeaturedList;
+      newestList = _allNewestList;
+    } else {
+      selectedCategory.value = category;
+      featuredList = _allFeaturedList
+          .where(
+            (car) =>
+                car.categoryProduct.toLowerCase() == category.toLowerCase(),
+          )
+          .toList();
+      newestList = _allNewestList
+          .where(
+            (car) =>
+                car.categoryProduct.toLowerCase() == category.toLowerCase(),
+          )
+          .toList();
+    }
   }
 }
