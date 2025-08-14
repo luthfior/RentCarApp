@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:rent_car_app/core/constants/message.dart';
+import 'package:rent_car_app/data/models/account.dart';
 import 'package:rent_car_app/data/models/car.dart';
 import 'package:rent_car_app/data/sources/car_source.dart';
 import 'package:rent_car_app/data/sources/user_source.dart';
@@ -17,6 +18,7 @@ class CheckoutViewModel extends GetxController {
   late final String? insurance;
   late final bool withDriver;
 
+  final Rx<num?> userBalance = Rx<num?>(null);
   final Rx<bool> hasPin = Rx<bool>(false);
   final RxString paymentMethodPicked = 'Dompet Ku'.obs;
 
@@ -30,8 +32,6 @@ class CheckoutViewModel extends GetxController {
   final double additionalCost = 2500;
 
   final AuthViewModel authVM = Get.find<AuthViewModel>();
-  final Rx<num?> userBalance = Rx<num?>(null);
-
   final UserSource userSource = UserSource();
 
   @override
@@ -45,34 +45,18 @@ class CheckoutViewModel extends GetxController {
     agency = arguments['agency'] as String;
     insurance = arguments['insurance'] as String?;
     withDriver = arguments['withDriver'] as bool;
-
     _calculateCosts();
+    authVM.loadUser();
 
-    ever(authVM.account, (account) {
+    ever(authVM.account, (Account? account) {
       if (account != null) {
         userBalance.value = account.balance;
         hasPin.value = account.pin != null;
       } else {
         userBalance.value = null;
+        hasPin.value = false;
       }
     });
-    authVM.loadUser();
-  }
-
-  Future<void> setPin(String pin) async {
-    try {
-      final userId = authVM.account.value?.uid;
-      if (userId == null) {
-        throw Exception('User tidak terautentikasi');
-      }
-      await userSource.createPin(userId, pin);
-      hasPin.value = true;
-      Message.success('PIN berhasil dibuat');
-      Get.back();
-    } catch (e) {
-      log('Gagal membuat PIN: $e');
-      Message.error('Gagal membuat PIN: ${e.toString()}');
-    }
   }
 
   void _calculateCosts() {
@@ -139,16 +123,7 @@ class CheckoutViewModel extends GetxController {
     }
   }
 
-  Future<void> updatePurchasedCount() async {
-    try {
-      await CarSource.updatePurchasedProduct(car.id);
-      log('Berhasil memanggil update purchased product dari ViewModel.');
-    } catch (e) {
-      log('Gagal memperbarui count purchased product: $e');
-    }
-  }
-
-  Future<void> processPayment() async {
+  Future<void> processPayment(String enteredPin) async {
     try {
       final userId = authVM.account.value?.uid;
       if (userId == null) {
@@ -160,12 +135,10 @@ class CheckoutViewModel extends GetxController {
 
       await CarSource.updatePurchasedProduct(car.id);
       log('Jumlah produk yang disewa berhasil diupdate');
-
-      await authVM.loadUser();
     } catch (e) {
       log('Gagal memproses pembayaran: $e');
       Message.error('Pembayaran gagal: ${e.toString()}');
-      return;
+      rethrow;
     }
   }
 }

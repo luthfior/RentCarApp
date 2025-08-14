@@ -9,7 +9,6 @@ import 'package:rent_car_app/presentation/widgets/chip_categories.dart';
 import 'package:rent_car_app/presentation/widgets/failed_ui.dart';
 import 'package:rent_car_app/presentation/widgets/item_featured_car.dart';
 import 'package:rent_car_app/presentation/widgets/item_newest_car.dart';
-import 'package:rent_car_app/presentation/widgets/offline_banner.dart';
 
 class BrowseFragment extends GetView<BrowseViewModel> {
   const BrowseFragment({super.key});
@@ -43,7 +42,6 @@ class BrowseFragment extends GetView<BrowseViewModel> {
             ],
           );
         }),
-        const OfflineBanner(),
       ],
     );
   }

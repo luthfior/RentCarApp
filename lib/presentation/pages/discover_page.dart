@@ -8,6 +8,7 @@ import 'package:rent_car_app/presentation/viewModels/browse_view_model.dart';
 import 'package:rent_car_app/presentation/viewModels/discover_view_model.dart';
 import 'package:rent_car_app/presentation/widgets/button_bottom_bar.dart';
 import 'package:rent_car_app/data/services/connectivity_service.dart';
+import 'package:rent_car_app/presentation/widgets/offline_banner.dart';
 
 class DiscoverPage extends GetView<DiscoverViewModel> {
   DiscoverPage({super.key}) {
@@ -42,6 +43,7 @@ class DiscoverPage extends GetView<DiscoverViewModel> {
             alignment: Alignment.bottomCenter,
             child: Container(height: 38, color: const Color(0xffEFEFF0)),
           ),
+          const OfflineBanner(),
         ],
       ),
 
@@ -62,7 +64,11 @@ class DiscoverPage extends GetView<DiscoverViewModel> {
                 iconOn: 'assets/ic_browse_on.png',
                 isActive: controller.fragmentIndex.value == 0,
                 onTap: () {
-                  controller.setFragmentIndex(0);
+                  if (connectivity.isOnline.value) {
+                    controller.setFragmentIndex(0);
+                  } else {
+                    null;
+                  }
                 },
               ),
               buildItemNav(
@@ -71,7 +77,11 @@ class DiscoverPage extends GetView<DiscoverViewModel> {
                 iconOn: 'assets/ic_orders_on.png',
                 isActive: controller.fragmentIndex.value == 1,
                 onTap: () {
-                  controller.setFragmentIndex(1);
+                  if (connectivity.isOnline.value) {
+                    controller.setFragmentIndex(1);
+                  } else {
+                    null;
+                  }
                 },
               ),
               buildItemCircle(),
@@ -88,7 +98,11 @@ class DiscoverPage extends GetView<DiscoverViewModel> {
                 iconOn: 'assets/ic_settings_on.png',
                 isActive: controller.fragmentIndex.value == 2,
                 onTap: () {
-                  controller.setFragmentIndex(2);
+                  if (connectivity.isOnline.value) {
+                    controller.setFragmentIndex(2);
+                  } else {
+                    null;
+                  }
                 },
               ),
             ],

@@ -6,34 +6,42 @@ import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:rent_car_app/data/services/connectivity_service.dart';
 import 'package:rent_car_app/presentation/viewModels/booking_view_model.dart';
 import 'package:rent_car_app/presentation/widgets/button_primary.dart';
 import 'package:rent_car_app/presentation/widgets/custom_header.dart';
 import 'package:rent_car_app/presentation/widgets/custom_input.dart';
+import 'package:rent_car_app/presentation/widgets/offline_banner.dart';
 
 class BookingPage extends GetView<BookingViewModel> {
-  const BookingPage({super.key});
+  BookingPage({super.key});
+  final connectivity = Get.find<ConnectivityService>();
   @override
   Widget build(BuildContext context) {
     final BookingViewModel bookingVM = Get.find<BookingViewModel>();
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Gap(20 + MediaQuery.of(context).padding.top),
-            CustomHeader(title: 'Pemesanan'),
-            const Gap(20),
-            _snippetBike(bookingVM),
-            const Gap(10),
-            _buildInput(context, bookingVM),
-            const Gap(20),
-            _buildAgency(bookingVM),
-            const Gap(20),
-            _buildInsurance(bookingVM),
-            const Gap(20),
-            _buildDriverOption(bookingVM),
-          ],
-        ),
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            child: Column(
+              children: [
+                Gap(20 + MediaQuery.of(context).padding.top),
+                CustomHeader(title: 'Pemesanan'),
+                const Gap(20),
+                _snippetBike(bookingVM),
+                const Gap(10),
+                _buildInput(context, bookingVM),
+                const Gap(20),
+                _buildAgency(bookingVM),
+                const Gap(20),
+                _buildInsurance(bookingVM),
+                const Gap(20),
+                _buildDriverOption(bookingVM),
+              ],
+            ),
+          ),
+          const OfflineBanner(),
+        ],
       ),
       bottomNavigationBar: Container(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 0),
@@ -42,7 +50,13 @@ class BookingPage extends GetView<BookingViewModel> {
           mainAxisSize: MainAxisSize.min,
           children: [
             ButtonPrimary(
-              onTap: () => bookingVM.goToCheckout(),
+              onTap: () {
+                if (connectivity.isOnline.value) {
+                  bookingVM.goToCheckout();
+                } else {
+                  null;
+                }
+              },
               text: 'Lanjutkan ke Pembayaran',
             ),
             const Gap(20),
@@ -157,6 +171,7 @@ class BookingPage extends GetView<BookingViewModel> {
           ),
           const Gap(10),
           CustomInput(
+            enable: connectivity.isOnline.value,
             icon: 'assets/ic_profile.png',
             hint: bookingVM.nameController.text.isNotEmpty
                 ? bookingVM.nameController.text
@@ -194,7 +209,7 @@ class BookingPage extends GetView<BookingViewModel> {
                   ],
                 ),
               ),
-              const SizedBox(width: 16), // Jarak di antara dua input tanggal
+              const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -254,7 +269,13 @@ class BookingPage extends GetView<BookingViewModel> {
               final agency = bookingVM.listAgency[index];
               return Obx(() {
                 return GestureDetector(
-                  onTap: () => bookingVM.agencyPicked = agency,
+                  onTap: () {
+                    if (connectivity.isOnline.value) {
+                      bookingVM.agencyPicked = agency;
+                    } else {
+                      null;
+                    }
+                  },
                   child: Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 4,
@@ -333,6 +354,7 @@ class BookingPage extends GetView<BookingViewModel> {
                   );
                 }).toList(),
                 decoration: InputDecoration(
+                  enabled: connectivity.isOnline.value,
                   hint: Text(
                     'Pilih Asuransi yang tersedia',
                     style: GoogleFonts.poppins(
@@ -402,7 +424,13 @@ class BookingPage extends GetView<BookingViewModel> {
               children: [
                 Expanded(
                   child: GestureDetector(
-                    onTap: () => bookingVM.withDriver = true,
+                    onTap: () {
+                      if (connectivity.isOnline.value) {
+                        bookingVM.withDriver = true;
+                      } else {
+                        null;
+                      }
+                    },
                     child: Container(
                       height: 65,
                       decoration: BoxDecoration(
@@ -440,7 +468,13 @@ class BookingPage extends GetView<BookingViewModel> {
                 const SizedBox(width: 16),
                 Expanded(
                   child: GestureDetector(
-                    onTap: () => bookingVM.withDriver = false,
+                    onTap: () {
+                      if (connectivity.isOnline.value) {
+                        bookingVM.withDriver = false;
+                      } else {
+                        null;
+                      }
+                    },
                     child: Container(
                       height: 65,
                       decoration: BoxDecoration(

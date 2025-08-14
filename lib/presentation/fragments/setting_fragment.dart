@@ -50,7 +50,7 @@ class SettingFragment extends StatelessWidget {
               const Gap(20),
               buildItemSettings(
                 icon: 'assets/ic_wallet.png',
-                title: 'Dompet Digital',
+                title: 'Sunting Pin Dompet Digital',
                 onTap: null,
               ),
               const Gap(20),

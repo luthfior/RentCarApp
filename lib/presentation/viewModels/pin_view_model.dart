@@ -22,6 +22,7 @@ class PinViewModel extends GetxController {
   final pin4 = TextEditingController();
 
   final isPinComplete = false.obs;
+  final RxInt _failedAttempts = 0.obs;
 
   final UserSource userSource = UserSource();
 
@@ -63,19 +64,6 @@ class PinViewModel extends GetxController {
     isPinComplete.value = false;
   }
 
-  Future<void> processPayment() async {
-    try {
-      final enteredPin = getPin;
-      await checkoutVm.processPayment(enteredPin);
-      browseVm.car.value = car;
-      Get.offAllNamed('/complete', arguments: car);
-    } catch (e) {
-      log('Error dari PinViewModel: $e');
-      clearPin();
-      Message.error(e.toString());
-    }
-  }
-
   Future<void> setPin(String pin) async {
     try {
       final userId = authVM.account.value?.uid;
@@ -85,10 +73,60 @@ class PinViewModel extends GetxController {
       await userSource.createPin(userId, pin);
       checkoutVm.hasPin.value = true;
       Message.success('PIN berhasil dibuat');
-      Get.back();
+      await Future.delayed(const Duration(seconds: 2));
+      Get.offNamed(
+        '/checkout',
+        arguments: {
+          'car': checkoutVm.car,
+          'nameOrder': checkoutVm.nameOrder,
+          'startDate': checkoutVm.startDate,
+          'endDate': checkoutVm.endDate,
+          'agency': checkoutVm.agency,
+          'insurance': checkoutVm.insurance,
+          'withDriver': checkoutVm.withDriver,
+        },
+      );
     } catch (e) {
       log('Gagal membuat PIN: $e');
       Message.error('Gagal membuat PIN: ${e.toString()}');
+    }
+  }
+
+  Future<void> finishedPayment() async {
+    try {
+      final enteredPin = getPin;
+      final isPinValid = await userSource.verifyPin(
+        authVM.account.value!.uid,
+        enteredPin,
+      );
+      if (!isPinValid) {
+        throw Exception('PIN yang Anda masukkan salah');
+      }
+
+      await checkoutVm.processPayment(enteredPin);
+      await authVM.loadUser();
+      Message.success('Pembayaran berhasil!');
+      Get.offAllNamed('/complete', arguments: car);
+    } catch (e) {
+      log('Error dari PinViewModel: $e');
+      clearPin();
+      if (e.toString().contains('PIN yang Anda masukkan salah')) {
+        _failedAttempts.value++;
+
+        if (_failedAttempts.value >= 3) {
+          Message.error(
+            'Anda telah 3 kali salah memasukkan PIN. Silakan coba lagi nanti.',
+          );
+          await Future.delayed(const Duration(seconds: 2));
+          Get.offAllNamed('/discover');
+        } else {
+          Message.error(
+            'PIN yang Anda masukkan salah. Anda masih memiliki ${3 - _failedAttempts.value} kali percobaan lagi.',
+          );
+        }
+      } else {
+        Message.error('Pembayaran gagal: ${e.toString()}');
+      }
     }
   }
 

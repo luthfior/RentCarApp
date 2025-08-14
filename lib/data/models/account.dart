@@ -8,7 +8,7 @@ class Account {
     required this.uid,
     required this.name,
     required this.email,
-    this.balance = 5000000,
+    this.balance = 8740900,
     this.pin,
   });
 

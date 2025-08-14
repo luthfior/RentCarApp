@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:rent_car_app/data/services/connectivity_service.dart';
 
 class CustomHeader extends StatelessWidget {
   final String title;
   final bool showBackButton;
   final Widget? rightIcon;
+
+  final connectivity = Get.find<ConnectivityService>();
 
   CustomHeader({
     super.key,
@@ -29,7 +32,13 @@ class CustomHeader extends StatelessWidget {
         children: [
           if (showBackButton)
             GestureDetector(
-              onTap: () => Get.back(),
+              onTap: () {
+                if (connectivity.isOnline.value) {
+                  Get.back();
+                } else {
+                  null;
+                }
+              },
               child: Container(
                 height: 46,
                 width: 46,

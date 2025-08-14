@@ -49,13 +49,12 @@ class BookingViewModel extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    authVM.loadUser();
     ever(authVM.account, (Account? account) {
       if (account != null) {
         nameController.text = account.name;
       }
     });
-
-    authVM.loadUser();
   }
 
   Future<void> pickDate(

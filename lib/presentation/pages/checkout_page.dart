@@ -4,32 +4,41 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:rent_car_app/data/services/connectivity_service.dart';
 import 'package:rent_car_app/presentation/viewModels/checkout_view_model.dart';
 import 'package:rent_car_app/presentation/widgets/button_primary.dart';
 import 'package:rent_car_app/presentation/widgets/custom_header.dart';
+import 'package:rent_car_app/presentation/widgets/offline_banner.dart';
 
 class CheckoutPage extends GetView<CheckoutViewModel> {
-  const CheckoutPage({super.key});
+  CheckoutPage({super.key});
+
+  final connectivity = Get.find<ConnectivityService>();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Gap(20 + MediaQuery.of(context).padding.top),
-            CustomHeader(title: 'Pembayaran'),
-            const Gap(20),
-            _snippetBike(),
-            const Gap(20),
-            _buildReceipt(),
-            const Gap(20),
-            _buildPaymentMethod(),
-            const Gap(20),
-            _buildWallet(),
-            const Gap(20),
-          ],
-        ),
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            child: Column(
+              children: [
+                Gap(20 + MediaQuery.of(context).padding.top),
+                CustomHeader(title: 'Pembayaran'),
+                const Gap(20),
+                _snippetBike(),
+                const Gap(20),
+                _buildReceipt(),
+                const Gap(20),
+                _buildPaymentMethod(),
+                const Gap(20),
+                _buildWallet(),
+                const Gap(20),
+              ],
+            ),
+          ),
+          const OfflineBanner(),
+        ],
       ),
       bottomNavigationBar: Container(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 0),
@@ -38,7 +47,13 @@ class CheckoutPage extends GetView<CheckoutViewModel> {
           mainAxisSize: MainAxisSize.min,
           children: [
             ButtonPrimary(
-              onTap: () => controller.goToPin(),
+              onTap: () {
+                if (connectivity.isOnline.value) {
+                  controller.goToPin();
+                } else {
+                  null;
+                }
+              },
               text: 'Bayar Sekarang',
             ),
             const Gap(20),
@@ -286,8 +301,13 @@ class CheckoutPage extends GetView<CheckoutViewModel> {
               final paymentMethod = controller.listPayment[index];
               return Obx(
                 () => GestureDetector(
-                  onTap: () =>
-                      controller.setPaymentMethod(paymentMethod['name']!),
+                  onTap: () {
+                    if (connectivity.isOnline.value) {
+                      controller.setPaymentMethod(paymentMethod['name']!);
+                    } else {
+                      null;
+                    }
+                  },
                   child: Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 4,
@@ -393,7 +413,6 @@ class CheckoutPage extends GetView<CheckoutViewModel> {
                 ),
                 Obx(() {
                   final balance = controller.userBalance.value;
-
                   return Text(
                     balance != null
                         ? controller.formatCurrency(balance.toDouble())

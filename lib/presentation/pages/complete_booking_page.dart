@@ -4,7 +4,6 @@ import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:rent_car_app/data/models/car.dart';
-import 'package:rent_car_app/presentation/viewModels/checkout_view_model.dart';
 import 'package:rent_car_app/presentation/widgets/button_primary.dart';
 
 class CompleteBookingPage extends StatelessWidget {
@@ -13,8 +12,6 @@ class CompleteBookingPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final checkoutVM = Get.find<CheckoutViewModel>();
-
     return Scaffold(
       body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -68,8 +65,7 @@ class CompleteBookingPage extends StatelessWidget {
           const Gap(50),
           ButtonPrimary(
             text: 'Cari Produk Lainnya',
-            onTap: () async {
-              await checkoutVM.updatePurchasedCount();
+            onTap: () {
               Get.offAllNamed(
                 '/discover',
                 arguments: {'fragmentIndex': 0, 'bookedCar': car},
@@ -80,8 +76,7 @@ class CompleteBookingPage extends StatelessWidget {
           ButtonPrimary(
             text: 'Lihat Pesanan Saya',
             customBackgroundColor: Colors.white,
-            onTap: () async {
-              await checkoutVM.updatePurchasedCount();
+            onTap: () {
               Get.offAllNamed(
                 '/discover',
                 arguments: {'fragmentIndex': 1, 'bookedCar': car},

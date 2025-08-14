@@ -5,11 +5,17 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:rent_car_app/data/models/car.dart';
+import 'package:rent_car_app/data/services/connectivity_service.dart';
 
 Widget itemNewestCar(Car car, EdgeInsetsGeometry margin) {
+  final connectivity = Get.find<ConnectivityService>();
   return GestureDetector(
     onTap: () {
-      Get.toNamed('/detail', arguments: car);
+      if (connectivity.isOnline.value) {
+        Get.toNamed('/detail', arguments: car);
+      } else {
+        null;
+      }
     },
     child: Container(
       height: 98,

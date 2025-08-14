@@ -1,113 +1,49 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:rent_car_app/core/constants/message.dart';
-import 'package:rent_car_app/data/models/car.dart';
-import 'package:rent_car_app/presentation/viewModels/browse_view_model.dart';
-import 'package:rent_car_app/presentation/viewModels/checkout_view_model.dart';
+import 'package:rent_car_app/data/services/connectivity_service.dart';
+import 'package:rent_car_app/presentation/viewModels/pin_view_model.dart';
 import 'package:rent_car_app/presentation/widgets/button_primary.dart';
 import 'package:rent_car_app/presentation/widgets/custom_header.dart';
+import 'package:rent_car_app/presentation/widgets/offline_banner.dart';
 
-class PinPage extends StatelessWidget {
-  PinPage({super.key, required this.car});
-  final Car car;
+class PinPage extends GetView<PinViewModel> {
+  PinPage({super.key});
 
-  final pin1 = TextEditingController();
-  final pin2 = TextEditingController();
-  final pin3 = TextEditingController();
-  final pin4 = TextEditingController();
-
-  final isPinComplete = false.obs;
-
-  void isPinTap(dynamic input) {
-    if (input is int) {
-      if (pin1.text == '') {
-        pin1.text = input.toString();
-        return;
-      }
-      if (pin2.text == '') {
-        pin2.text = input.toString();
-        return;
-      }
-      if (pin3.text == '') {
-        pin3.text = input.toString();
-        return;
-      }
-      if (pin4.text == '') {
-        pin4.text = input.toString();
-        isPinComplete.value = true;
-        return;
-      }
-    } else if (input is IconData) {
-      if (pin4.text.isNotEmpty) {
-        pin4.clear();
-        isPinComplete.value = false;
-        return;
-      }
-      if (pin3.text.isNotEmpty) {
-        pin3.clear();
-        return;
-      }
-      if (pin2.text.isNotEmpty) {
-        pin2.clear();
-        return;
-      }
-      if (pin1.text.isNotEmpty) {
-        pin1.clear();
-        return;
-      }
-    }
-  }
+  final connectivity = Get.find<ConnectivityService>();
 
   @override
   Widget build(BuildContext context) {
-    final browseVM = Get.find<BrowseViewModel>();
-    final checkoutVM = Get.find<CheckoutViewModel>();
-
-    void processPaymentWithPin() async {
-      try {
-        final enteredPin = pin1.text + pin2.text + pin3.text + pin4.text;
-        await checkoutVM.processPayment(enteredPin);
-        browseVM.car.value = car;
-        Get.offAllNamed('/complete', arguments: car);
-      } catch (e) {
-        log('Error dari PinPage: $e');
-        pin1.clear();
-        pin2.clear();
-        pin3.clear();
-        pin4.clear();
-        isPinComplete.value = false;
-        Message.error(e.toString());
-      }
-    }
-
     return Scaffold(
-      body: Column(
+      body: Stack(
         children: [
-          Gap(20 + MediaQuery.of(context).padding.top),
-          CustomHeader(title: 'Booking'),
-          const Gap(100),
           Column(
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              Gap(20 + MediaQuery.of(context).padding.top),
+              CustomHeader(title: 'PIN'),
+              const Gap(100),
+              Column(
                 children: [
-                  _inputPin(pin1),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _inputPin(controller.pin1),
+                      const Gap(30),
+                      _inputPin(controller.pin2),
+                      const Gap(30),
+                      _inputPin(controller.pin3),
+                      const Gap(30),
+                      _inputPin(controller.pin4),
+                    ],
+                  ),
                   const Gap(30),
-                  _inputPin(pin2),
-                  const Gap(30),
-                  _inputPin(pin3),
-                  const Gap(30),
-                  _inputPin(pin4),
+                  _buildNumberInput(controller),
                 ],
               ),
-              const Gap(30),
-              _buildNumberInput(),
             ],
           ),
+          const OfflineBanner(),
         ],
       ),
       bottomNavigationBar: Container(
@@ -117,12 +53,18 @@ class PinPage extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Obx(() {
+              final Function()? onPressed = controller.isPinComplete.value
+                  ? () async {
+                      if (connectivity.isOnline.value) {
+                        await controller.finishedPayment();
+                      } else {
+                        null;
+                      }
+                    }
+                  : null;
+
               return ButtonPrimary(
-                onTap: (!isPinComplete.value)
-                    ? null
-                    : () async {
-                        processPaymentWithPin();
-                      },
+                onTap: onPressed,
                 text: 'Konfirmasi Pembayaran',
               );
             }),
@@ -160,7 +102,7 @@ class PinPage extends StatelessWidget {
     );
   }
 
-  Widget _buildNumberInput() {
+  Widget _buildNumberInput(PinViewModel pinVm) {
     return SizedBox(
       width: 300,
       child: GridView.count(
@@ -171,24 +113,24 @@ class PinPage extends StatelessWidget {
         physics: const NeverScrollableScrollPhysics(),
         shrinkWrap: true,
         children: [
-          _buildNumberButton(1),
-          _buildNumberButton(2),
-          _buildNumberButton(3),
-          _buildNumberButton(4),
-          _buildNumberButton(5),
-          _buildNumberButton(6),
-          _buildNumberButton(7),
-          _buildNumberButton(8),
-          _buildNumberButton(9),
-          _buildNumberButton(null),
-          _buildNumberButton(0),
-          _buildNumberButton(Icons.backspace),
+          _buildNumberButton(pinVm, 1),
+          _buildNumberButton(pinVm, 2),
+          _buildNumberButton(pinVm, 3),
+          _buildNumberButton(pinVm, 4),
+          _buildNumberButton(pinVm, 5),
+          _buildNumberButton(pinVm, 6),
+          _buildNumberButton(pinVm, 7),
+          _buildNumberButton(pinVm, 8),
+          _buildNumberButton(pinVm, 9),
+          _buildNumberButton(pinVm, null),
+          _buildNumberButton(pinVm, 0),
+          _buildNumberButton(pinVm, Icons.backspace),
         ],
       ),
     );
   }
 
-  Widget _buildNumberButton(dynamic input) {
+  Widget _buildNumberButton(PinViewModel pinVm, dynamic input) {
     if (input == null) {
       return Container();
     }
@@ -205,14 +147,14 @@ class PinPage extends StatelessWidget {
           color: const Color(0xff070623),
         ),
       );
-      onPressed = () => isPinTap(input);
+      onPressed = () => pinVm.handlePinInput(input);
     } else {
       content = Icon(
         input as IconData,
         color: const Color(0xff070623),
         size: 28,
       );
-      onPressed = () => isPinTap(input);
+      onPressed = () => pinVm.handlePinInput(input);
     }
 
     return Center(

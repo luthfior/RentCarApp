@@ -29,8 +29,8 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await initializeDateFormatting('id_ID');
-  Get.put(ConnectivityService());
-  Get.put(AuthViewModel());
+  Get.put(ConnectivityService(), permanent: true);
+  Get.put(AuthViewModel(), permanent: true);
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
   ]).then((_) => runApp(const MyApp()));
@@ -62,11 +62,10 @@ class MyApp extends StatelessWidget {
             Car car = Get.arguments as Car;
             return DetailPage(car: car);
           },
-          // binding: DetailBinding(),
         ),
         GetPage(
           name: '/booking',
-          page: () => const BookingPage(),
+          page: () => BookingPage(),
           binding: BookingBinding(),
         ),
         GetPage(
@@ -81,15 +80,15 @@ class MyApp extends StatelessWidget {
         ),
         GetPage(
           name: '/checkout',
-          page: () => const CheckoutPage(),
+          page: () => CheckoutPage(),
           binding: CheckoutBinding(),
         ),
-        GetPage(name: '/pin-setup', page: () => const PinSetupPage()),
         GetPage(
-          name: '/pin',
-          page: () => const PinPage(),
+          name: '/pin-setup',
+          page: () => PinSetupPage(),
           binding: PinBinding(),
         ),
+        GetPage(name: '/pin', page: () => PinPage(), binding: PinBinding()),
         GetPage(
           name: '/complete',
           page: () {

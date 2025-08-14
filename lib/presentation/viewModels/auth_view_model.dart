@@ -1,3 +1,6 @@
+import 'dart:developer';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 import 'package:rent_car_app/core/constants/message.dart';
 import 'package:rent_car_app/data/models/account.dart';
@@ -6,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthViewModel extends GetxController {
   Rx<Account?> account = Rx<Account?>(null);
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   @override
   void onInit() {
@@ -39,7 +43,23 @@ class AuthViewModel extends GetxController {
   Future<void> loadUser() async {
     final user = await DSession.getUser();
     if (user != null) {
-      account.value = Account.fromJson(Map.from(user));
+      final userId = user['uid'] as String;
+      try {
+        final docSnapshot = await _firestore
+            .collection('Users')
+            .doc(userId)
+            .get();
+        if (docSnapshot.exists) {
+          final updatedAccount = Account.fromJson(docSnapshot.data()!);
+          account.value = updatedAccount;
+          await DSession.setUser(docSnapshot.data()!);
+        } else {
+          account.value = null;
+        }
+      } catch (e) {
+        log('Gagal memuat data pengguna dari Firebase: $e');
+        account.value = Account.fromJson(Map.from(user));
+      }
     } else {
       account.value = null;
     }

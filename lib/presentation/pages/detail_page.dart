@@ -7,196 +7,207 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:rent_car_app/data/models/car.dart';
+import 'package:rent_car_app/data/services/connectivity_service.dart';
 import 'package:rent_car_app/data/sources/chat_source.dart';
 import 'package:rent_car_app/data/models/chat.dart';
 import 'package:rent_car_app/presentation/widgets/button_chat.dart';
 import 'package:rent_car_app/presentation/widgets/button_primary.dart';
 import 'package:rent_car_app/presentation/widgets/custom_header.dart';
+import 'package:rent_car_app/presentation/widgets/offline_banner.dart';
 
 class DetailPage extends StatelessWidget {
-  const DetailPage({super.key, required this.car});
+  DetailPage({super.key, required this.car});
 
   final Car car;
+  final connectivity = Get.find<ConnectivityService>();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
+      body: Stack(
         children: [
-          Gap(20 + MediaQuery.of(context).padding.top),
-          CustomHeader(
-            title: '',
-            rightIcon: Container(
-              height: 46,
-              width: 46,
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white,
-              ),
-              alignment: Alignment.center,
-              child: Image.asset(
-                'assets/ic_favorite.png',
-                height: 24,
-                width: 24,
-              ),
-            ),
-          ),
-          const Gap(20),
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Gap(10),
-                  Center(
-                    child: ExtendedImage.network(
-                      car.imageProduct,
-                      width: 400,
-                      height: 250,
-                      fit: BoxFit.cover,
-                      loadStateChanged: (state) {
-                        if (state.extendedImageLoadState == LoadState.failed) {
-                          return Image.asset(
-                            'assets/splash_screen.png',
-                            width: 220,
-                            height: 170,
-                          );
-                        }
-                        return null;
-                      },
-                    ),
+          Column(
+            children: [
+              Gap(20 + MediaQuery.of(context).padding.top),
+              CustomHeader(
+                title: '',
+                rightIcon: Container(
+                  height: 46,
+                  width: 46,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white,
                   ),
-                  const Gap(30),
-                  Text(
-                    car.nameProduct,
-                    style: GoogleFonts.poppins(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w700,
-                      color: const Color(0xff070623),
-                    ),
+                  alignment: Alignment.center,
+                  child: Image.asset(
+                    'assets/ic_favorite.png',
+                    height: 24,
+                    width: 24,
                   ),
-                  const Gap(10),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                ),
+              ),
+              const Gap(20),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      RatingBar.builder(
-                        initialRating: car.ratingProduct.toDouble(),
-                        itemPadding: const EdgeInsets.all(0),
-                        itemSize: 14,
-                        unratedColor: Colors.grey[300],
-                        itemBuilder: (context, index) =>
-                            const Icon(Icons.star, color: Color(0xffFFBC1C)),
-                        ignoreGestures: true,
-                        allowHalfRating: true,
-                        onRatingUpdate: (value) {},
+                      const Gap(10),
+                      Center(
+                        child: ExtendedImage.network(
+                          car.imageProduct,
+                          width: 400,
+                          height: 250,
+                          fit: BoxFit.cover,
+                          loadStateChanged: (state) {
+                            if (state.extendedImageLoadState ==
+                                LoadState.failed) {
+                              return Image.asset(
+                                'assets/splash_screen.png',
+                                width: 220,
+                                height: 170,
+                              );
+                            }
+                            return null;
+                          },
+                        ),
                       ),
-                      RichText(
-                        text: TextSpan(
-                          text: '${car.purchasedProduct}',
-                          style: GoogleFonts.poppins(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xff070623),
+                      const Gap(30),
+                      Text(
+                        car.nameProduct,
+                        style: GoogleFonts.poppins(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xff070623),
+                        ),
+                      ),
+                      const Gap(10),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          RatingBar.builder(
+                            initialRating: car.ratingProduct.toDouble(),
+                            itemPadding: const EdgeInsets.all(0),
+                            itemSize: 14,
+                            unratedColor: Colors.grey[300],
+                            itemBuilder: (context, index) => const Icon(
+                              Icons.star,
+                              color: Color(0xffFFBC1C),
+                            ),
+                            ignoreGestures: true,
+                            allowHalfRating: true,
+                            onRatingUpdate: (value) {},
                           ),
-                          children: [
-                            TextSpan(
-                              text: ' kali disewa',
+                          RichText(
+                            text: TextSpan(
+                              text: '${car.purchasedProduct}',
                               style: GoogleFonts.poppins(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
                                 color: const Color(0xff070623),
                               ),
+                              children: [
+                                TextSpan(
+                                  text: ' kali disewa',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: const Color(0xff070623),
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                  const Gap(10),
-                  Text(
-                    'Tentang',
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: const Color(0xff070623),
-                    ),
-                  ),
-                  const Gap(10),
-                  Text(
-                    car.descriptionProduct,
-                    style: GoogleFonts.poppins(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: const Color(0xff070623),
-                    ),
-                  ),
-                  const Gap(10),
-                  Row(
-                    children: [
+                      const Gap(10),
                       Text(
-                        'Kategori: ',
+                        'Tentang',
                         style: GoogleFonts.poppins(
-                          fontSize: 14,
+                          fontSize: 16,
                           fontWeight: FontWeight.w700,
                           color: const Color(0xff070623),
                         ),
                       ),
+                      const Gap(10),
                       Text(
-                        car.categoryProduct,
+                        car.descriptionProduct,
                         style: GoogleFonts.poppins(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
                           color: const Color(0xff070623),
                         ),
                       ),
+                      const Gap(10),
+                      Row(
+                        children: [
+                          Text(
+                            'Kategori: ',
+                            style: GoogleFonts.poppins(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xff070623),
+                            ),
+                          ),
+                          Text(
+                            car.categoryProduct,
+                            style: GoogleFonts.poppins(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: const Color(0xff070623),
+                            ),
+                          ),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          Text(
+                            'Tahun Rilis: ',
+                            style: GoogleFonts.poppins(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xff070623),
+                            ),
+                          ),
+                          Text(
+                            '${car.releaseProduct}',
+                            style: GoogleFonts.poppins(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: const Color(0xff070623),
+                            ),
+                          ),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          Text(
+                            'Transmisi: ',
+                            style: GoogleFonts.poppins(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xff070623),
+                            ),
+                          ),
+                          Text(
+                            car.transmissionProduct,
+                            style: GoogleFonts.poppins(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: const Color(0xff070623),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const Gap(30),
                     ],
                   ),
-                  Row(
-                    children: [
-                      Text(
-                        'Tahun Rilis: ',
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: const Color(0xff070623),
-                        ),
-                      ),
-                      Text(
-                        '${car.releaseProduct}',
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: const Color(0xff070623),
-                        ),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      Text(
-                        'Transmisi: ',
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: const Color(0xff070623),
-                        ),
-                      ),
-                      Text(
-                        car.transmissionProduct,
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: const Color(0xff070623),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const Gap(30),
-                ],
+                ),
               ),
-            ),
+            ],
           ),
+          const OfflineBanner(),
         ],
       ),
       bottomNavigationBar: Container(
@@ -209,36 +220,40 @@ class DetailPage extends StatelessWidget {
             const Gap(10),
             ButtonChat(
               onTap: () async {
-                try {
-                  String uid = 'sssss';
-                  Chat chat = Chat(
-                    chatId: uid,
-                    message: 'Ready?',
-                    receiverId: 'cs',
-                    senderId: uid,
-                    productDetail: {
-                      'categoryProduct': car.categoryProduct,
-                      'imageProduct': car.imageProduct,
-                      'nameProduct': car.nameProduct,
-                      'priceProduct': car.priceProduct,
-                      'releaseProduct': car.releaseProduct,
-                      'transmissionProduct': car.transmissionProduct,
-                    },
-                  );
-                  ChatSource.openChat(uid, 'tes').then((value) {
-                    ChatSource.send(chat, uid).then((value) {
-                      Get.toNamed(
-                        '/chatting',
-                        arguments: {
-                          'product': car,
-                          'uid': uid,
-                          'username': 'tes',
-                        },
-                      );
+                if (connectivity.isOnline.value) {
+                  try {
+                    String uid = 'sssss';
+                    Chat chat = Chat(
+                      chatId: uid,
+                      message: 'Ready?',
+                      receiverId: 'cs',
+                      senderId: uid,
+                      productDetail: {
+                        'categoryProduct': car.categoryProduct,
+                        'imageProduct': car.imageProduct,
+                        'nameProduct': car.nameProduct,
+                        'priceProduct': car.priceProduct,
+                        'releaseProduct': car.releaseProduct,
+                        'transmissionProduct': car.transmissionProduct,
+                      },
+                    );
+                    ChatSource.openChat(uid, 'tes').then((value) {
+                      ChatSource.send(chat, uid).then((value) {
+                        Get.toNamed(
+                          '/chatting',
+                          arguments: {
+                            'product': car,
+                            'uid': uid,
+                            'username': 'tes',
+                          },
+                        );
+                      });
                     });
-                  });
-                } catch (e) {
-                  log('Gagal membuka chat: $e');
+                  } catch (e) {
+                    log('Gagal membuka chat: $e');
+                  }
+                } else {
+                  null;
                 }
               },
             ),
@@ -292,7 +307,11 @@ class DetailPage extends StatelessWidget {
             width: 150,
             child: ButtonPrimary(
               onTap: () {
-                Get.toNamed('/booking', arguments: car);
+                if (connectivity.isOnline.value) {
+                  Get.toNamed('/booking', arguments: car);
+                } else {
+                  null;
+                }
               },
               customBorderRadius: BorderRadius.circular(20),
               text: 'Pesan Sekarang',
