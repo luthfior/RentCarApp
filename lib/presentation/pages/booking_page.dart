@@ -28,7 +28,7 @@ class BookingPage extends GetView<BookingViewModel> {
                 Gap(20 + MediaQuery.of(context).padding.top),
                 CustomHeader(title: 'Pemesanan'),
                 const Gap(20),
-                _snippetBike(bookingVM),
+                _snippetCar(bookingVM),
                 const Gap(10),
                 _buildInput(context, bookingVM),
                 const Gap(20),
@@ -66,7 +66,7 @@ class BookingPage extends GetView<BookingViewModel> {
     );
   }
 
-  Widget _snippetBike(BookingViewModel bookingVM) {
+  Widget _snippetCar(BookingViewModel bookingVM) {
     final String productName = bookingVM.car.nameProduct.length > 16
         ? '${bookingVM.car.nameProduct.substring(0, 14)}...'
         : bookingVM.car.nameProduct;

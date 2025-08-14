@@ -26,7 +26,7 @@ class CheckoutPage extends GetView<CheckoutViewModel> {
                 Gap(20 + MediaQuery.of(context).padding.top),
                 CustomHeader(title: 'Pembayaran'),
                 const Gap(20),
-                _snippetBike(),
+                _snippetCar(),
                 const Gap(20),
                 _buildReceipt(),
                 const Gap(20),
@@ -63,7 +63,7 @@ class CheckoutPage extends GetView<CheckoutViewModel> {
     );
   }
 
-  Widget _snippetBike() {
+  Widget _snippetCar() {
     final String productName = controller.car.nameProduct.length > 16
         ? '${controller.car.nameProduct.substring(0, 14)}...'
         : controller.car.nameProduct;

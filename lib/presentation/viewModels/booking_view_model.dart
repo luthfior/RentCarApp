@@ -11,7 +11,6 @@ class BookingViewModel extends GetxController {
   final Rx<Car> _car = (Get.arguments as Car).obs;
   Car get car => _car.value;
 
-  final RxString name = ''.obs;
   final TextEditingController nameController = TextEditingController();
   final TextEditingController startDateController = TextEditingController();
   final TextEditingController endDateController = TextEditingController();

@@ -6,6 +6,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:rent_car_app/data/models/car.dart';
 import 'package:rent_car_app/presentation/bindings/auth_binding.dart';
 import 'package:rent_car_app/presentation/bindings/booking_binding.dart';
+import 'package:rent_car_app/presentation/bindings/chat_binding.dart';
 import 'package:rent_car_app/presentation/bindings/checkout_binding.dart';
 import 'package:rent_car_app/presentation/bindings/discover_binding.dart';
 import 'package:rent_car_app/presentation/bindings/pin_binding.dart';
@@ -22,6 +23,7 @@ import 'package:rent_car_app/presentation/pages/pin_setup_page.dart';
 import 'package:rent_car_app/presentation/pages/splash_screen.dart';
 import 'package:rent_car_app/data/services/connectivity_service.dart';
 import 'package:rent_car_app/presentation/viewModels/auth_view_model.dart';
+import 'package:rent_car_app/presentation/viewModels/detail_view_model.dart';
 import 'core/firebase_options.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -58,10 +60,11 @@ class MyApp extends StatelessWidget {
         GetPage(name: '/auth', page: () => AuthPage(), binding: AuthBinding()),
         GetPage(
           name: '/detail',
-          page: () {
-            Car car = Get.arguments as Car;
-            return DetailPage(car: car);
-          },
+          page: () => DetailPage(),
+          binding: BindingsBuilder(() {
+            final String productId = Get.arguments as String;
+            Get.put(DetailViewModel(productId));
+          }),
         ),
         GetPage(
           name: '/booking',
@@ -88,12 +91,8 @@ class MyApp extends StatelessWidget {
         ),
         GetPage(
           name: '/chatting',
-          page: () {
-            Map data = Get.arguments as Map;
-            String uid = data['uid'];
-            String username = data['username'];
-            return ChattingPage(uid: uid, username: username);
-          },
+          page: () => ChattingPage(),
+          binding: ChatBinding(),
         ),
       ],
     );

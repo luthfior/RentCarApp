@@ -31,27 +31,29 @@ Widget itemFeaturedCar(Car car, EdgeInsetsGeometry margin, bool isTrending) {
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Stack(
             children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: ExtendedImage.network(
-                  car.imageProduct,
-                  width: 175,
-                  height: 125,
-                  fit: BoxFit.cover,
-                  loadStateChanged: (state) {
-                    if (state.extendedImageLoadState == LoadState.failed) {
-                      return Image.asset(
-                        'assets/splash_screen.png',
-                        width: 220,
-                        height: 170,
-                      );
-                    }
-                    return null;
-                  },
+              Center(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: ExtendedImage.network(
+                    car.imageProduct,
+                    width: 175,
+                    height: 125,
+                    fit: BoxFit.cover,
+                    loadStateChanged: (state) {
+                      if (state.extendedImageLoadState == LoadState.failed) {
+                        return Image.asset(
+                          'assets/splash_screen.png',
+                          width: 220,
+                          height: 170,
+                        );
+                      }
+                      return null;
+                    },
+                  ),
                 ),
               ),
               if (isTrending)

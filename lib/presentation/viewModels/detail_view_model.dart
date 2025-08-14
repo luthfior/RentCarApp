@@ -5,9 +5,14 @@ import 'package:rent_car_app/data/models/car.dart';
 import 'package:rent_car_app/data/sources/car_source.dart';
 
 class DetailViewModel extends GetxController {
-  final String idProduct;
+  final String? idProduct;
   DetailViewModel(this.idProduct) {
-    getDetail(idProduct);
+    if (idProduct != null) {
+      getDetail(idProduct!);
+    } else {
+      log('Error: DetailViewModel initialized with a null product ID.');
+      status = 'error';
+    }
   }
 
   final Rx<Car> _car = Car.empty.obs;
@@ -30,7 +35,7 @@ class DetailViewModel extends GetxController {
       status = 'success';
       car = data;
     } catch (e) {
-      status = 'Failed to fetch cars';
+      status = 'error';
       log('Error fetching detail: $e');
     }
   }
