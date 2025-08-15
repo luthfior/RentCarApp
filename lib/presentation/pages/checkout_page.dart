@@ -4,6 +4,7 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:rent_car_app/core/utils/app_colors.dart';
 import 'package:rent_car_app/data/services/connectivity_service.dart';
 import 'package:rent_car_app/presentation/viewModels/checkout_view_model.dart';
 import 'package:rent_car_app/presentation/widgets/button_primary.dart';
@@ -73,7 +74,7 @@ class CheckoutPage extends GetView<CheckoutViewModel> {
       margin: const EdgeInsets.symmetric(horizontal: 24),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
@@ -97,7 +98,7 @@ class CheckoutPage extends GetView<CheckoutViewModel> {
                   style: GoogleFonts.poppins(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xff070623),
+                    color: AppColors.onSurface,
                   ),
                 ),
                 Text(
@@ -105,7 +106,7 @@ class CheckoutPage extends GetView<CheckoutViewModel> {
                   style: GoogleFonts.poppins(
                     fontSize: 12,
                     fontWeight: FontWeight.w400,
-                    color: const Color(0xff838384),
+                    color: AppColors.secondaryText,
                   ),
                 ),
                 Text(
@@ -115,7 +116,7 @@ class CheckoutPage extends GetView<CheckoutViewModel> {
                   style: GoogleFonts.poppins(
                     fontSize: 12,
                     fontWeight: FontWeight.w400,
-                    color: const Color(0xff838384),
+                    color: AppColors.secondaryText,
                   ),
                 ),
               ],
@@ -141,7 +142,7 @@ class CheckoutPage extends GetView<CheckoutViewModel> {
                 style: GoogleFonts.poppins(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: const Color(0xff070623),
+                  color: AppColors.onSurface,
                 ),
               ),
             ],
@@ -169,7 +170,7 @@ class CheckoutPage extends GetView<CheckoutViewModel> {
               style: GoogleFonts.poppins(
                 fontSize: 14,
                 fontWeight: FontWeight.w400,
-                color: const Color(0xff838384),
+                color: AppColors.onSurface,
               ),
             ),
             const Gap(50),
@@ -181,9 +182,7 @@ class CheckoutPage extends GetView<CheckoutViewModel> {
                 style: GoogleFonts.poppins(
                   fontSize: isBold ? 14 : 12,
                   fontWeight: isBold ? FontWeight.w600 : FontWeight.w400,
-                  color: isBlue
-                      ? const Color(0xff6747E9)
-                      : const Color(0xff070623),
+                  color: isBlue ? const Color(0xffFF5722) : AppColors.onSurface,
                 ),
               ),
             ),
@@ -197,7 +196,7 @@ class CheckoutPage extends GetView<CheckoutViewModel> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.surface,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
@@ -287,7 +286,7 @@ class CheckoutPage extends GetView<CheckoutViewModel> {
             style: GoogleFonts.poppins(
               fontSize: 14,
               fontWeight: FontWeight.w600,
-              color: const Color(0xff070623),
+              color: AppColors.onSurface,
             ),
           ),
         ),
@@ -321,21 +320,27 @@ class CheckoutPage extends GetView<CheckoutViewModel> {
                           : 8,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: AppColors.surface,
                       borderRadius: BorderRadius.circular(20),
                       border:
                           controller.paymentMethodPicked.value ==
                               paymentMethod['name']
-                          ? Border.all(color: const Color(0xff4A1DFF))
+                          ? Border.all(color: const Color(0xffFF5722))
                           : null,
                     ),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Image.asset(
-                          paymentMethod['icon']!,
-                          width: 38,
-                          height: 38,
+                        ColorFiltered(
+                          colorFilter: const ColorFilter.mode(
+                            Color(0xffFF5722),
+                            BlendMode.srcIn,
+                          ),
+                          child: Image.asset(
+                            paymentMethod['icon']!,
+                            width: 38,
+                            height: 38,
+                          ),
                         ),
                         const Gap(5),
                         Text(
@@ -344,7 +349,7 @@ class CheckoutPage extends GetView<CheckoutViewModel> {
                           style: GoogleFonts.poppins(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
-                            color: const Color(0xff070623),
+                            color: AppColors.onSurface,
                           ),
                         ),
                       ],
@@ -381,7 +386,7 @@ class CheckoutPage extends GetView<CheckoutViewModel> {
                   style: GoogleFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.w400,
-                    color: Colors.white,
+                    color: const Color(0xffFFFFFF),
                   ),
                 ),
                 Text(
@@ -389,7 +394,7 @@ class CheckoutPage extends GetView<CheckoutViewModel> {
                   style: GoogleFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.w400,
-                    color: Colors.white,
+                    color: const Color(0xffFFFFFF),
                   ),
                 ),
               ],
@@ -408,7 +413,7 @@ class CheckoutPage extends GetView<CheckoutViewModel> {
                   style: GoogleFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.w400,
-                    color: Colors.white,
+                    color: const Color(0xffFFFFFF),
                   ),
                 ),
                 Obx(() {
@@ -420,7 +425,7 @@ class CheckoutPage extends GetView<CheckoutViewModel> {
                     style: GoogleFonts.poppins(
                       fontSize: 36,
                       fontWeight: FontWeight.w700,
-                      color: Colors.white,
+                      color: const Color(0xffFFFFFF),
                     ),
                   );
                 }),

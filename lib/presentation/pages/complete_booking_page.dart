@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:rent_car_app/core/utils/app_colors.dart';
 import 'package:rent_car_app/data/models/car.dart';
 import 'package:rent_car_app/presentation/widgets/button_primary.dart';
 
@@ -23,7 +24,7 @@ class CompleteBookingPage extends StatelessWidget {
             style: GoogleFonts.poppins(
               fontWeight: FontWeight.w700,
               fontSize: 24,
-              color: const Color(0xff070623),
+              color: AppColors.onSurface,
             ),
           ),
           const Gap(50),
@@ -50,7 +51,7 @@ class CompleteBookingPage extends StatelessWidget {
             style: GoogleFonts.poppins(
               fontWeight: FontWeight.w600,
               fontSize: 22,
-              color: const Color(0xff070623),
+              color: AppColors.onSurface,
             ),
           ),
           Text(
@@ -75,7 +76,7 @@ class CompleteBookingPage extends StatelessWidget {
           const Gap(12),
           ButtonPrimary(
             text: 'Lihat Pesanan Saya',
-            customBackgroundColor: Colors.white,
+            customBackgroundColor: const Color(0xffFFFFFF),
             onTap: () {
               Get.offAllNamed(
                 '/discover',

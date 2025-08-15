@@ -11,7 +11,7 @@ class FailedUi extends StatelessWidget {
       aspectRatio: 16 / 9,
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: const Color(0xffFFFFFF),
           borderRadius: BorderRadius.circular(16),
         ),
         alignment: Alignment.center,

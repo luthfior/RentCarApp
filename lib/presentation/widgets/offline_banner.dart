@@ -26,7 +26,7 @@ class OfflineBanner extends StatelessWidget {
             borderRadius: BorderRadius.circular(8),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withAlpha(70),
+                color: const Color(0xff000000).withAlpha(70),
                 blurRadius: 4,
                 offset: const Offset(0, 2),
               ),
@@ -38,7 +38,7 @@ class OfflineBanner extends StatelessWidget {
               Text(
                 "Aplikasi ini memerlukan koneksi internet",
                 style: GoogleFonts.poppins(
-                  color: Colors.white,
+                  color: const Color(0xffFFFFFF),
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
                 ),
@@ -47,12 +47,16 @@ class OfflineBanner extends StatelessWidget {
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.wifi_off, color: Colors.white, size: 20),
+                  const Icon(
+                    Icons.wifi_off,
+                    color: Color(0xffFFFFFF),
+                    size: 20,
+                  ),
                   const Gap(5),
                   Text(
                     "Tidak ada koneksi internet",
                     style: GoogleFonts.poppins(
-                      color: Colors.white70,
+                      color: const Color(0xB3FFFFFF),
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
                     ),

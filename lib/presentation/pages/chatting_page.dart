@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:rent_car_app/core/utils/app_colors.dart';
 import 'package:rent_car_app/data/models/chat.dart';
 import 'package:rent_car_app/data/services/connectivity_service.dart';
 import 'package:rent_car_app/presentation/viewModels/chat_view_model.dart';
@@ -63,8 +64,9 @@ class ChattingPage extends GetView<ChatViewModel> {
     return Container(
       height: 80,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      margin: const EdgeInsets.only(top: 24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
@@ -88,7 +90,7 @@ class ChattingPage extends GetView<ChatViewModel> {
                   style: GoogleFonts.poppins(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xff070623),
+                    color: AppColors.onSurface,
                   ),
                 ),
                 Text(
@@ -96,7 +98,7 @@ class ChattingPage extends GetView<ChatViewModel> {
                   style: GoogleFonts.poppins(
                     fontSize: 12,
                     fontWeight: FontWeight.w400,
-                    color: const Color(0xff838384),
+                    color: AppColors.secondaryText,
                   ),
                 ),
                 Text(
@@ -106,7 +108,7 @@ class ChattingPage extends GetView<ChatViewModel> {
                   style: GoogleFonts.poppins(
                     fontSize: 12,
                     fontWeight: FontWeight.w400,
-                    color: const Color(0xff838384),
+                    color: AppColors.secondaryText,
                   ),
                 ),
               ],
@@ -123,7 +125,7 @@ class ChattingPage extends GetView<ChatViewModel> {
                 decoration: TextDecoration.underline,
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: const Color(0xff4A1DFF),
+                color: AppColors.onSurface,
               ),
             ),
           ),
@@ -153,7 +155,7 @@ class ChattingPage extends GetView<ChatViewModel> {
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: ListView.builder(
-              padding: const EdgeInsets.only(top: 20),
+              padding: const EdgeInsets.only(top: 0),
               itemCount: list.length,
               itemBuilder: (context, index) {
                 Chat chat = Chat.fromJson(list[index].data());
@@ -178,11 +180,11 @@ class ChattingPage extends GetView<ChatViewModel> {
             children: [
               _snippetCar(chat.productDetail!),
               const Gap(16),
-              const DottedLine(
+              DottedLine(
                 lineThickness: 1,
                 dashLength: 6,
                 dashGapLength: 6,
-                dashColor: Color(0xffCECED5),
+                dashColor: AppColors.border,
               ),
               const Gap(16),
             ],
@@ -190,7 +192,7 @@ class ChattingPage extends GetView<ChatViewModel> {
         Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppColors.surface,
             borderRadius: BorderRadius.circular(16),
           ),
           child: Text(
@@ -198,7 +200,7 @@ class ChattingPage extends GetView<ChatViewModel> {
             style: GoogleFonts.poppins(
               fontSize: 16,
               fontWeight: FontWeight.w600,
-              color: const Color(0xff070623),
+              color: AppColors.onSurface,
             ),
           ),
         ),
@@ -206,7 +208,7 @@ class ChattingPage extends GetView<ChatViewModel> {
         Row(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            Image.asset('assets/chat_profile.png', width: 40, height: 40),
+            Image.asset('assets/chat_profile.png', width: 30, height: 30),
             const Gap(8),
             Expanded(
               child: Text(
@@ -214,7 +216,7 @@ class ChattingPage extends GetView<ChatViewModel> {
                 style: GoogleFonts.poppins(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: const Color(0xff070623),
+                  color: AppColors.onSurface,
                 ),
               ),
             ),
@@ -231,7 +233,7 @@ class ChattingPage extends GetView<ChatViewModel> {
         Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppColors.surface,
             borderRadius: BorderRadius.circular(16),
           ),
           child: Text(
@@ -239,7 +241,7 @@ class ChattingPage extends GetView<ChatViewModel> {
             style: GoogleFonts.poppins(
               fontSize: 16,
               fontWeight: FontWeight.w600,
-              color: const Color(0xff070623),
+              color: AppColors.onSurface,
             ),
           ),
         ),
@@ -254,18 +256,18 @@ class ChattingPage extends GetView<ChatViewModel> {
                 style: GoogleFonts.poppins(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: const Color(0xff070623),
+                  color: AppColors.onSurface,
                 ),
               ),
             ),
             const Gap(8),
             Container(
-              padding: const EdgeInsets.all(5),
+              padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(50),
               ),
-              child: Image.asset('assets/logo_app.png', width: 30, height: 30),
+              child: Image.asset('assets/logo_app.png', width: 25, height: 25),
             ),
           ],
         ),

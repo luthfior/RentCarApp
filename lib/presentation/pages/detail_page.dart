@@ -6,6 +6,7 @@ import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:rent_car_app/core/utils/app_colors.dart';
 import 'package:rent_car_app/data/models/car.dart';
 import 'package:rent_car_app/data/services/connectivity_service.dart';
 import 'package:rent_car_app/data/sources/chat_source.dart';
@@ -47,15 +48,16 @@ class DetailPage extends GetView<DetailViewModel> {
                   rightIcon: Container(
                     height: 46,
                     width: 46,
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Colors.white,
+                      color: AppColors.surface,
                     ),
                     alignment: Alignment.center,
                     child: Image.asset(
                       'assets/ic_favorite.png',
                       height: 24,
                       width: 24,
+                      color: AppColors.onSurface,
                     ),
                   ),
                 ),
@@ -92,7 +94,7 @@ class DetailPage extends GetView<DetailViewModel> {
                           style: GoogleFonts.poppins(
                             fontSize: 24,
                             fontWeight: FontWeight.w700,
-                            color: const Color(0xff070623),
+                            color: AppColors.onSurface,
                           ),
                         ),
                         const Gap(10),
@@ -118,7 +120,7 @@ class DetailPage extends GetView<DetailViewModel> {
                                 style: GoogleFonts.poppins(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
-                                  color: const Color(0xff070623),
+                                  color: AppColors.onSurface,
                                 ),
                                 children: [
                                   TextSpan(
@@ -126,7 +128,7 @@ class DetailPage extends GetView<DetailViewModel> {
                                     style: GoogleFonts.poppins(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w600,
-                                      color: const Color(0xff070623),
+                                      color: AppColors.onSurface,
                                     ),
                                   ),
                                 ],
@@ -140,7 +142,7 @@ class DetailPage extends GetView<DetailViewModel> {
                           style: GoogleFonts.poppins(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
-                            color: const Color(0xff070623),
+                            color: AppColors.onSurface,
                           ),
                         ),
                         const Gap(10),
@@ -149,7 +151,7 @@ class DetailPage extends GetView<DetailViewModel> {
                           style: GoogleFonts.poppins(
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
-                            color: const Color(0xff070623),
+                            color: AppColors.onSurface,
                           ),
                         ),
                         const Gap(10),
@@ -160,7 +162,7 @@ class DetailPage extends GetView<DetailViewModel> {
                               style: GoogleFonts.poppins(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w700,
-                                color: const Color(0xff070623),
+                                color: AppColors.onSurface,
                               ),
                             ),
                             Text(
@@ -168,7 +170,7 @@ class DetailPage extends GetView<DetailViewModel> {
                               style: GoogleFonts.poppins(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w500,
-                                color: const Color(0xff070623),
+                                color: AppColors.onSurface,
                               ),
                             ),
                           ],
@@ -180,7 +182,7 @@ class DetailPage extends GetView<DetailViewModel> {
                               style: GoogleFonts.poppins(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w700,
-                                color: const Color(0xff070623),
+                                color: AppColors.onSurface,
                               ),
                             ),
                             Text(
@@ -188,7 +190,7 @@ class DetailPage extends GetView<DetailViewModel> {
                               style: GoogleFonts.poppins(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w500,
-                                color: const Color(0xff070623),
+                                color: AppColors.onSurface,
                               ),
                             ),
                           ],
@@ -200,7 +202,7 @@ class DetailPage extends GetView<DetailViewModel> {
                               style: GoogleFonts.poppins(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w700,
-                                color: const Color(0xff070623),
+                                color: AppColors.onSurface,
                               ),
                             ),
                             Text(
@@ -208,7 +210,7 @@ class DetailPage extends GetView<DetailViewModel> {
                               style: GoogleFonts.poppins(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w500,
-                                color: const Color(0xff070623),
+                                color: AppColors.onSurface,
                               ),
                             ),
                           ],
@@ -284,7 +286,7 @@ class DetailPage extends GetView<DetailViewModel> {
     return Container(
       height: 88,
       decoration: BoxDecoration(
-        color: const Color(0xff070623),
+        color: const Color(0xFFFFB86C),
         borderRadius: BorderRadius.circular(20),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
@@ -305,7 +307,7 @@ class DetailPage extends GetView<DetailViewModel> {
                   style: GoogleFonts.poppins(
                     fontSize: 21,
                     fontWeight: FontWeight.w700,
-                    color: Colors.white,
+                    color: Colors.black,
                   ),
                 ),
                 Text(
@@ -313,7 +315,7 @@ class DetailPage extends GetView<DetailViewModel> {
                   style: GoogleFonts.poppins(
                     fontSize: 14,
                     fontWeight: FontWeight.w400,
-                    color: Colors.white,
+                    color: Colors.black,
                   ),
                 ),
               ],

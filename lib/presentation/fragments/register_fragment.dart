@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:rent_car_app/core/utils/app_colors.dart';
 import 'package:rent_car_app/data/services/connectivity_service.dart';
 import 'package:rent_car_app/presentation/viewModels/register_view_model.dart';
 import 'package:rent_car_app/presentation/widgets/button_primary.dart';
@@ -33,7 +34,7 @@ class RegisterFragment extends GetView<RegisterViewmodel> {
                 style: GoogleFonts.poppins(
                   fontSize: 24,
                   fontWeight: FontWeight.w700,
-                  color: const Color(0xff070623),
+                  color: AppColors.onSurface,
                 ),
               ),
               const Gap(30),
@@ -42,7 +43,7 @@ class RegisterFragment extends GetView<RegisterViewmodel> {
                 style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: const Color(0xff070623),
+                  color: AppColors.onSurface,
                 ),
               ),
               const Gap(12),
@@ -66,7 +67,7 @@ class RegisterFragment extends GetView<RegisterViewmodel> {
                 style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: const Color(0xff070623),
+                  color: AppColors.onSurface,
                 ),
               ),
               const Gap(12),
@@ -90,7 +91,7 @@ class RegisterFragment extends GetView<RegisterViewmodel> {
                 style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: const Color(0xff070623),
+                  color: AppColors.onSurface,
                 ),
               ),
               const Gap(12),
@@ -177,7 +178,7 @@ class RegisterFragment extends GetView<RegisterViewmodel> {
         Obx(() {
           if (!controller.isLoading.value) return const SizedBox.shrink();
           return Container(
-            color: Colors.black.withAlpha(179),
+            color: const Color(0xff000000).withAlpha(179),
             child: const Center(child: CircularProgressIndicator()),
           );
         }),

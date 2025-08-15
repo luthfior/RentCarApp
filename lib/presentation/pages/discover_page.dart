@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:rent_car_app/core/utils/app_colors.dart';
 import 'package:rent_car_app/data/models/car.dart';
+import 'package:rent_car_app/data/services/theme_service.dart';
 import 'package:rent_car_app/data/sources/chat_source.dart';
 import 'package:rent_car_app/presentation/fragments/browse_fragment.dart';
 import 'package:rent_car_app/presentation/fragments/order_fragment.dart';
@@ -42,9 +44,16 @@ class DiscoverPage extends GetView<DiscoverViewModel> {
       body: Stack(
         children: [
           Obx(() => fragments[controller.fragmentIndex.value]),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Container(height: 38, color: const Color(0xffEFEFF0)),
+          GetBuilder<ThemeService>(
+            builder: (themeService) {
+              return Align(
+                alignment: Alignment.bottomCenter,
+                child: Container(
+                  height: 38,
+                  color: Theme.of(context).scaffoldBackgroundColor,
+                ),
+              );
+            },
           ),
           const OfflineBanner(),
         ],
@@ -56,7 +65,7 @@ class DiscoverPage extends GetView<DiscoverViewModel> {
           margin: const EdgeInsets.all(24),
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
           decoration: BoxDecoration(
-            color: const Color(0xff070623),
+            color: AppColors.onSurface,
             borderRadius: BorderRadiusDirectional.circular(30),
           ),
           child: Row(

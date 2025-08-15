@@ -28,7 +28,8 @@ class ChatSource {
         .collection('chats')
         .add({
           'chatId': uid,
-          'message': 'Halo user',
+          'message':
+              'Halo Selamat Datang! ini adalah pesan otomatis, silahkan tunggu penjual merespon pesan ini ya.',
           'productDetail': null,
           'receiverId': uid,
           'senderId': 'cs',

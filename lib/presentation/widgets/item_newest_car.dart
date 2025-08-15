@@ -4,6 +4,7 @@ import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:rent_car_app/core/utils/app_colors.dart';
 import 'package:rent_car_app/data/models/car.dart';
 import 'package:rent_car_app/data/services/connectivity_service.dart';
 
@@ -12,7 +13,7 @@ Widget itemNewestCar(Car car, EdgeInsetsGeometry margin) {
   return GestureDetector(
     onTap: () {
       if (connectivity.isOnline.value) {
-        Get.toNamed('/detail', arguments: car);
+        Get.toNamed('/detail', arguments: car.id);
       } else {
         null;
       }
@@ -22,7 +23,7 @@ Widget itemNewestCar(Car car, EdgeInsetsGeometry margin) {
       margin: margin,
       padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
@@ -56,7 +57,7 @@ Widget itemNewestCar(Car car, EdgeInsetsGeometry margin) {
                   style: GoogleFonts.poppins(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xff070623),
+                    color: AppColors.onSurface,
                   ),
                 ),
                 const Gap(4),
@@ -67,7 +68,7 @@ Widget itemNewestCar(Car car, EdgeInsetsGeometry margin) {
                   style: GoogleFonts.poppins(
                     fontSize: 10,
                     fontWeight: FontWeight.w400,
-                    color: const Color(0xff838384),
+                    color: AppColors.secondaryText,
                   ),
                 ),
               ],
@@ -88,7 +89,7 @@ Widget itemNewestCar(Car car, EdgeInsetsGeometry margin) {
                 style: GoogleFonts.poppins(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
-                  color: const Color(0xff6747E9),
+                  color: const Color(0xffFF5722),
                 ),
               ),
               Text(
@@ -96,7 +97,7 @@ Widget itemNewestCar(Car car, EdgeInsetsGeometry margin) {
                 style: GoogleFonts.poppins(
                   fontSize: 10,
                   fontWeight: FontWeight.w400,
-                  color: const Color(0xff838384),
+                  color: AppColors.secondaryText,
                 ),
               ),
             ],

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:rent_car_app/core/utils/app_colors.dart';
 import 'package:rent_car_app/data/services/connectivity_service.dart';
 import 'package:rent_car_app/presentation/viewModels/browse_view_model.dart';
 
@@ -18,7 +19,7 @@ Widget chipCategories(List categories) {
           style: GoogleFonts.poppins(
             fontSize: 16,
             fontWeight: FontWeight.w700,
-            color: const Color(0xff070623),
+            color: AppColors.onSurface,
           ),
         ),
       ),
@@ -49,8 +50,8 @@ Widget chipCategories(List categories) {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(16),
                       color: isSelected
-                          ? const Color(0xff070623)
-                          : Colors.white,
+                          ? AppColors.onSurface
+                          : AppColors.surface,
                     ),
                     child: Row(
                       children: [
@@ -62,8 +63,8 @@ Widget chipCategories(List categories) {
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
                             color: isSelected
-                                ? Colors.white
-                                : const Color(0xff070623),
+                                ? AppColors.surface
+                                : AppColors.onSurface,
                           ),
                         ),
                       ],
@@ -82,14 +83,37 @@ Widget chipCategories(List categories) {
 Widget getCategoryIcon(String category) {
   switch (category.toLowerCase()) {
     case 'mpv | mobil keluarga':
-      return Image.asset('assets/ic_car_mpv.png', width: 19, height: 19);
+      return ColorFiltered(
+        colorFilter: const ColorFilter.mode(Color(0xffFF5722), BlendMode.srcIn),
+        child: Image.asset('assets/ic_car_mpv.png', width: 19, height: 19),
+      );
     case 'suv | mobil tangguh':
-      return Image.asset('assets/ic_car_suv.png', width: 24, height: 24);
+      return ColorFiltered(
+        colorFilter: const ColorFilter.mode(Color(0xffFF5722), BlendMode.srcIn),
+        child: Image.asset('assets/ic_car_suv.png', width: 24, height: 24),
+      );
     case 'hatchback | mobil kota':
-      return Image.asset('assets/ic_car_hatchback.png', width: 24, height: 24);
+      return ColorFiltered(
+        colorFilter: const ColorFilter.mode(Color(0xffFF5722), BlendMode.srcIn),
+        child: Image.asset(
+          'assets/ic_car_hatchback.png',
+          width: 24,
+          height: 24,
+        ),
+      );
     case 'electric | mobil listrik':
-      return Image.asset('assets/ic_car_electric.png', width: 19, height: 19);
+      return ColorFiltered(
+        colorFilter: const ColorFilter.mode(Color(0xffFF5722), BlendMode.srcIn),
+        child: Image.asset('assets/ic_car_electric.png', width: 19, height: 19),
+      );
     default:
-      return Image.asset('assets/ic_car_hatchback.png', width: 24, height: 24);
+      return ColorFiltered(
+        colorFilter: const ColorFilter.mode(Color(0xffFF5722), BlendMode.srcIn),
+        child: Image.asset(
+          'assets/ic_car_hatchback.png',
+          width: 24,
+          height: 24,
+        ),
+      );
   }
 }

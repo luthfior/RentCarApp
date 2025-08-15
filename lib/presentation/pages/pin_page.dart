@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:rent_car_app/core/utils/app_colors.dart';
 import 'package:rent_car_app/data/services/connectivity_service.dart';
 import 'package:rent_car_app/presentation/viewModels/pin_view_model.dart';
 import 'package:rent_car_app/presentation/widgets/button_primary.dart';
@@ -76,8 +77,8 @@ class PinPage extends GetView<PinViewModel> {
   }
 
   Widget _inputPin(TextEditingController editingController) {
-    InputBorder inputBorder = const UnderlineInputBorder(
-      borderSide: BorderSide(color: Color(0xff070623), width: 3),
+    InputBorder inputBorder = UnderlineInputBorder(
+      borderSide: BorderSide(color: AppColors.onSurface, width: 3),
     );
     return SizedBox(
       width: 30,
@@ -96,7 +97,7 @@ class PinPage extends GetView<PinViewModel> {
         style: GoogleFonts.poppins(
           fontSize: 32,
           fontWeight: FontWeight.w600,
-          color: const Color(0xff070623),
+          color: AppColors.onSurface,
         ),
       ),
     );
@@ -144,24 +145,20 @@ class PinPage extends GetView<PinViewModel> {
         style: GoogleFonts.poppins(
           fontSize: 22,
           fontWeight: FontWeight.w600,
-          color: const Color(0xff070623),
+          color: AppColors.onSurface,
         ),
       );
       onPressed = () => pinVm.handlePinInput(input);
     } else {
-      content = Icon(
-        input as IconData,
-        color: const Color(0xff070623),
-        size: 28,
-      );
+      content = Icon(input as IconData, color: AppColors.onSurface, size: 28);
       onPressed = () => pinVm.handlePinInput(input);
     }
 
     return Center(
       child: IconButton(
         onPressed: onPressed,
-        style: const ButtonStyle(
-          backgroundColor: WidgetStatePropertyAll(Colors.white),
+        style: ButtonStyle(
+          backgroundColor: WidgetStatePropertyAll(AppColors.surface),
         ),
         constraints: const BoxConstraints(
           minHeight: 65,

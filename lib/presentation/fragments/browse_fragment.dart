@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:rent_car_app/core/utils/app_colors.dart';
 import 'package:rent_car_app/data/models/car.dart';
 import 'package:rent_car_app/presentation/viewModels/browse_view_model.dart';
 import 'package:rent_car_app/presentation/widgets/chip_categories.dart';
@@ -54,21 +55,23 @@ class BrowseFragment extends GetView<BrowseViewModel> {
         children: [
           Transform.translate(
             offset: const Offset(-16, 0),
-            child: Image.asset('assets/logo_text_16_9.png', width: 130),
+            child: ColorFiltered(
+              colorFilter: ColorFilter.mode(
+                AppColors.onSurface,
+                BlendMode.srcIn,
+              ),
+              child: Image.asset('assets/logo_text_16_9.png', width: 130),
+            ),
           ),
           Container(
             width: 46,
             height: 46,
-            decoration: const BoxDecoration(
-              color: Colors.white,
+            decoration: BoxDecoration(
+              color: AppColors.surface,
               shape: BoxShape.circle,
             ),
             alignment: Alignment.center,
-            child: Image.asset(
-              'assets/ic_notification.png',
-              width: 20,
-              height: 20,
-            ),
+            child: Icon(Icons.notifications, color: AppColors.onSurface),
           ),
         ],
       ),
@@ -84,7 +87,7 @@ class BrowseFragment extends GetView<BrowseViewModel> {
       margin: const EdgeInsets.fromLTRB(24, 14, 24, 0),
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
       decoration: BoxDecoration(
-        color: const Color(0xff393e52),
+        color: const Color(0xFFFFB86C),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
@@ -93,7 +96,7 @@ class BrowseFragment extends GetView<BrowseViewModel> {
             width: 80,
             height: 60,
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppColors.surface,
               borderRadius: BorderRadius.circular(16),
             ),
             child: ClipRRect(
@@ -116,15 +119,15 @@ class BrowseFragment extends GetView<BrowseViewModel> {
                 style: GoogleFonts.poppins(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: Colors.white,
+                  color: const Color(0xff070623),
                 ),
                 children: [
                   TextSpan(
                     text: car.nameProduct,
                     style: GoogleFonts.poppins(
                       fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xffFFBC1C),
+                      fontWeight: FontWeight.w800,
+                      color: const Color(0xff070623),
                     ),
                   ),
                   TextSpan(
@@ -132,7 +135,7 @@ class BrowseFragment extends GetView<BrowseViewModel> {
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                      color: const Color(0xff070623),
                     ),
                   ),
                 ],
@@ -155,7 +158,7 @@ class BrowseFragment extends GetView<BrowseViewModel> {
             style: GoogleFonts.poppins(
               fontSize: 16,
               fontWeight: FontWeight.w700,
-              color: const Color(0xff070623),
+              color: AppColors.onSurface,
             ),
           ),
         ),
@@ -191,7 +194,7 @@ class BrowseFragment extends GetView<BrowseViewModel> {
             style: GoogleFonts.poppins(
               fontSize: 16,
               fontWeight: FontWeight.w700,
-              color: const Color(0xff070623),
+              color: AppColors.onSurface,
             ),
           ),
         ),

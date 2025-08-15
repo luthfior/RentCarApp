@@ -2,8 +2,10 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:rent_car_app/data/models/car.dart';
+import 'package:rent_car_app/data/services/theme_service.dart';
 import 'package:rent_car_app/presentation/bindings/auth_binding.dart';
 import 'package:rent_car_app/presentation/bindings/booking_binding.dart';
 import 'package:rent_car_app/presentation/bindings/chat_binding.dart';
@@ -25,14 +27,18 @@ import 'package:rent_car_app/data/services/connectivity_service.dart';
 import 'package:rent_car_app/presentation/viewModels/auth_view_model.dart';
 import 'package:rent_car_app/presentation/viewModels/detail_view_model.dart';
 import 'core/firebase_options.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await initializeDateFormatting('id_ID');
+  await GetStorage.init();
+
+  Get.put(ThemeService(), permanent: true);
   Get.put(ConnectivityService(), permanent: true);
   Get.put(AuthViewModel(), permanent: true);
+
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
   ]).then((_) => runApp(const MyApp()));
@@ -43,12 +49,12 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeService = Get.find<ThemeService>();
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        scaffoldBackgroundColor: const Color(0xffEFEFF0),
-        textTheme: GoogleFonts.poppinsTextTheme(),
-      ),
+      theme: ThemeService.lightTheme,
+      darkTheme: ThemeService.darkTheme,
+      themeMode: themeService.themeMode,
       home: const SplashScreen(),
       getPages: [
         GetPage(name: '/onboarding', page: () => const OnBoardingPage()),
@@ -62,7 +68,7 @@ class MyApp extends StatelessWidget {
           name: '/detail',
           page: () => DetailPage(),
           binding: BindingsBuilder(() {
-            final String productId = Get.arguments as String;
+            final String productId = Get.arguments;
             Get.put(DetailViewModel(productId));
           }),
         ),

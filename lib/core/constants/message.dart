@@ -8,7 +8,7 @@ class Message {
       messageText: Text(
         message,
         style: GoogleFonts.poppins(
-          color: Colors.white,
+          color: const Color(0xffFFFFFF),
           fontSize: fontSize,
           fontWeight: FontWeight.w600,
         ),
@@ -30,7 +30,7 @@ class Message {
       messageText: Text(
         message,
         style: GoogleFonts.poppins(
-          color: Colors.white,
+          color: const Color(0xffFFFFFF),
           fontSize: fontSize,
           fontWeight: FontWeight.w600,
         ),
@@ -52,7 +52,7 @@ class Message {
       messageText: Text(
         message,
         style: GoogleFonts.poppins(
-          color: Colors.white,
+          color: const Color(0xffFFFFFF),
           fontSize: fontSize,
           fontWeight: FontWeight.w600,
         ),

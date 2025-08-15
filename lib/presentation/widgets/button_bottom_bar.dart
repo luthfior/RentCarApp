@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:rent_car_app/core/utils/app_colors.dart';
 
 Widget buildItemNav({
   required String label,
@@ -18,7 +19,13 @@ Widget buildItemNav({
         height: 46,
         child: Column(
           children: [
-            Image.asset(isActive ? iconOn : icon, height: 24, width: 24),
+            ColorFiltered(
+              colorFilter: ColorFilter.mode(
+                isActive ? const Color(0xffFF5722) : AppColors.surface,
+                BlendMode.srcIn,
+              ),
+              child: Image.asset(icon, height: 24, width: 24),
+            ),
             const Gap(4),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -28,7 +35,9 @@ Widget buildItemNav({
                   style: GoogleFonts.poppins(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: Color(isActive ? 0xffFFBC1C : 0xffFFFFFF),
+                    color: isActive
+                        ? const Color(0xffFF5722)
+                        : AppColors.surface,
                   ),
                 ),
                 if (hasDot)
@@ -56,7 +65,7 @@ Widget buildItemCircle() {
     width: 50,
     decoration: const BoxDecoration(
       shape: BoxShape.circle,
-      color: Color(0xffFFBC1C),
+      color: Color(0xffFF5722),
     ),
     child: UnconstrainedBox(
       child: Image.asset('assets/ic_status.png', width: 24, height: 24),

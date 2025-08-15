@@ -7,6 +7,16 @@ class SplashScreen extends GetView<AuthViewModel> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(body: Center(child: Image.asset('assets/logo_text_1.png')));
+    return Scaffold(
+      body: Center(
+        child: ColorFiltered(
+          colorFilter: ColorFilter.mode(
+            Theme.of(context).colorScheme.onSurface,
+            BlendMode.srcIn,
+          ),
+          child: Image.asset('assets/logo_text_1.png'),
+        ),
+      ),
+    );
   }
 }

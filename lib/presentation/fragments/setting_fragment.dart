@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:rent_car_app/core/utils/app_colors.dart';
 import 'package:rent_car_app/data/models/account.dart';
+import 'package:rent_car_app/data/services/theme_service.dart';
 import 'package:rent_car_app/presentation/viewModels/auth_view_model.dart';
 
 class SettingFragment extends StatelessWidget {
@@ -24,7 +26,7 @@ class SettingFragment extends StatelessWidget {
             style: GoogleFonts.poppins(
               fontSize: 24,
               fontWeight: FontWeight.w700,
-              color: const Color(0xff070623),
+              color: AppColors.onSurface,
             ),
           ),
         ),
@@ -33,7 +35,7 @@ class SettingFragment extends StatelessWidget {
           margin: const EdgeInsets.symmetric(horizontal: 24),
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppColors.surface,
             borderRadius: BorderRadius.circular(20),
           ),
           child: Column(
@@ -92,7 +94,7 @@ class SettingFragment extends StatelessWidget {
                   style: GoogleFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xff070623),
+                    color: AppColors.onSurface,
                   ),
                 ),
                 Text(
@@ -100,7 +102,7 @@ class SettingFragment extends StatelessWidget {
                   style: GoogleFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.w400,
-                    color: const Color(0xff838384),
+                    color: AppColors.secondaryText,
                   ),
                 ),
               ],
@@ -124,11 +126,17 @@ class SettingFragment extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.transparent,
           borderRadius: BorderRadius.circular(50),
-          border: Border.all(color: const Color(0xffEFEEF7), width: 1),
+          border: Border.all(color: AppColors.border, width: 1),
         ),
         child: Row(
           children: [
-            Image.asset(icon, width: 24, height: 24),
+            ColorFiltered(
+              colorFilter: const ColorFilter.mode(
+                Color(0xffFF5722),
+                BlendMode.srcIn,
+              ),
+              child: Image.asset(icon, width: 24, height: 24),
+            ),
             const Gap(10),
             Expanded(
               child: Text(
@@ -136,11 +144,16 @@ class SettingFragment extends StatelessWidget {
                 style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.w400,
-                  color: const Color(0xff070623),
+                  color: AppColors.onSurface,
                 ),
               ),
             ),
-            Image.asset('assets/ic_arrow_next.png', width: 20, height: 20),
+            Image.asset(
+              'assets/ic_arrow_next.png',
+              width: 20,
+              height: 20,
+              color: AppColors.onSurface,
+            ),
           ],
         ),
       ),
@@ -148,20 +161,28 @@ class SettingFragment extends StatelessWidget {
   }
 
   Widget buildDarkMode() {
+    final themeService = Get.find<ThemeService>();
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            'Mode Gelap',
+            'Mode Malam',
             style: GoogleFonts.poppins(
               fontSize: 16,
               fontWeight: FontWeight.w600,
-              color: const Color(0xff070623),
+              color: AppColors.onSurface,
             ),
           ),
-          Image.asset('assets/ic_dark.png', width: 24),
+          Obx(() {
+            return Switch(
+              value: themeService.isDarkMode.value,
+              onChanged: (value) {
+                themeService.toggleTheme();
+              },
+            );
+          }),
         ],
       ),
     );

@@ -5,6 +5,7 @@ import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:rent_car_app/core/utils/app_colors.dart';
 import 'package:rent_car_app/data/models/car.dart';
 import 'package:rent_car_app/data/services/connectivity_service.dart';
 
@@ -17,7 +18,7 @@ Widget itemFeaturedCar(Car car, EdgeInsetsGeometry margin, bool isTrending) {
   return GestureDetector(
     onTap: () {
       if (connectivity.isOnline.value) {
-        Get.toNamed('/detail', arguments: car);
+        Get.toNamed('/detail', arguments: car.id);
       } else {
         null;
       }
@@ -27,7 +28,7 @@ Widget itemFeaturedCar(Car car, EdgeInsetsGeometry margin, bool isTrending) {
       margin: margin,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -78,7 +79,7 @@ Widget itemFeaturedCar(Car car, EdgeInsetsGeometry margin, bool isTrending) {
                     style: GoogleFonts.poppins(
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
-                      color: Colors.white,
+                      color: const Color(0xffFFFFFF),
                     ),
                   ),
                 ),
@@ -100,7 +101,7 @@ Widget itemFeaturedCar(Car car, EdgeInsetsGeometry margin, bool isTrending) {
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: const Color(0xff070623),
+                        color: AppColors.onSurface,
                       ),
                     ),
                     Text(
@@ -110,7 +111,7 @@ Widget itemFeaturedCar(Car car, EdgeInsetsGeometry margin, bool isTrending) {
                       style: GoogleFonts.poppins(
                         fontSize: 12,
                         fontWeight: FontWeight.w400,
-                        color: const Color(0xff838384),
+                        color: AppColors.secondaryText,
                       ),
                     ),
                     Text(
@@ -120,7 +121,7 @@ Widget itemFeaturedCar(Car car, EdgeInsetsGeometry margin, bool isTrending) {
                       style: GoogleFonts.poppins(
                         fontSize: 12,
                         fontWeight: FontWeight.w400,
-                        color: const Color(0xff838384),
+                        color: AppColors.secondaryText,
                       ),
                     ),
                   ],
@@ -135,7 +136,7 @@ Widget itemFeaturedCar(Car car, EdgeInsetsGeometry margin, bool isTrending) {
                     style: GoogleFonts.poppins(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: const Color(0xff070623),
+                      color: AppColors.onSurface,
                     ),
                   ),
                   const Gap(4),
@@ -155,7 +156,7 @@ Widget itemFeaturedCar(Car car, EdgeInsetsGeometry margin, bool isTrending) {
                     style: GoogleFonts.poppins(
                       fontSize: 12,
                       fontWeight: FontWeight.w400,
-                      color: const Color(0xff838384),
+                      color: AppColors.onSurface,
                     ),
                   ),
                 ],
@@ -174,7 +175,7 @@ Widget itemFeaturedCar(Car car, EdgeInsetsGeometry margin, bool isTrending) {
                 style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
-                  color: const Color(0xff6747E9),
+                  color: const Color(0xffFF5722),
                 ),
               ),
               const SizedBox(width: 4),
@@ -183,7 +184,7 @@ Widget itemFeaturedCar(Car car, EdgeInsetsGeometry margin, bool isTrending) {
                 style: GoogleFonts.poppins(
                   fontSize: 12,
                   fontWeight: FontWeight.w400,
-                  color: const Color(0xff838384),
+                  color: AppColors.secondaryText,
                 ),
               ),
             ],
