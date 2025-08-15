@@ -1,16 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:rent_car_app/core/utils/app_colors.dart';
 
 Widget buildItemNav({
   required String label,
-  required String icon,
-  required String iconOn,
+  required dynamic icon,
+  required dynamic iconOn,
   bool isActive = false,
   required VoidCallback onTap,
   bool hasDot = false,
 }) {
+  final iconColor = isActive ? const Color(0xffFF5722) : Colors.white;
+
+  final labelColor = isActive ? const Color(0xffFF5722) : Colors.white;
+
+  Widget getIconWidget(dynamic iconData) {
+    if (iconData is String) {
+      return Image.asset(iconData, height: 24, width: 24);
+    } else if (iconData is Icon) {
+      return Icon(iconData.icon, color: iconColor, size: 24);
+    }
+    return Container();
+  }
+
   return Expanded(
     child: GestureDetector(
       onTap: onTap,
@@ -18,14 +30,19 @@ Widget buildItemNav({
         color: Colors.transparent,
         height: 46,
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            ColorFiltered(
-              colorFilter: ColorFilter.mode(
-                isActive ? const Color(0xffFF5722) : AppColors.surface,
-                BlendMode.srcIn,
-              ),
-              child: Image.asset(icon, height: 24, width: 24),
-            ),
+            if (icon is String)
+              ColorFiltered(
+                colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
+                child: Image.asset(
+                  isActive ? iconOn : icon,
+                  height: 24,
+                  width: 24,
+                ),
+              )
+            else if (icon is Icon)
+              getIconWidget(isActive ? iconOn : icon),
             const Gap(4),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -33,11 +50,9 @@ Widget buildItemNav({
                 Text(
                   label,
                   style: GoogleFonts.poppins(
-                    fontSize: 12,
+                    fontSize: 10,
                     fontWeight: FontWeight.w600,
-                    color: isActive
-                        ? const Color(0xffFF5722)
-                        : AppColors.surface,
+                    color: labelColor,
                   ),
                 ),
                 if (hasDot)
@@ -55,20 +70,6 @@ Widget buildItemNav({
           ],
         ),
       ),
-    ),
-  );
-}
-
-Widget buildItemCircle() {
-  return Container(
-    height: 50,
-    width: 50,
-    decoration: const BoxDecoration(
-      shape: BoxShape.circle,
-      color: Color(0xffFF5722),
-    ),
-    child: UnconstrainedBox(
-      child: Image.asset('assets/ic_status.png', width: 24, height: 24),
     ),
   );
 }

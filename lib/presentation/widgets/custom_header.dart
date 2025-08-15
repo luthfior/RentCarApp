@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:rent_car_app/core/utils/app_colors.dart';
 import 'package:rent_car_app/data/services/connectivity_service.dart';
 
 class CustomHeader extends StatelessWidget {
@@ -22,7 +21,7 @@ class CustomHeader extends StatelessWidget {
     'assets/ic_arrow_back.png',
     height: 24,
     width: 24,
-    color: AppColors.onSurface,
+    color: Theme.of(Get.context!).colorScheme.onSurface,
   );
 
   @override
@@ -46,7 +45,7 @@ class CustomHeader extends StatelessWidget {
                 width: 46,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.surface,
+                  color: Theme.of(Get.context!).colorScheme.surface,
                 ),
                 alignment: Alignment.center,
                 child: _backIcon,
@@ -62,7 +61,7 @@ class CustomHeader extends StatelessWidget {
               style: GoogleFonts.poppins(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
-                color: AppColors.onSurface,
+                color: Theme.of(Get.context!).colorScheme.onSurface,
               ),
             ),
           ),

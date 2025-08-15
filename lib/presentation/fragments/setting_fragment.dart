@@ -1,10 +1,8 @@
-import 'package:d_session/d_session.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:rent_car_app/core/utils/app_colors.dart';
-import 'package:rent_car_app/data/models/account.dart';
+import 'package:rent_car_app/core/constants/message.dart';
 import 'package:rent_car_app/data/services/theme_service.dart';
 import 'package:rent_car_app/presentation/viewModels/auth_view_model.dart';
 
@@ -26,7 +24,7 @@ class SettingFragment extends StatelessWidget {
             style: GoogleFonts.poppins(
               fontSize: 24,
               fontWeight: FontWeight.w700,
-              color: AppColors.onSurface,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
         ),
@@ -35,7 +33,7 @@ class SettingFragment extends StatelessWidget {
           margin: const EdgeInsets.symmetric(horizontal: 24),
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(20),
           ),
           child: Column(
@@ -52,14 +50,22 @@ class SettingFragment extends StatelessWidget {
               const Gap(20),
               buildItemSettings(
                 icon: 'assets/ic_wallet.png',
-                title: 'Sunting Pin Dompet Digital',
-                onTap: null,
+                title: 'Dompet Digital',
+                onTap: () {
+                  return Message.neutral(
+                    'Maaf. Saat ini, fitur tersebut belum tersedia',
+                  );
+                },
               ),
               const Gap(20),
               buildItemSettings(
                 icon: 'assets/ic_key.png',
                 title: 'Ganti Kata Sandi',
-                onTap: null,
+                onTap: () {
+                  return Message.neutral(
+                    'Maaf. Saat ini, fitur tersebut belum tersedia',
+                  );
+                },
               ),
               const Gap(20),
               buildItemSettings(
@@ -75,42 +81,39 @@ class SettingFragment extends StatelessWidget {
   }
 
   Widget buildProfile() {
-    return FutureBuilder(
-      future: DSession.getUser(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        Account account = Account.fromJson(Map.from(snapshot.data!));
-        return Row(
-          children: [
-            Image.asset('assets/profile.png', width: 50, height: 50),
-            const Gap(20),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  account.name,
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.onSurface,
-                  ),
+    return Obx(() {
+      final account = authVM.account.value;
+      if (account == null) {
+        return const Center(child: CircularProgressIndicator());
+      }
+      return Row(
+        children: [
+          Image.asset('assets/profile.png', width: 50, height: 50),
+          const Gap(20),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                account.name,
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Theme.of(Get.context!).colorScheme.onSurface,
                 ),
-                Text(
-                  account.email,
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w400,
-                    color: AppColors.secondaryText,
-                  ),
+              ),
+              Text(
+                account.email,
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w400,
+                  color: Theme.of(Get.context!).colorScheme.secondary,
                 ),
-              ],
-            ),
-          ],
-        );
-      },
-    );
+              ),
+            ],
+          ),
+        ],
+      );
+    });
   }
 
   Widget buildItemSettings({
@@ -120,71 +123,73 @@ class SettingFragment extends StatelessWidget {
   }) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        height: 52,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
-          color: Colors.transparent,
-          borderRadius: BorderRadius.circular(50),
-          border: Border.all(color: AppColors.border, width: 1),
-        ),
-        child: Row(
-          children: [
-            ColorFiltered(
-              colorFilter: const ColorFilter.mode(
-                Color(0xffFF5722),
-                BlendMode.srcIn,
-              ),
-              child: Image.asset(icon, width: 24, height: 24),
+      child: Builder(
+        builder: (context) {
+          return Container(
+            height: 52,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              color: Colors.transparent,
+              borderRadius: BorderRadius.circular(50),
+              border: Border.all(color: const Color(0xff393e52), width: 1),
             ),
-            const Gap(10),
-            Expanded(
-              child: Text(
-                title,
-                style: GoogleFonts.poppins(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w400,
-                  color: AppColors.onSurface,
+            child: Row(
+              children: [
+                ColorFiltered(
+                  colorFilter: ColorFilter.mode(
+                    Theme.of(context).colorScheme.primary,
+                    BlendMode.srcIn,
+                  ),
+                  child: Image.asset(icon, width: 24, height: 24),
                 ),
-              ),
+                const Gap(10),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w400,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
+                ),
+                Image.asset(
+                  'assets/ic_arrow_next.png',
+                  width: 20,
+                  height: 20,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              ],
             ),
-            Image.asset(
-              'assets/ic_arrow_next.png',
-              width: 20,
-              height: 20,
-              color: AppColors.onSurface,
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
 
   Widget buildDarkMode() {
     final themeService = Get.find<ThemeService>();
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            'Mode Malam',
-            style: GoogleFonts.poppins(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: AppColors.onSurface,
-            ),
-          ),
-          Obx(() {
-            return Switch(
+    return Obx(() {
+      final textStyle = GoogleFonts.poppins(
+        fontSize: 16,
+        fontWeight: FontWeight.w600,
+        color: Theme.of(Get.context!).colorScheme.onSurface,
+      );
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('Mode Malam', style: textStyle),
+            Switch(
               value: themeService.isDarkMode.value,
               onChanged: (value) {
                 themeService.toggleTheme();
               },
-            );
-          }),
-        ],
-      ),
-    );
+            ),
+          ],
+        ),
+      );
+    });
   }
 }

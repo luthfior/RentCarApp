@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:rent_car_app/core/utils/app_colors.dart';
 
 class CustomInput extends StatelessWidget {
   const CustomInput({
@@ -38,7 +38,7 @@ class CustomInput extends StatelessWidget {
         style: GoogleFonts.poppins(
           fontSize: 14,
           fontWeight: FontWeight.w400,
-          color: AppColors.onSurface,
+          color: Theme.of(Get.context!).colorScheme.onSurface,
         ),
         obscureText: obsecure ?? false,
         onChanged: onChanged,
@@ -49,9 +49,9 @@ class CustomInput extends StatelessWidget {
           hintStyle: GoogleFonts.poppins(
             fontSize: customHintFontSize,
             fontWeight: FontWeight.w400,
-            color: AppColors.onSurface,
+            color: Theme.of(Get.context!).colorScheme.onSurface,
           ),
-          fillColor: AppColors.surface,
+          fillColor: Theme.of(Get.context!).colorScheme.surface,
           filled: true,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(50),

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:rent_car_app/core/utils/app_colors.dart';
 import 'package:rent_car_app/presentation/widgets/button_primary.dart';
 
 class OnBoardingPage extends StatelessWidget {
@@ -22,7 +21,7 @@ class OnBoardingPage extends StatelessWidget {
             style: GoogleFonts.poppins(
               fontSize: 18,
               fontWeight: FontWeight.w700,
-              color: AppColors.onSurface,
+              color: Theme.of(Get.context!).colorScheme.onSurface,
             ),
           ),
           Expanded(
@@ -38,7 +37,7 @@ class OnBoardingPage extends StatelessWidget {
               style: GoogleFonts.poppins(
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
-                color: AppColors.onSurface,
+                color: Theme.of(Get.context!).colorScheme.onSurface,
               ),
             ),
           ),

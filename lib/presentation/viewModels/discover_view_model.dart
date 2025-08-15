@@ -24,6 +24,8 @@ class DiscoverViewModel extends GetxController {
       case 1:
         break;
       case 2:
+        break;
+      case 3:
         authVM.loadUser();
         break;
     }

@@ -6,7 +6,6 @@ import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:rent_car_app/core/utils/app_colors.dart';
 import 'package:rent_car_app/data/services/connectivity_service.dart';
 import 'package:rent_car_app/presentation/viewModels/booking_view_model.dart';
 import 'package:rent_car_app/presentation/widgets/button_primary.dart';
@@ -23,23 +22,29 @@ class BookingPage extends GetView<BookingViewModel> {
     return Scaffold(
       body: Stack(
         children: [
-          SingleChildScrollView(
-            child: Column(
-              children: [
-                Gap(20 + MediaQuery.of(context).padding.top),
-                CustomHeader(title: 'Pemesanan'),
-                const Gap(20),
-                _snippetCar(bookingVM),
-                const Gap(10),
-                _buildInput(context, bookingVM),
-                const Gap(20),
-                _buildAgency(bookingVM),
-                const Gap(20),
-                _buildInsurance(bookingVM),
-                const Gap(20),
-                _buildDriverOption(bookingVM),
-              ],
-            ),
+          Column(
+            children: [
+              Gap(20 + MediaQuery.of(context).padding.top),
+              CustomHeader(title: 'Pemesanan'),
+              const Gap(20),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      _snippetCar(bookingVM),
+                      const Gap(10),
+                      _buildInput(context, bookingVM),
+                      const Gap(20),
+                      _buildAgency(bookingVM),
+                      const Gap(20),
+                      _buildInsurance(bookingVM),
+                      const Gap(20),
+                      _buildDriverOption(bookingVM),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
           const OfflineBanner(),
         ],
@@ -77,7 +82,7 @@ class BookingPage extends GetView<BookingViewModel> {
       margin: const EdgeInsets.symmetric(horizontal: 24),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: Theme.of(Get.context!).colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
@@ -101,7 +106,7 @@ class BookingPage extends GetView<BookingViewModel> {
                   style: GoogleFonts.poppins(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.onSurface,
+                    color: Theme.of(Get.context!).colorScheme.onSurface,
                   ),
                 ),
                 Text(
@@ -109,7 +114,7 @@ class BookingPage extends GetView<BookingViewModel> {
                   style: GoogleFonts.poppins(
                     fontSize: 12,
                     fontWeight: FontWeight.w400,
-                    color: AppColors.secondaryText,
+                    color: Theme.of(Get.context!).colorScheme.secondary,
                   ),
                 ),
                 Text(
@@ -119,7 +124,7 @@ class BookingPage extends GetView<BookingViewModel> {
                   style: GoogleFonts.poppins(
                     fontSize: 12,
                     fontWeight: FontWeight.w400,
-                    color: AppColors.secondaryText,
+                    color: Theme.of(Get.context!).colorScheme.secondary,
                   ),
                 ),
               ],
@@ -138,7 +143,7 @@ class BookingPage extends GetView<BookingViewModel> {
                 style: GoogleFonts.poppins(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.onSurface,
+                  color: Theme.of(Get.context!).colorScheme.onSurface,
                 ),
               ),
               Text(
@@ -146,7 +151,7 @@ class BookingPage extends GetView<BookingViewModel> {
                 style: GoogleFonts.poppins(
                   fontSize: 12,
                   fontWeight: FontWeight.w400,
-                  color: AppColors.onSurface,
+                  color: Theme.of(Get.context!).colorScheme.onSurface,
                 ),
               ),
             ],
@@ -167,7 +172,7 @@ class BookingPage extends GetView<BookingViewModel> {
             style: GoogleFonts.poppins(
               fontSize: 14,
               fontWeight: FontWeight.w600,
-              color: AppColors.onSurface,
+              color: Theme.of(Get.context!).colorScheme.onSurface,
             ),
           ),
           const Gap(10),
@@ -192,7 +197,7 @@ class BookingPage extends GetView<BookingViewModel> {
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.onSurface,
+                        color: Theme.of(Get.context!).colorScheme.onSurface,
                       ),
                     ),
                     const Gap(10),
@@ -220,7 +225,7 @@ class BookingPage extends GetView<BookingViewModel> {
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.onSurface,
+                        color: Theme.of(Get.context!).colorScheme.onSurface,
                       ),
                     ),
                     const Gap(10),
@@ -256,7 +261,7 @@ class BookingPage extends GetView<BookingViewModel> {
             style: GoogleFonts.poppins(
               fontSize: 14,
               fontWeight: FontWeight.w600,
-              color: AppColors.onSurface,
+              color: Theme.of(Get.context!).colorScheme.onSurface,
             ),
           ),
         ),
@@ -288,7 +293,7 @@ class BookingPage extends GetView<BookingViewModel> {
                       right: index == bookingVM.listAgency.length - 1 ? 24 : 8,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.surface,
+                      color: Theme.of(Get.context!).colorScheme.surface,
                       borderRadius: BorderRadius.circular(20),
                       border: bookingVM.agencyPicked == agency
                           ? Border.all(color: const Color(0xffFF5722))
@@ -315,7 +320,7 @@ class BookingPage extends GetView<BookingViewModel> {
                           style: GoogleFonts.poppins(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
-                            color: AppColors.onSurface,
+                            color: Theme.of(Get.context!).colorScheme.onSurface,
                           ),
                         ),
                       ],
@@ -342,7 +347,7 @@ class BookingPage extends GetView<BookingViewModel> {
               style: GoogleFonts.poppins(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: AppColors.onSurface,
+                color: Theme.of(Get.context!).colorScheme.onSurface,
               ),
             ),
             const Gap(10),
@@ -359,7 +364,7 @@ class BookingPage extends GetView<BookingViewModel> {
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         fontWeight: FontWeight.w400,
-                        color: AppColors.onSurface,
+                        color: Theme.of(Get.context!).colorScheme.onSurface,
                       ),
                     ),
                   );
@@ -371,11 +376,11 @@ class BookingPage extends GetView<BookingViewModel> {
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
-                      color: AppColors.onSurface,
+                      color: Theme.of(Get.context!).colorScheme.onSurface,
                     ),
                   ),
                   filled: true,
-                  fillColor: AppColors.surface,
+                  fillColor: Theme.of(Get.context!).colorScheme.surface,
                   contentPadding: const EdgeInsets.fromLTRB(16, 18, 18, 10),
                   prefixIcon: UnconstrainedBox(
                     alignment: const Alignment(0.4, 0),
@@ -411,7 +416,7 @@ class BookingPage extends GetView<BookingViewModel> {
                   'assets/ic_arrow_down.png',
                   width: 18,
                   height: 18,
-                  color: AppColors.onSurface,
+                  color: Theme.of(Get.context!).colorScheme.onSurface,
                 ),
               ),
             ),
@@ -434,7 +439,7 @@ class BookingPage extends GetView<BookingViewModel> {
               style: GoogleFonts.poppins(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: AppColors.onSurface,
+                color: Theme.of(Get.context!).colorScheme.onSurface,
               ),
             ),
             const Gap(10),
@@ -452,12 +457,12 @@ class BookingPage extends GetView<BookingViewModel> {
                     child: Container(
                       height: 65,
                       decoration: BoxDecoration(
-                        color: AppColors.surface,
+                        color: Theme.of(Get.context!).colorScheme.surface,
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
                           color: isWithDriver
                               ? const Color(0xffFF5722)
-                              : AppColors.border,
+                              : Colors.transparent,
                         ),
                       ),
                       child: Column(
@@ -475,7 +480,9 @@ class BookingPage extends GetView<BookingViewModel> {
                             style: GoogleFonts.poppins(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
-                              color: AppColors.onSurface,
+                              color: Theme.of(
+                                Get.context!,
+                              ).colorScheme.onSurface,
                             ),
                           ),
                         ],
@@ -496,11 +503,11 @@ class BookingPage extends GetView<BookingViewModel> {
                     child: Container(
                       height: 65,
                       decoration: BoxDecoration(
-                        color: AppColors.surface,
+                        color: Theme.of(Get.context!).colorScheme.surface,
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
                           color: isWithDriver
-                              ? AppColors.border
+                              ? Colors.transparent
                               : const Color(0xffFF5722),
                         ),
                       ),
@@ -519,7 +526,9 @@ class BookingPage extends GetView<BookingViewModel> {
                             style: GoogleFonts.poppins(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
-                              color: AppColors.onSurface,
+                              color: Theme.of(
+                                Get.context!,
+                              ).colorScheme.onSurface,
                             ),
                           ),
                         ],

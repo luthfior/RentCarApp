@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:rent_car_app/core/utils/app_colors.dart';
 import 'package:rent_car_app/data/services/connectivity_service.dart';
 import 'package:rent_car_app/presentation/viewModels/pin_view_model.dart';
 import 'package:rent_car_app/presentation/widgets/button_primary.dart';
@@ -83,7 +82,10 @@ class PinSetupPage extends GetView<PinViewModel> {
 
   Widget _inputPin(TextEditingController editingController) {
     InputBorder inputBorder = UnderlineInputBorder(
-      borderSide: BorderSide(color: AppColors.onSurface, width: 3),
+      borderSide: BorderSide(
+        color: Theme.of(Get.context!).colorScheme.onSurface,
+        width: 3,
+      ),
     );
     return SizedBox(
       width: 30,
@@ -102,7 +104,7 @@ class PinSetupPage extends GetView<PinViewModel> {
         style: GoogleFonts.poppins(
           fontSize: 32,
           fontWeight: FontWeight.w600,
-          color: AppColors.onSurface,
+          color: Theme.of(Get.context!).colorScheme.onSurface,
         ),
       ),
     );
@@ -150,12 +152,16 @@ class PinSetupPage extends GetView<PinViewModel> {
         style: GoogleFonts.poppins(
           fontSize: 22,
           fontWeight: FontWeight.w600,
-          color: AppColors.onSurface,
+          color: Theme.of(Get.context!).colorScheme.onSurface,
         ),
       );
       onPressed = () => pinVm.handlePinInput(input);
     } else {
-      content = Icon(input as IconData, color: AppColors.onSurface, size: 28);
+      content = Icon(
+        input as IconData,
+        color: Theme.of(Get.context!).colorScheme.onSurface,
+        size: 28,
+      );
       onPressed = () => pinVm.handlePinInput(input);
     }
 
@@ -163,7 +169,9 @@ class PinSetupPage extends GetView<PinViewModel> {
       child: IconButton(
         onPressed: onPressed,
         style: ButtonStyle(
-          backgroundColor: WidgetStatePropertyAll(AppColors.onSurface),
+          backgroundColor: WidgetStatePropertyAll(
+            Theme.of(Get.context!).colorScheme.onSurface,
+          ),
         ),
         constraints: const BoxConstraints(
           minHeight: 65,

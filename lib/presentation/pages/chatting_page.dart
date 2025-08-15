@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:rent_car_app/core/utils/app_colors.dart';
 import 'package:rent_car_app/data/models/chat.dart';
 import 'package:rent_car_app/data/services/connectivity_service.dart';
 import 'package:rent_car_app/presentation/viewModels/chat_view_model.dart';
@@ -66,7 +65,7 @@ class ChattingPage extends GetView<ChatViewModel> {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       margin: const EdgeInsets.only(top: 24),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: Theme.of(Get.context!).colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
@@ -90,7 +89,7 @@ class ChattingPage extends GetView<ChatViewModel> {
                   style: GoogleFonts.poppins(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.onSurface,
+                    color: Theme.of(Get.context!).colorScheme.onSurface,
                   ),
                 ),
                 Text(
@@ -98,7 +97,7 @@ class ChattingPage extends GetView<ChatViewModel> {
                   style: GoogleFonts.poppins(
                     fontSize: 12,
                     fontWeight: FontWeight.w400,
-                    color: AppColors.secondaryText,
+                    color: Theme.of(Get.context!).colorScheme.secondary,
                   ),
                 ),
                 Text(
@@ -108,7 +107,7 @@ class ChattingPage extends GetView<ChatViewModel> {
                   style: GoogleFonts.poppins(
                     fontSize: 12,
                     fontWeight: FontWeight.w400,
-                    color: AppColors.secondaryText,
+                    color: Theme.of(Get.context!).colorScheme.secondary,
                   ),
                 ),
               ],
@@ -125,7 +124,7 @@ class ChattingPage extends GetView<ChatViewModel> {
                 decoration: TextDecoration.underline,
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: AppColors.onSurface,
+                color: Theme.of(Get.context!).colorScheme.onSurface,
               ),
             ),
           ),
@@ -145,25 +144,50 @@ class ChattingPage extends GetView<ChatViewModel> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
-
           if (snapshot.data!.docs.isEmpty) {
             return const Center(child: Text('Chat kosong'));
           }
-
-          final list = snapshot.data!.docs;
-
+          final list = snapshot.data!.docs.reversed.toList();
+          Chat? firstChatWithProduct;
+          for (var doc in list) {
+            final chat = Chat.fromJson(doc.data());
+            if (chat.productDetail != null) {
+              firstChatWithProduct = chat;
+              break;
+            }
+          }
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: ListView.builder(
-              padding: const EdgeInsets.only(top: 0),
-              itemCount: list.length,
-              itemBuilder: (context, index) {
-                Chat chat = Chat.fromJson(list[index].data());
-                if (chat.senderId == 'cs') {
-                  return _chatAdmin(chat);
-                }
-                return _chatUser(chat);
-              },
+            child: Column(
+              children: [
+                if (firstChatWithProduct != null) ...[
+                  _snippetCar(firstChatWithProduct.productDetail!),
+                  const Gap(16),
+                  const DottedLine(
+                    lineThickness: 1,
+                    dashLength: 6,
+                    dashGapLength: 6,
+                    dashColor: Color(0xff393e52),
+                  ),
+                ],
+                Expanded(
+                  child: ListView.builder(
+                    padding: EdgeInsets.only(
+                      top: (firstChatWithProduct != null) ? 16 : 0,
+                    ),
+                    itemCount: list.length,
+                    itemBuilder: (context, index) {
+                      Chat chat = Chat.fromJson(list[index].data());
+                      final isFirstMessageOnScreen = index == list.length - 1;
+                      if (chat.senderId == 'cs') {
+                        return _chatAdmin(chat);
+                      } else {
+                        return _chatUser(chat, isFirstMessageOnScreen);
+                      }
+                    },
+                  ),
+                ),
+              ],
             ),
           );
         },
@@ -171,77 +195,23 @@ class ChattingPage extends GetView<ChatViewModel> {
     });
   }
 
-  Widget _chatUser(Chat chat) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (chat.productDetail != null)
-          Column(
-            children: [
-              _snippetCar(chat.productDetail!),
-              const Gap(16),
-              DottedLine(
-                lineThickness: 1,
-                dashLength: 6,
-                dashGapLength: 6,
-                dashColor: AppColors.border,
-              ),
-              const Gap(16),
-            ],
-          ),
-        Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Text(
-            chat.message,
-            style: GoogleFonts.poppins(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: AppColors.onSurface,
-            ),
-          ),
-        ),
-        const Gap(12),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Image.asset('assets/chat_profile.png', width: 30, height: 30),
-            const Gap(8),
-            Expanded(
-              child: Text(
-                controller.username.toString(),
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.onSurface,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _chatAdmin(Chat chat) {
+  Widget _chatUser(Chat chat, bool isFirstMessage) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         Container(
           padding: const EdgeInsets.all(10),
+          margin: EdgeInsets.only(top: isFirstMessage ? 24 : 0),
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: Theme.of(Get.context!).colorScheme.surface,
             borderRadius: BorderRadius.circular(16),
           ),
           child: Text(
             chat.message,
             style: GoogleFonts.poppins(
-              fontSize: 16,
+              fontSize: 14,
               fontWeight: FontWeight.w600,
-              color: AppColors.onSurface,
+              color: Theme.of(Get.context!).colorScheme.onSurface,
             ),
           ),
         ),
@@ -251,16 +221,47 @@ class ChattingPage extends GetView<ChatViewModel> {
           children: [
             Expanded(
               child: Text(
-                chat.senderId,
+                controller.username.toString(),
                 textAlign: TextAlign.end,
                 style: GoogleFonts.poppins(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.onSurface,
+                  color: Theme.of(Get.context!).colorScheme.onSurface,
                 ),
               ),
             ),
             const Gap(8),
+            Image.asset('assets/chat_profile.png', width: 30, height: 30),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _chatAdmin(Chat chat) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          margin: const EdgeInsets.only(top: 24),
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: Theme.of(Get.context!).colorScheme.surface,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Text(
+            chat.message,
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: Theme.of(Get.context!).colorScheme.onSurface,
+            ),
+          ),
+        ),
+        const Gap(12),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
             Container(
               padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(
@@ -268,6 +269,18 @@ class ChattingPage extends GetView<ChatViewModel> {
                 borderRadius: BorderRadius.circular(50),
               ),
               child: Image.asset('assets/logo_app.png', width: 25, height: 25),
+            ),
+            const Gap(8),
+            Expanded(
+              child: Text(
+                chat.senderId,
+                textAlign: TextAlign.start,
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Theme.of(Get.context!).colorScheme.onSurface,
+                ),
+              ),
             ),
           ],
         ),

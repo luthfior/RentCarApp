@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:rent_car_app/core/utils/app_colors.dart';
 import 'package:rent_car_app/data/services/connectivity_service.dart';
 import 'package:rent_car_app/presentation/viewModels/register_view_model.dart';
 import 'package:rent_car_app/presentation/widgets/button_primary.dart';
@@ -34,7 +33,7 @@ class RegisterFragment extends GetView<RegisterViewmodel> {
                 style: GoogleFonts.poppins(
                   fontSize: 24,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.onSurface,
+                  color: Theme.of(Get.context!).colorScheme.onSurface,
                 ),
               ),
               const Gap(30),
@@ -43,7 +42,7 @@ class RegisterFragment extends GetView<RegisterViewmodel> {
                 style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.onSurface,
+                  color: Theme.of(Get.context!).colorScheme.onSurface,
                 ),
               ),
               const Gap(12),
@@ -67,7 +66,7 @@ class RegisterFragment extends GetView<RegisterViewmodel> {
                 style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.onSurface,
+                  color: Theme.of(Get.context!).colorScheme.onSurface,
                 ),
               ),
               const Gap(12),
@@ -91,7 +90,7 @@ class RegisterFragment extends GetView<RegisterViewmodel> {
                 style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.onSurface,
+                  color: Theme.of(Get.context!).colorScheme.onSurface,
                 ),
               ),
               const Gap(12),
@@ -168,6 +167,7 @@ class RegisterFragment extends GetView<RegisterViewmodel> {
               ButtonPrimary(
                 onTap: (!connectivity.isOnline.value) ? null : onSwitchToLogin,
                 text: 'Masuk',
+                customTextColor: Theme.of(Get.context!).colorScheme.onSurface,
                 customBackgroundColor: const Color(0xffFFFFFF),
               ),
               const Gap(50),

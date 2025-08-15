@@ -29,7 +29,7 @@ class ChatSource {
         .add({
           'chatId': uid,
           'message':
-              'Halo Selamat Datang! ini adalah pesan otomatis, silahkan tunggu penjual merespon pesan ini ya.',
+              'Halo, Selamat Datang! ini adalah pesan otomatis, silahkan tunggu penjual merespon pesan ini ya.',
           'productDetail': null,
           'receiverId': uid,
           'senderId': 'cs',
@@ -55,5 +55,13 @@ class ChatSource {
           'senderId': chat.senderId,
           'timeStamp': FieldValue.serverTimestamp(),
         });
+  }
+
+  static Future<bool> checkIfChatExists(String uid) async {
+    final doc = await FirebaseFirestore.instance
+        .collection('Services')
+        .doc(uid)
+        .get();
+    return doc.exists;
   }
 }

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:rent_car_app/core/utils/app_colors.dart';
 import 'package:rent_car_app/data/services/connectivity_service.dart';
 import 'package:rent_car_app/presentation/viewModels/browse_view_model.dart';
 
@@ -19,7 +18,7 @@ Widget chipCategories(List categories) {
           style: GoogleFonts.poppins(
             fontSize: 16,
             fontWeight: FontWeight.w700,
-            color: AppColors.onSurface,
+            color: Theme.of(Get.context!).colorScheme.onSurface,
           ),
         ),
       ),
@@ -50,8 +49,8 @@ Widget chipCategories(List categories) {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(16),
                       color: isSelected
-                          ? AppColors.onSurface
-                          : AppColors.surface,
+                          ? Theme.of(Get.context!).colorScheme.onSurface
+                          : Theme.of(Get.context!).colorScheme.surface,
                     ),
                     child: Row(
                       children: [
@@ -63,8 +62,8 @@ Widget chipCategories(List categories) {
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
                             color: isSelected
-                                ? AppColors.surface
-                                : AppColors.onSurface,
+                                ? Theme.of(Get.context!).colorScheme.surface
+                                : Theme.of(Get.context!).colorScheme.onSurface,
                           ),
                         ),
                       ],

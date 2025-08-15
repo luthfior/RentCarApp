@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:rent_car_app/core/utils/app_colors.dart';
 
 class ButtonChat extends StatelessWidget {
   const ButtonChat({
@@ -20,7 +20,7 @@ class ButtonChat extends StatelessWidget {
   Widget build(BuildContext context) {
     return Material(
       borderRadius: BorderRadius.circular(50),
-      color: AppColors.surface,
+      color: Theme.of(Get.context!).colorScheme.surface,
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(50),
@@ -37,7 +37,7 @@ class ButtonChat extends StatelessWidget {
                 style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.onSurface,
+                  color: Theme.of(Get.context!).colorScheme.onSurface,
                 ),
               ),
             ],

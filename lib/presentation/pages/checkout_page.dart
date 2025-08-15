@@ -4,7 +4,6 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:rent_car_app/core/utils/app_colors.dart';
 import 'package:rent_car_app/data/services/connectivity_service.dart';
 import 'package:rent_car_app/presentation/viewModels/checkout_view_model.dart';
 import 'package:rent_car_app/presentation/widgets/button_primary.dart';
@@ -21,22 +20,28 @@ class CheckoutPage extends GetView<CheckoutViewModel> {
     return Scaffold(
       body: Stack(
         children: [
-          SingleChildScrollView(
-            child: Column(
-              children: [
-                Gap(20 + MediaQuery.of(context).padding.top),
-                CustomHeader(title: 'Pembayaran'),
-                const Gap(20),
-                _snippetCar(),
-                const Gap(20),
-                _buildReceipt(),
-                const Gap(20),
-                _buildPaymentMethod(),
-                const Gap(20),
-                _buildWallet(),
-                const Gap(20),
-              ],
-            ),
+          Column(
+            children: [
+              Gap(20 + MediaQuery.of(context).padding.top),
+              CustomHeader(title: 'Pembayaran'),
+              const Gap(20),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      _snippetCar(),
+                      const Gap(20),
+                      _buildReceipt(),
+                      const Gap(20),
+                      _buildPaymentMethod(),
+                      const Gap(20),
+                      _buildWallet(),
+                      const Gap(20),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
           const OfflineBanner(),
         ],
@@ -74,7 +79,7 @@ class CheckoutPage extends GetView<CheckoutViewModel> {
       margin: const EdgeInsets.symmetric(horizontal: 24),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: Theme.of(Get.context!).colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
@@ -98,7 +103,7 @@ class CheckoutPage extends GetView<CheckoutViewModel> {
                   style: GoogleFonts.poppins(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.onSurface,
+                    color: Theme.of(Get.context!).colorScheme.onSurface,
                   ),
                 ),
                 Text(
@@ -106,7 +111,7 @@ class CheckoutPage extends GetView<CheckoutViewModel> {
                   style: GoogleFonts.poppins(
                     fontSize: 12,
                     fontWeight: FontWeight.w400,
-                    color: AppColors.secondaryText,
+                    color: Theme.of(Get.context!).colorScheme.secondary,
                   ),
                 ),
                 Text(
@@ -116,7 +121,7 @@ class CheckoutPage extends GetView<CheckoutViewModel> {
                   style: GoogleFonts.poppins(
                     fontSize: 12,
                     fontWeight: FontWeight.w400,
-                    color: AppColors.secondaryText,
+                    color: Theme.of(Get.context!).colorScheme.secondary,
                   ),
                 ),
               ],
@@ -142,7 +147,7 @@ class CheckoutPage extends GetView<CheckoutViewModel> {
                 style: GoogleFonts.poppins(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.onSurface,
+                  color: Theme.of(Get.context!).colorScheme.onSurface,
                 ),
               ),
             ],
@@ -170,7 +175,7 @@ class CheckoutPage extends GetView<CheckoutViewModel> {
               style: GoogleFonts.poppins(
                 fontSize: 14,
                 fontWeight: FontWeight.w400,
-                color: AppColors.onSurface,
+                color: Theme.of(Get.context!).colorScheme.onSurface,
               ),
             ),
             const Gap(50),
@@ -182,7 +187,9 @@ class CheckoutPage extends GetView<CheckoutViewModel> {
                 style: GoogleFonts.poppins(
                   fontSize: isBold ? 14 : 12,
                   fontWeight: isBold ? FontWeight.w600 : FontWeight.w400,
-                  color: isBlue ? const Color(0xffFF5722) : AppColors.onSurface,
+                  color: isBlue
+                      ? const Color(0xffFF5722)
+                      : Theme.of(Get.context!).colorScheme.onSurface,
                 ),
               ),
             ),
@@ -196,7 +203,7 @@ class CheckoutPage extends GetView<CheckoutViewModel> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: Theme.of(Get.context!).colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
@@ -206,7 +213,7 @@ class CheckoutPage extends GetView<CheckoutViewModel> {
               isBold: true,
               controller.nameOrder ?? 'Tidak Ada',
             ),
-            const Divider(color: Color(0xffEFEFF0), height: 24),
+            const Divider(color: Color(0xffEFEEF7), height: 24),
             buildReceiptRow(
               'Harga',
               isBold: true,
@@ -238,7 +245,7 @@ class CheckoutPage extends GetView<CheckoutViewModel> {
               isBold: true,
               controller.formatCurrency(controller.subTotal),
             ),
-            const Divider(color: Color(0xffEFEFF0), height: 24),
+            const Divider(color: Color(0xffEFEEF7), height: 24),
 
             buildReceiptRow(
               'Penyedia',
@@ -251,7 +258,7 @@ class CheckoutPage extends GetView<CheckoutViewModel> {
               isInsurance: true,
               controller.insurance ?? 'Tidak Ada',
             ),
-            const Divider(color: Color(0xffEFEFF0), height: 24),
+            const Divider(color: Color(0xffEFEEF7), height: 24),
             buildReceiptRow(
               'Biaya Asuransi (20%)',
               isBold: true,
@@ -286,7 +293,7 @@ class CheckoutPage extends GetView<CheckoutViewModel> {
             style: GoogleFonts.poppins(
               fontSize: 14,
               fontWeight: FontWeight.w600,
-              color: AppColors.onSurface,
+              color: Theme.of(Get.context!).colorScheme.onSurface,
             ),
           ),
         ),
@@ -320,7 +327,7 @@ class CheckoutPage extends GetView<CheckoutViewModel> {
                           : 8,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.surface,
+                      color: Theme.of(Get.context!).colorScheme.surface,
                       borderRadius: BorderRadius.circular(20),
                       border:
                           controller.paymentMethodPicked.value ==
@@ -349,7 +356,7 @@ class CheckoutPage extends GetView<CheckoutViewModel> {
                           style: GoogleFonts.poppins(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
-                            color: AppColors.onSurface,
+                            color: Theme.of(Get.context!).colorScheme.onSurface,
                           ),
                         ),
                       ],

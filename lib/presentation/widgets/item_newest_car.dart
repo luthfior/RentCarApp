@@ -4,7 +4,6 @@ import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:rent_car_app/core/utils/app_colors.dart';
 import 'package:rent_car_app/data/models/car.dart';
 import 'package:rent_car_app/data/services/connectivity_service.dart';
 
@@ -23,7 +22,7 @@ Widget itemNewestCar(Car car, EdgeInsetsGeometry margin) {
       margin: margin,
       padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: Theme.of(Get.context!).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
@@ -57,7 +56,7 @@ Widget itemNewestCar(Car car, EdgeInsetsGeometry margin) {
                   style: GoogleFonts.poppins(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.onSurface,
+                    color: Theme.of(Get.context!).colorScheme.onSurface,
                   ),
                 ),
                 const Gap(4),
@@ -68,7 +67,7 @@ Widget itemNewestCar(Car car, EdgeInsetsGeometry margin) {
                   style: GoogleFonts.poppins(
                     fontSize: 10,
                     fontWeight: FontWeight.w400,
-                    color: AppColors.secondaryText,
+                    color: Theme.of(Get.context!).colorScheme.secondary,
                   ),
                 ),
               ],
@@ -97,7 +96,7 @@ Widget itemNewestCar(Car car, EdgeInsetsGeometry margin) {
                 style: GoogleFonts.poppins(
                   fontSize: 10,
                   fontWeight: FontWeight.w400,
-                  color: AppColors.secondaryText,
+                  color: Theme.of(Get.context!).colorScheme.secondary,
                 ),
               ),
             ],

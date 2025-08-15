@@ -7,7 +7,7 @@ class ButtonPrimary extends StatelessWidget {
     required this.onTap,
     required this.text,
     this.customBackgroundColor = const Color(0xffFF5722),
-    this.customTextColor,
+    this.customTextColor = Colors.white,
     this.customTextSize = 16.0,
     this.customBorderRadius = const BorderRadius.all(Radius.circular(50)),
   });
@@ -36,7 +36,7 @@ class ButtonPrimary extends StatelessWidget {
               style: GoogleFonts.poppins(
                 fontSize: customTextSize,
                 fontWeight: FontWeight.w700,
-                color: Colors.white,
+                color: customTextColor,
               ),
             ),
           ),

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:rent_car_app/core/utils/app_colors.dart';
 import 'package:rent_car_app/data/models/car.dart';
 import 'package:rent_car_app/presentation/viewModels/browse_view_model.dart';
 import 'package:rent_car_app/presentation/widgets/chip_categories.dart';
@@ -57,7 +56,7 @@ class BrowseFragment extends GetView<BrowseViewModel> {
             offset: const Offset(-16, 0),
             child: ColorFiltered(
               colorFilter: ColorFilter.mode(
-                AppColors.onSurface,
+                Theme.of(Get.context!).colorScheme.onSurface,
                 BlendMode.srcIn,
               ),
               child: Image.asset('assets/logo_text_16_9.png', width: 130),
@@ -67,11 +66,14 @@ class BrowseFragment extends GetView<BrowseViewModel> {
             width: 46,
             height: 46,
             decoration: BoxDecoration(
-              color: AppColors.surface,
+              color: Theme.of(Get.context!).colorScheme.surface,
               shape: BoxShape.circle,
             ),
             alignment: Alignment.center,
-            child: Icon(Icons.notifications, color: AppColors.onSurface),
+            child: Icon(
+              Icons.notifications,
+              color: Theme.of(Get.context!).colorScheme.onSurface,
+            ),
           ),
         ],
       ),
@@ -96,7 +98,7 @@ class BrowseFragment extends GetView<BrowseViewModel> {
             width: 80,
             height: 60,
             decoration: BoxDecoration(
-              color: AppColors.surface,
+              color: Theme.of(Get.context!).colorScheme.surface,
               borderRadius: BorderRadius.circular(16),
             ),
             child: ClipRRect(
@@ -158,7 +160,7 @@ class BrowseFragment extends GetView<BrowseViewModel> {
             style: GoogleFonts.poppins(
               fontSize: 16,
               fontWeight: FontWeight.w700,
-              color: AppColors.onSurface,
+              color: Theme.of(Get.context!).colorScheme.onSurface,
             ),
           ),
         ),
@@ -194,7 +196,7 @@ class BrowseFragment extends GetView<BrowseViewModel> {
             style: GoogleFonts.poppins(
               fontSize: 16,
               fontWeight: FontWeight.w700,
-              color: AppColors.onSurface,
+              color: Theme.of(Get.context!).colorScheme.onSurface,
             ),
           ),
         ),

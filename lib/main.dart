@@ -35,7 +35,7 @@ Future<void> main() async {
   await initializeDateFormatting('id_ID');
   await GetStorage.init();
 
-  Get.put(ThemeService(), permanent: true);
+  Get.put(ThemeService());
   Get.put(ConnectivityService(), permanent: true);
   Get.put(AuthViewModel(), permanent: true);
 
@@ -50,57 +50,63 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final themeService = Get.find<ThemeService>();
-    return GetMaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: ThemeService.lightTheme,
-      darkTheme: ThemeService.darkTheme,
-      themeMode: themeService.themeMode,
-      home: const SplashScreen(),
-      getPages: [
-        GetPage(name: '/onboarding', page: () => const OnBoardingPage()),
-        GetPage(
-          name: '/discover',
-          page: () => DiscoverPage(),
-          binding: DiscoverBinding(),
-        ),
-        GetPage(name: '/auth', page: () => AuthPage(), binding: AuthBinding()),
-        GetPage(
-          name: '/detail',
-          page: () => DetailPage(),
-          binding: BindingsBuilder(() {
-            final String productId = Get.arguments;
-            Get.put(DetailViewModel(productId));
-          }),
-        ),
-        GetPage(
-          name: '/booking',
-          page: () => BookingPage(),
-          binding: BookingBinding(),
-        ),
-        GetPage(
-          name: '/checkout',
-          page: () => CheckoutPage(),
-          binding: CheckoutBinding(),
-        ),
-        GetPage(
-          name: '/pin-setup',
-          page: () => PinSetupPage(),
-          binding: PinBinding(),
-        ),
-        GetPage(name: '/pin', page: () => PinPage(), binding: PinBinding()),
-        GetPage(
-          name: '/complete',
-          page: () {
-            Car car = Get.arguments as Car;
-            return CompleteBookingPage(car: car);
-          },
-        ),
-        GetPage(
-          name: '/chatting',
-          page: () => ChattingPage(),
-          binding: ChatBinding(),
-        ),
-      ],
-    );
+    return Obx(() {
+      return GetMaterialApp(
+        debugShowCheckedModeBanner: false,
+        theme: ThemeService.lightTheme,
+        darkTheme: ThemeService.darkTheme,
+        themeMode: themeService.themeMode,
+        home: const SplashScreen(),
+        getPages: [
+          GetPage(name: '/onboarding', page: () => const OnBoardingPage()),
+          GetPage(
+            name: '/discover',
+            page: () => DiscoverPage(),
+            binding: DiscoverBinding(),
+          ),
+          GetPage(
+            name: '/auth',
+            page: () => AuthPage(),
+            binding: AuthBinding(),
+          ),
+          GetPage(
+            name: '/detail',
+            page: () => DetailPage(),
+            binding: BindingsBuilder(() {
+              final String productId = Get.arguments;
+              Get.put(DetailViewModel(productId));
+            }),
+          ),
+          GetPage(
+            name: '/booking',
+            page: () => BookingPage(),
+            binding: BookingBinding(),
+          ),
+          GetPage(
+            name: '/checkout',
+            page: () => CheckoutPage(),
+            binding: CheckoutBinding(),
+          ),
+          GetPage(
+            name: '/pin-setup',
+            page: () => PinSetupPage(),
+            binding: PinBinding(),
+          ),
+          GetPage(name: '/pin', page: () => PinPage(), binding: PinBinding()),
+          GetPage(
+            name: '/complete',
+            page: () {
+              Car car = Get.arguments as Car;
+              return CompleteBookingPage(car: car);
+            },
+          ),
+          GetPage(
+            name: '/chatting',
+            page: () => ChattingPage(),
+            binding: ChatBinding(),
+          ),
+        ],
+      );
+    });
   }
 }
