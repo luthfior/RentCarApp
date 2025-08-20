@@ -3,6 +3,7 @@ import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:rent_car_app/core/constants/message.dart';
+import 'package:rent_car_app/data/services/connectivity_service.dart';
 import 'package:rent_car_app/data/services/theme_service.dart';
 import 'package:rent_car_app/presentation/viewModels/auth_view_model.dart';
 
@@ -10,6 +11,7 @@ class SettingFragment extends StatelessWidget {
   SettingFragment({super.key});
 
   final authVM = Get.find<AuthViewModel>();
+  final connectivity = Get.find<ConnectivityService>();
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +30,7 @@ class SettingFragment extends StatelessWidget {
             ),
           ),
         ),
-        const Gap(20),
+        const Gap(30),
         Container(
           margin: const EdgeInsets.symmetric(horizontal: 24),
           padding: const EdgeInsets.all(20),
@@ -45,22 +47,30 @@ class SettingFragment extends StatelessWidget {
               buildItemSettings(
                 icon: 'assets/ic_profile.png',
                 title: 'Sunting Profil',
-                onTap: () {},
+                isDisable: !connectivity.isOnline.value,
+                onTap: () {
+                  Get.toNamed('/edit-profile');
+                },
               ),
               const Gap(20),
               buildItemSettings(
                 icon: 'assets/ic_wallet.png',
-                title: 'Dompet Digital',
+                title: 'Ganti Pin Dompet Ku',
+                isDisable: !connectivity.isOnline.value,
                 onTap: () {
-                  return Message.neutral(
-                    'Maaf. Saat ini, fitur tersebut belum tersedia',
-                  );
+                  final pin = authVM.account.value?.pin;
+                  if (pin != null && pin.isNotEmpty) {
+                    Get.toNamed('/pin', arguments: {'isForVerification': true});
+                  } else {
+                    Get.toNamed('/pin-setup');
+                  }
                 },
               ),
               const Gap(20),
               buildItemSettings(
                 icon: 'assets/ic_key.png',
                 title: 'Ganti Kata Sandi',
+                isDisable: !connectivity.isOnline.value,
                 onTap: () {
                   return Message.neutral(
                     'Maaf. Saat ini, fitur tersebut belum tersedia',
@@ -71,6 +81,7 @@ class SettingFragment extends StatelessWidget {
               buildItemSettings(
                 icon: 'assets/ic_logout.png',
                 title: 'Keluar',
+                isDisable: !connectivity.isOnline.value,
                 onTap: () => authVM.logout(),
               ),
             ],
@@ -84,32 +95,45 @@ class SettingFragment extends StatelessWidget {
     return Obx(() {
       final account = authVM.account.value;
       if (account == null) {
-        return const Center(child: CircularProgressIndicator());
+        return const Center(
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(Color(0xffFF5722)),
+          ),
+        );
       }
       return Row(
         children: [
-          Image.asset('assets/profile.png', width: 50, height: 50),
+          CircleAvatar(
+            radius: 40,
+            backgroundColor: Theme.of(Get.context!).colorScheme.secondary,
+            backgroundImage:
+                (account.photoUrl != null && account.photoUrl!.isNotEmpty)
+                ? NetworkImage(account.photoUrl!)
+                : const AssetImage('assets/profile.png'),
+          ),
           const Gap(20),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                account.name,
-                style: GoogleFonts.poppins(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Theme.of(Get.context!).colorScheme.onSurface,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  account.name,
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(Get.context!).colorScheme.onSurface,
+                  ),
                 ),
-              ),
-              Text(
-                account.email,
-                style: GoogleFonts.poppins(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w400,
-                  color: Theme.of(Get.context!).colorScheme.secondary,
+                Text(
+                  account.email,
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w400,
+                    color: Theme.of(Get.context!).colorScheme.secondary,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       );
@@ -120,9 +144,10 @@ class SettingFragment extends StatelessWidget {
     required String icon,
     required String title,
     VoidCallback? onTap,
+    bool isDisable = false,
   }) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: isDisable ? null : onTap,
       child: Builder(
         builder: (context) {
           return Container(

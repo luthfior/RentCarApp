@@ -27,7 +27,7 @@ class AuthViewModel extends GetxController {
 
       if (user != null) {
         await loadUser();
-        Get.offAllNamed('/discover');
+        Get.offAllNamed('/discover', arguments: {'fragmentIndex': 0});
       } else if (isFirstTime) {
         await prefs.setBool("is_first_time", false);
         Get.offAllNamed('/onboarding');

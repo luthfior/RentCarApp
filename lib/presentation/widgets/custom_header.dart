@@ -7,6 +7,7 @@ class CustomHeader extends StatelessWidget {
   final String title;
   final bool showBackButton;
   final Widget? rightIcon;
+  final VoidCallback? onBackTap;
 
   final connectivity = Get.find<ConnectivityService>();
 
@@ -15,6 +16,7 @@ class CustomHeader extends StatelessWidget {
     required this.title,
     this.showBackButton = true,
     this.rightIcon,
+    this.onBackTap,
   });
 
   final Widget _backIcon = Image.asset(
@@ -35,7 +37,11 @@ class CustomHeader extends StatelessWidget {
             GestureDetector(
               onTap: () {
                 if (connectivity.isOnline.value) {
-                  Get.back();
+                  if (onBackTap != null) {
+                    onBackTap!();
+                  } else {
+                    Get.back();
+                  }
                 } else {
                   null;
                 }

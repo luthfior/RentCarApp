@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:rent_car_app/core/constants/message.dart';
-import 'package:rent_car_app/data/models/account.dart';
 import 'package:rent_car_app/data/models/car.dart';
 import 'package:rent_car_app/presentation/viewModels/auth_view_model.dart';
 
@@ -10,6 +9,10 @@ class BookingViewModel extends GetxController {
   final authVM = Get.find<AuthViewModel>();
   final Rx<Car> _car = (Get.arguments as Car).obs;
   Car get car => _car.value;
+
+  final RxString _name = ''.obs;
+  String get name => _name.value;
+  set name(String value) => _name.value = value;
 
   final TextEditingController nameController = TextEditingController();
   final TextEditingController startDateController = TextEditingController();
@@ -49,11 +52,10 @@ class BookingViewModel extends GetxController {
   void onInit() {
     super.onInit();
     authVM.loadUser();
-    ever(authVM.account, (Account? account) {
-      if (account != null) {
-        nameController.text = account.name;
-      }
-    });
+    if (authVM.account.value != null) {
+      _name.value = authVM.account.value!.name;
+      nameController.text = _name.value;
+    }
   }
 
   Future<void> pickDate(

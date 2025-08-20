@@ -33,14 +33,33 @@ class CompleteBookingPage extends StatelessWidget {
             height: 220,
             fit: BoxFit.cover,
             loadStateChanged: (state) {
-              if (state.extendedImageLoadState == LoadState.failed) {
-                return Image.asset(
-                  'assets/splash_screen.png',
-                  width: 220,
-                  height: 170,
-                );
+              switch (state.extendedImageLoadState) {
+                case LoadState.loading:
+                  return const SizedBox(
+                    width: 240,
+                    height: 220,
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          Color(0xffFF5722),
+                        ),
+                      ),
+                    ),
+                  );
+                case LoadState.completed:
+                  return ExtendedImage(
+                    image: state.imageProvider,
+                    width: 240,
+                    height: 220,
+                    fit: BoxFit.cover,
+                  );
+                case LoadState.failed:
+                  return Image.asset(
+                    'assets/splash_screen.png',
+                    width: 220,
+                    height: 170,
+                  );
               }
-              return null;
             },
           ),
           const Gap(50),
@@ -75,7 +94,8 @@ class CompleteBookingPage extends StatelessWidget {
           const Gap(12),
           ButtonPrimary(
             text: 'Lihat Pesanan Saya',
-            customBackgroundColor: const Color(0xffFFFFFF),
+            customTextColor: Theme.of(context).colorScheme.onSurface,
+            customBackgroundColor: Theme.of(context).colorScheme.surface,
             onTap: () {
               Get.offAllNamed(
                 '/discover',

@@ -51,10 +51,12 @@ class CheckoutViewModel extends GetxController {
     ever(authVM.account, (Account? account) {
       if (account != null) {
         userBalance.value = account.balance;
-        hasPin.value = account.pin != null;
+        hasPin.value = account.pin != null && account.pin!.isNotEmpty;
+        log('User account updated. hasPin: ${hasPin.value}');
       } else {
         userBalance.value = null;
         hasPin.value = false;
+        log('User account is null. hasPin: ${hasPin.value}');
       }
     });
   }
@@ -119,7 +121,7 @@ class CheckoutViewModel extends GetxController {
     if (!hasPin.value) {
       Get.toNamed('/pin-setup');
     } else {
-      Get.toNamed('/pin', arguments: car);
+      Get.toNamed('/pin', arguments: {'isForVerification': false, 'car': car});
     }
   }
 

@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:rent_car_app/data/models/chat.dart';
 import 'package:rent_car_app/data/services/connectivity_service.dart';
 import 'package:rent_car_app/presentation/viewModels/chat_view_model.dart';
+import 'package:rent_car_app/presentation/viewModels/discover_view_model.dart';
 import 'package:rent_car_app/presentation/widgets/button_primary.dart';
 import 'package:rent_car_app/presentation/widgets/custom_header.dart';
 import 'package:rent_car_app/presentation/widgets/offline_banner.dart';
@@ -24,8 +25,13 @@ class ChattingPage extends GetView<ChatViewModel> {
           Column(
             children: [
               Gap(20 + MediaQuery.of(context).padding.top),
-              CustomHeader(title: 'Chat'),
-              // const Gap(20),
+              CustomHeader(
+                title: 'Chat',
+                onBackTap: () {
+                  Get.until((route) => route.settings.name == '/discover');
+                  Get.find<DiscoverViewModel>().setFragmentIndex(0);
+                },
+              ),
               Expanded(child: _buildChat()),
               const Gap(30),
             ],
@@ -142,7 +148,11 @@ class ChattingPage extends GetView<ChatViewModel> {
         stream: controller.streamChat,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xffFF5722)),
+              ),
+            );
           }
           if (snapshot.data!.docs.isEmpty) {
             return const Center(child: Text('Chat kosong'));
@@ -172,6 +182,8 @@ class ChattingPage extends GetView<ChatViewModel> {
                 ],
                 Expanded(
                   child: ListView.builder(
+                    physics: const NeverScrollableScrollPhysics(),
+                    shrinkWrap: true,
                     padding: EdgeInsets.only(
                       top: (firstChatWithProduct != null) ? 16 : 0,
                     ),

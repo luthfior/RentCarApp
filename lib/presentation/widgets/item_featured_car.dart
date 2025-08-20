@@ -44,14 +44,33 @@ Widget itemFeaturedCar(Car car, EdgeInsetsGeometry margin, bool isTrending) {
                     height: 125,
                     fit: BoxFit.cover,
                     loadStateChanged: (state) {
-                      if (state.extendedImageLoadState == LoadState.failed) {
-                        return Image.asset(
-                          'assets/splash_screen.png',
-                          width: 220,
-                          height: 170,
-                        );
+                      switch (state.extendedImageLoadState) {
+                        case LoadState.loading:
+                          return const SizedBox(
+                            width: 175,
+                            height: 125,
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Color(0xffFF5722),
+                                ),
+                              ),
+                            ),
+                          );
+                        case LoadState.completed:
+                          return ExtendedImage(
+                            image: state.imageProvider,
+                            width: 175,
+                            height: 125,
+                            fit: BoxFit.cover,
+                          );
+                        case LoadState.failed:
+                          return Image.asset(
+                            'assets/splash_screen.png',
+                            width: 175,
+                            height: 125,
+                          );
                       }
-                      return null;
                     },
                   ),
                 ),
@@ -168,7 +187,7 @@ Widget itemFeaturedCar(Car car, EdgeInsetsGeometry margin, bool isTrending) {
               Text(
                 NumberFormat.currency(
                   decimalDigits: 0,
-                  locale: 'id',
+                  locale: 'id_ID',
                   symbol: 'Rp.',
                 ).format(car.priceProduct),
                 style: GoogleFonts.poppins(

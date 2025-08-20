@@ -269,6 +269,8 @@ class BookingPage extends GetView<BookingViewModel> {
         SizedBox(
           height: 100,
           child: ListView.builder(
+            physics: const NeverScrollableScrollPhysics(),
+            shrinkWrap: true,
             itemCount: bookingVM.listAgency.length,
             scrollDirection: Axis.horizontal,
             itemBuilder: (context, index) {

@@ -1,5 +1,6 @@
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -27,21 +28,45 @@ Widget itemNewestCar(Car car, EdgeInsetsGeometry margin) {
       ),
       child: Row(
         children: [
-          ExtendedImage.network(
-            car.imageProduct,
+          SizedBox(
             width: 90,
             height: 70,
-            fit: BoxFit.cover,
-            loadStateChanged: (state) {
-              if (state.extendedImageLoadState == LoadState.failed) {
-                return Image.asset(
-                  'assets/splash_screen.png',
-                  width: 90,
-                  height: 70,
-                );
-              }
-              return null;
-            },
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: ExtendedImage.network(
+                car.imageProduct,
+                fit: BoxFit.cover,
+                loadStateChanged: (state) {
+                  switch (state.extendedImageLoadState) {
+                    case LoadState.loading:
+                      return const SizedBox(
+                        width: 90,
+                        height: 70,
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Color(0xffFF5722),
+                            ),
+                          ),
+                        ),
+                      );
+                    case LoadState.completed:
+                      return ExtendedImage(
+                        image: state.imageProvider,
+                        width: 90,
+                        height: 70,
+                        fit: BoxFit.cover,
+                      );
+                    case LoadState.failed:
+                      return Image.asset(
+                        'assets/splash_screen.png',
+                        width: 90,
+                        height: 70,
+                      );
+                  }
+                },
+              ),
+            ),
           ),
           const Gap(10),
           Expanded(
@@ -49,15 +74,29 @@ Widget itemNewestCar(Car car, EdgeInsetsGeometry margin) {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  car.nameProduct,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.poppins(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: Theme.of(Get.context!).colorScheme.onSurface,
-                  ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        car.nameProduct,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Theme.of(Get.context!).colorScheme.onSurface,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      " (${car.releaseProduct})",
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Theme.of(Get.context!).colorScheme.onSurface,
+                      ),
+                    ),
+                  ],
                 ),
                 const Gap(4),
                 Text(
@@ -70,17 +109,43 @@ Widget itemNewestCar(Car car, EdgeInsetsGeometry margin) {
                     color: Theme.of(Get.context!).colorScheme.secondary,
                   ),
                 ),
+                const Gap(4),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    RatingBar.builder(
+                      initialRating: car.ratingProduct.toDouble(),
+                      itemPadding: const EdgeInsets.all(0),
+                      itemSize: 12,
+                      unratedColor: Colors.grey[300],
+                      itemBuilder: (context, index) =>
+                          const Icon(Icons.star, color: Color(0xffFFBC1C)),
+                      ignoreGestures: true,
+                      allowHalfRating: true,
+                      onRatingUpdate: (value) {},
+                    ),
+                    Text(
+                      '(${car.purchasedProduct}x disewa)',
+                      style: GoogleFonts.poppins(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w400,
+                        color: Theme.of(Get.context!).colorScheme.onSurface,
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
-          const Gap(8),
-          Row(
+          const Gap(14),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
                 NumberFormat.currency(
                   decimalDigits: 0,
-                  locale: 'id',
+                  locale: 'id_ID',
                   symbol: 'Rp.',
                 ).format(car.priceProduct),
                 maxLines: 1,

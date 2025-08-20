@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rent_car_app/data/services/serp_api_service.dart';
 import 'package:rent_car_app/data/sources/car_source.dart';
@@ -24,11 +25,36 @@ class BrowseViewModel extends GetxController {
   final categories = <String>[].obs;
   final selectedCategory = ''.obs;
 
+  final TextEditingController searchController = TextEditingController();
+  final _searchQuery = ''.obs;
+  String get searchQuery => _searchQuery.value;
+  final _searchResults = <Car>[].obs;
+  List<Car> get searchResults => _searchResults;
+
+  final _currentView = 'home'.obs;
+  RxString get currentView => _currentView;
+
   @override
   void onInit() {
     super.onInit();
     fetchAllCars();
     fetchCategories();
+
+    searchController.addListener(() {
+      _searchQuery.value = searchController.text;
+    });
+  }
+
+  @override
+  void onClose() {
+    searchController.dispose();
+    super.onClose();
+  }
+
+  void clearSearch() {
+    searchController.clear();
+    _currentView.value = 'home';
+    _searchResults.clear();
   }
 
   Future<void> fetchCategories() async {
@@ -102,6 +128,7 @@ class BrowseViewModel extends GetxController {
       selectedCategory.value = '';
       featuredList = _allFeaturedList;
       newestList = _allNewestList;
+      _currentView.value = 'home';
     } else {
       selectedCategory.value = category;
       featuredList = _allFeaturedList
@@ -116,6 +143,34 @@ class BrowseViewModel extends GetxController {
                 car.categoryProduct.toLowerCase() == category.toLowerCase(),
           )
           .toList();
+      _currentView.value = 'home';
+    }
+  }
+
+  void handleSearchSubmit() {
+    final query = searchQuery.trim().toLowerCase();
+    if (query.isNotEmpty) {
+      _currentView.value = 'search';
+      final Map<String, Car> uniqueCarsMap = {};
+      for (var car in _allFeaturedList) {
+        uniqueCarsMap[car.id] = car;
+      }
+      for (var car in _allNewestList) {
+        uniqueCarsMap[car.id] = car;
+      }
+      final uniqueList = uniqueCarsMap.values.toList();
+      final filteredResults = uniqueList
+          .where(
+            (car) =>
+                car.nameProduct.toLowerCase().contains(query) ||
+                car.categoryProduct.toLowerCase().contains(query) ||
+                car.transmissionProduct.toLowerCase().contains(query),
+          )
+          .toList();
+      _searchResults.value = filteredResults;
+    } else {
+      _currentView.value = 'home';
+      _searchResults.clear();
     }
   }
 }

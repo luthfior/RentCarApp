@@ -11,7 +11,9 @@ import 'package:rent_car_app/presentation/bindings/booking_binding.dart';
 import 'package:rent_car_app/presentation/bindings/chat_binding.dart';
 import 'package:rent_car_app/presentation/bindings/checkout_binding.dart';
 import 'package:rent_car_app/presentation/bindings/discover_binding.dart';
+import 'package:rent_car_app/presentation/bindings/edit_profile_binding.dart';
 import 'package:rent_car_app/presentation/bindings/pin_binding.dart';
+import 'package:rent_car_app/presentation/bindings/pin_setup_binding.dart';
 import 'package:rent_car_app/presentation/pages/auth_page.dart';
 import 'package:rent_car_app/presentation/pages/booking_page.dart';
 import 'package:rent_car_app/presentation/pages/chatting_page.dart';
@@ -19,6 +21,7 @@ import 'package:rent_car_app/presentation/pages/checkout_page.dart';
 import 'package:rent_car_app/presentation/pages/complete_booking_page.dart';
 import 'package:rent_car_app/presentation/pages/detail_page.dart';
 import 'package:rent_car_app/presentation/pages/discover_page.dart';
+import 'package:rent_car_app/presentation/pages/edit_profile_page.dart';
 import 'package:rent_car_app/presentation/pages/pin_page.dart';
 import 'package:rent_car_app/presentation/pages/onboarding_page.dart';
 import 'package:rent_car_app/presentation/pages/pin_setup_page.dart';
@@ -58,7 +61,7 @@ class MyApp extends StatelessWidget {
         themeMode: themeService.themeMode,
         home: const SplashScreen(),
         getPages: [
-          GetPage(name: '/onboarding', page: () => const OnBoardingPage()),
+          GetPage(name: '/onboarding', page: () => OnBoardingPage()),
           GetPage(
             name: '/discover',
             page: () => DiscoverPage(),
@@ -87,23 +90,32 @@ class MyApp extends StatelessWidget {
             page: () => CheckoutPage(),
             binding: CheckoutBinding(),
           ),
+          GetPage(name: '/pin', page: () => PinPage(), binding: PinBinding()),
           GetPage(
             name: '/pin-setup',
             page: () => PinSetupPage(),
-            binding: PinBinding(),
+            binding: PinSetupBinding(),
           ),
-          GetPage(name: '/pin', page: () => PinPage(), binding: PinBinding()),
           GetPage(
             name: '/complete',
             page: () {
-              Car car = Get.arguments as Car;
-              return CompleteBookingPage(car: car);
+              final arguments = Get.arguments;
+              if (arguments is Map && arguments.containsKey('bookedCar')) {
+                final Car car = arguments['bookedCar'] as Car;
+                return CompleteBookingPage(car: car);
+              }
+              return DiscoverPage();
             },
           ),
           GetPage(
             name: '/chatting',
             page: () => ChattingPage(),
             binding: ChatBinding(),
+          ),
+          GetPage(
+            name: '/edit-profile',
+            page: () => EditProfilePage(),
+            binding: EditProfileBinding(),
           ),
         ],
       );

@@ -83,7 +83,7 @@ class LoginViewModel extends GetxController {
 
       if (response.isSuccess) {
         resetForm();
-        Get.offAllNamed('/discover');
+        Get.offAllNamed('/discover', arguments: {'fragmentIndex': 0});
       } else {
         Message.error(response.error.toString());
       }

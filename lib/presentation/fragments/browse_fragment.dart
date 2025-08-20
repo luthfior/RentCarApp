@@ -3,15 +3,20 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:rent_car_app/core/constants/message.dart';
 import 'package:rent_car_app/data/models/car.dart';
+import 'package:rent_car_app/data/services/connectivity_service.dart';
 import 'package:rent_car_app/presentation/viewModels/browse_view_model.dart';
 import 'package:rent_car_app/presentation/widgets/chip_categories.dart';
 import 'package:rent_car_app/presentation/widgets/failed_ui.dart';
 import 'package:rent_car_app/presentation/widgets/item_featured_car.dart';
+import 'package:rent_car_app/presentation/widgets/item_grid_car.dart';
 import 'package:rent_car_app/presentation/widgets/item_newest_car.dart';
 
 class BrowseFragment extends GetView<BrowseViewModel> {
-  const BrowseFragment({super.key});
+  BrowseFragment({super.key});
+
+  final connectivity = Get.find<ConnectivityService>();
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +26,11 @@ class BrowseFragment extends GetView<BrowseViewModel> {
           String status = controller.status;
           if (status == '') return const SizedBox();
           if (status == 'loading') {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xffFF5722)),
+              ),
+            );
           }
           if (status != 'success') {
             return Center(child: FailedUi(message: status));
@@ -29,15 +38,24 @@ class BrowseFragment extends GetView<BrowseViewModel> {
           return ListView(
             padding: const EdgeInsets.all(0),
             children: [
-              Gap(10 + MediaQuery.of(context).padding.top),
-              buildHeader(),
-              Obx(() => buildBookingStatus()),
+              Gap(20 + MediaQuery.of(context).padding.top),
+              buildHeader(context),
               const Gap(20),
-              chipCategories(controller.categories),
-              const Gap(20),
-              buildPopular(),
-              const Gap(20),
-              buildNewest(),
+              Obx(() {
+                if (controller.currentView.value == 'search') {
+                  return buildSearchProducts();
+                } else {
+                  return Column(
+                    children: [
+                      chipCategories(controller.categories),
+                      const Gap(20),
+                      buildPopular(),
+                      const Gap(20),
+                      buildNewest(),
+                    ],
+                  );
+                }
+              }),
               const Gap(100),
             ],
           );
@@ -46,33 +64,84 @@ class BrowseFragment extends GetView<BrowseViewModel> {
     );
   }
 
-  Widget buildHeader() {
+  Widget buildHeader(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Transform.translate(
-            offset: const Offset(-16, 0),
-            child: ColorFiltered(
-              colorFilter: ColorFilter.mode(
-                Theme.of(Get.context!).colorScheme.onSurface,
-                BlendMode.srcIn,
+          Expanded(
+            child: TextField(
+              enabled: connectivity.isOnline.value,
+              controller: controller.searchController,
+              onSubmitted: (query) {
+                controller.handleSearchSubmit();
+              },
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
+                color: Theme.of(Get.context!).colorScheme.onSurface,
               ),
-              child: Image.asset('assets/logo_text_16_9.png', width: 130),
+              decoration: InputDecoration(
+                hintText: 'Cari Produk ...',
+                hintStyle: GoogleFonts.poppins(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                  color: Theme.of(Get.context!).colorScheme.onSurface,
+                ),
+                fillColor: Theme.of(Get.context!).colorScheme.surface,
+                filled: true,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(50),
+                  borderSide: BorderSide.none,
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(50),
+                  borderSide: const BorderSide(
+                    color: Color(0xffFF5722),
+                    width: 2,
+                  ),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  vertical: 14,
+                  horizontal: 16,
+                ),
+                prefixIcon: const Icon(Icons.search),
+                suffixIcon: Obx(() {
+                  if (controller.searchQuery.isNotEmpty) {
+                    return IconButton(
+                      onPressed: controller.clearSearch,
+                      icon: const Icon(Icons.close),
+                    );
+                  }
+                  return const SizedBox.shrink();
+                }),
+              ),
             ),
           ),
-          Container(
-            width: 46,
-            height: 46,
-            decoration: BoxDecoration(
-              color: Theme.of(Get.context!).colorScheme.surface,
-              shape: BoxShape.circle,
-            ),
-            alignment: Alignment.center,
-            child: Icon(
-              Icons.notifications,
-              color: Theme.of(Get.context!).colorScheme.onSurface,
+          const Gap(16),
+          GestureDetector(
+            onTap: () {
+              if (connectivity.isOnline.value) {
+                return Message.neutral(
+                  'Maaf. Saat ini, fitur tersebut belum tersedia',
+                );
+              } else {
+                null;
+              }
+            },
+            child: Container(
+              width: 46,
+              height: 46,
+              decoration: BoxDecoration(
+                color: Theme.of(Get.context!).colorScheme.surface,
+                shape: BoxShape.circle,
+              ),
+              alignment: Alignment.center,
+              child: Icon(
+                Icons.notifications,
+                color: Theme.of(Get.context!).colorScheme.onSurface,
+              ),
             ),
           ),
         ],
@@ -168,6 +237,8 @@ class BrowseFragment extends GetView<BrowseViewModel> {
         SizedBox(
           height: 250,
           child: ListView.builder(
+            physics: const NeverScrollableScrollPhysics(),
+            shrinkWrap: true,
             itemCount: controller.featuredList.length,
             scrollDirection: Axis.horizontal,
             itemBuilder: (context, index) {
@@ -215,6 +286,62 @@ class BrowseFragment extends GetView<BrowseViewModel> {
           },
         ),
       ],
+    );
+  }
+
+  Widget buildSearchProducts() {
+    return Padding(
+      padding: const EdgeInsetsGeometry.symmetric(horizontal: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Pencarian untuk "${controller.searchQuery}"',
+            style: GoogleFonts.poppins(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: Theme.of(Get.context!).colorScheme.onSurface,
+            ),
+          ),
+          if (controller.searchResults.isEmpty)
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 32.0),
+                child: Text(
+                  'Produk tidak ditemukan.',
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    color: Theme.of(Get.context!).colorScheme.secondary,
+                  ),
+                ),
+              ),
+            )
+          else if (controller.searchResults.length == 1)
+            Padding(
+              padding: const EdgeInsets.only(top: 10),
+              child: itemNewestCar(
+                controller.searchResults.first,
+                EdgeInsets.zero,
+              ),
+            )
+          else
+            GridView.builder(
+              physics: const NeverScrollableScrollPhysics(),
+              shrinkWrap: true,
+              itemCount: controller.searchResults.length,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 10,
+                childAspectRatio: 0.7,
+              ),
+              itemBuilder: (context, index) {
+                final car = controller.searchResults[index];
+                return itemGridCar(car);
+              },
+            ),
+        ],
+      ),
     );
   }
 }

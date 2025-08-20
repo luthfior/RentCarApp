@@ -152,7 +152,11 @@ class LoginFragment extends GetView<LoginViewModel> {
           if (!controller.isLoading.value) return const SizedBox.shrink();
           return Container(
             color: const Color(0xff000000).withAlpha(179),
-            child: const Center(child: CircularProgressIndicator()),
+            child: const Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xffFF5722)),
+              ),
+            ),
           );
         }),
       ],

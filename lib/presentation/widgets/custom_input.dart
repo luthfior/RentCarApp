@@ -7,7 +7,7 @@ class CustomInput extends StatelessWidget {
     super.key,
     required this.icon,
     required this.hint,
-    required this.editingController,
+    this.editingController,
     this.obsecure,
     this.enable = true,
     this.onTapBox,
@@ -16,10 +16,11 @@ class CustomInput extends StatelessWidget {
     this.errorText,
     this.focusNode,
     this.customHintFontSize = 16,
+    this.initialValue,
   });
   final String icon;
   final String hint;
-  final TextEditingController editingController;
+  final TextEditingController? editingController;
   final bool? obsecure;
   final bool enable;
   final VoidCallback? onTapBox;
@@ -28,13 +29,17 @@ class CustomInput extends StatelessWidget {
   final String? errorText;
   final FocusNode? focusNode;
   final double? customHintFontSize;
+  final String? initialValue;
 
   @override
   Widget build(BuildContext context) {
+    final localController =
+        editingController ?? TextEditingController(text: initialValue);
+
     return GestureDetector(
       onTap: onTapBox,
       child: TextField(
-        controller: editingController,
+        controller: localController,
         style: GoogleFonts.poppins(
           fontSize: 14,
           fontWeight: FontWeight.w400,
@@ -64,7 +69,7 @@ class CustomInput extends StatelessWidget {
           isDense: true,
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(50),
-            borderSide: const BorderSide(color: Color(0xff4A1DFF), width: 2),
+            borderSide: const BorderSide(color: Color(0xffFF5722), width: 2),
           ),
           prefixIcon: UnconstrainedBox(
             alignment: const Alignment(0.5, 0),

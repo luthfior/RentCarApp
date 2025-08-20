@@ -26,14 +26,6 @@ class DetailPage extends GetView<DetailViewModel> {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      if (controller.status == 'loading') {
-        return const Center(child: CircularProgressIndicator());
-      }
-
-      if (controller.car == Car.empty) {
-        return const Center(child: Text('Data mobil tidak ditemukan.'));
-      }
-
       final Car car = controller.car;
 
       return Scaffold(
@@ -44,197 +36,262 @@ class DetailPage extends GetView<DetailViewModel> {
                 Gap(20 + MediaQuery.of(context).padding.top),
                 CustomHeader(
                   title: '',
-                  rightIcon: Container(
-                    height: 46,
-                    width: 46,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Theme.of(Get.context!).colorScheme.surface,
-                    ),
-                    alignment: Alignment.center,
-                    child: Image.asset(
-                      'assets/ic_favorite.png',
-                      height: 24,
-                      width: 24,
-                      color: Theme.of(Get.context!).colorScheme.onSurface,
+                  rightIcon: GestureDetector(
+                    onTap: () {
+                      if (!connectivity.isOnline.value) {
+                        null;
+                      }
+                      controller.toggleFavorite();
+                    },
+                    child: Container(
+                      height: 46,
+                      width: 46,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Theme.of(Get.context!).colorScheme.surface,
+                      ),
+                      alignment: Alignment.center,
+                      child: Obx(() {
+                        if (controller.isFavorited.value) {
+                          return const Icon(
+                            Icons.favorite_rounded,
+                            color: Color(0xffFF5722),
+                          );
+                        } else {
+                          return Icon(
+                            Icons.favorite_border_outlined,
+                            color: Theme.of(Get.context!).colorScheme.onSurface,
+                          );
+                        }
+                      }),
                     ),
                   ),
                 ),
                 const Gap(20),
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Gap(10),
-                        Center(
-                          child: ExtendedImage.network(
-                            car.imageProduct,
-                            width: 400,
-                            height: 250,
-                            fit: BoxFit.cover,
-                            loadStateChanged: (state) {
-                              if (state.extendedImageLoadState ==
-                                  LoadState.failed) {
-                                return Image.asset(
-                                  'assets/splash_screen.png',
-                                  width: 220,
-                                  height: 170,
-                                );
-                              }
-                              return null;
-                            },
-                          ),
+                if (controller.status == 'loading')
+                  const Expanded(
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          Color(0xffFF5722),
                         ),
-                        const Gap(30),
-                        Text(
-                          car.nameProduct,
-                          style: GoogleFonts.poppins(
-                            fontSize: 24,
-                            fontWeight: FontWeight.w700,
-                            color: Theme.of(Get.context!).colorScheme.onSurface,
-                          ),
+                      ),
+                    ),
+                  ),
+                if (controller.car == Car.empty)
+                  Expanded(
+                    child: Center(
+                      child: Text(
+                        'Data mobil tidak ditemukan.',
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: Theme.of(Get.context!).colorScheme.onSurface,
                         ),
-                        const Gap(10),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            RatingBar.builder(
-                              initialRating: car.ratingProduct.toDouble(),
-                              itemPadding: const EdgeInsets.all(0),
-                              itemSize: 14,
-                              unratedColor: Colors.grey[300],
-                              itemBuilder: (context, index) => const Icon(
-                                Icons.star,
-                                color: Color(0xffFFBC1C),
-                              ),
-                              ignoreGestures: true,
-                              allowHalfRating: true,
-                              onRatingUpdate: (value) {},
+                      ),
+                    ),
+                  ),
+                if (controller.status != 'loading' &&
+                    controller.car != Car.empty)
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Gap(10),
+                          Center(
+                            child: ExtendedImage.network(
+                              car.imageProduct,
+                              width: 400,
+                              height: 250,
+                              fit: BoxFit.cover,
+                              loadStateChanged: (state) {
+                                switch (state.extendedImageLoadState) {
+                                  case LoadState.loading:
+                                    return const SizedBox(
+                                      width: 450,
+                                      height: 250,
+                                      child: Center(
+                                        child: CircularProgressIndicator(
+                                          valueColor:
+                                              AlwaysStoppedAnimation<Color>(
+                                                Color(0xffFF5722),
+                                              ),
+                                        ),
+                                      ),
+                                    );
+                                  case LoadState.completed:
+                                    return ExtendedImage(
+                                      image: state.imageProvider,
+                                      width: 450,
+                                      height: 250,
+                                      fit: BoxFit.cover,
+                                    );
+                                  case LoadState.failed:
+                                    return Image.asset(
+                                      'assets/splash_screen.png',
+                                      width: 220,
+                                      height: 170,
+                                    );
+                                }
+                              },
                             ),
-                            RichText(
-                              text: TextSpan(
-                                text: '${car.purchasedProduct}',
+                          ),
+                          const Gap(30),
+                          Text(
+                            car.nameProduct,
+                            style: GoogleFonts.poppins(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w700,
+                              color: Theme.of(
+                                Get.context!,
+                              ).colorScheme.onSurface,
+                            ),
+                          ),
+                          const Gap(10),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              RatingBar.builder(
+                                initialRating: car.ratingProduct.toDouble(),
+                                itemPadding: const EdgeInsets.all(0),
+                                itemSize: 14,
+                                unratedColor: Colors.grey[300],
+                                itemBuilder: (context, index) => const Icon(
+                                  Icons.star,
+                                  color: Color(0xffFFBC1C),
+                                ),
+                                ignoreGestures: true,
+                                allowHalfRating: true,
+                                onRatingUpdate: (value) {},
+                              ),
+                              RichText(
+                                text: TextSpan(
+                                  text: '${car.purchasedProduct}',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: Theme.of(
+                                      Get.context!,
+                                    ).colorScheme.onSurface,
+                                  ),
+                                  children: [
+                                    TextSpan(
+                                      text: ' kali disewa',
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                        color: Theme.of(
+                                          Get.context!,
+                                        ).colorScheme.onSurface,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const Gap(10),
+                          Text(
+                            'Tentang',
+                            style: GoogleFonts.poppins(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: Theme.of(
+                                Get.context!,
+                              ).colorScheme.onSurface,
+                            ),
+                          ),
+                          const Gap(10),
+                          Text(
+                            car.descriptionProduct,
+                            style: GoogleFonts.poppins(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: Theme.of(
+                                Get.context!,
+                              ).colorScheme.onSurface,
+                            ),
+                          ),
+                          const Gap(10),
+                          Row(
+                            children: [
+                              Text(
+                                'Kategori: ',
                                 style: GoogleFonts.poppins(
                                   fontSize: 14,
-                                  fontWeight: FontWeight.w600,
+                                  fontWeight: FontWeight.w700,
                                   color: Theme.of(
                                     Get.context!,
                                   ).colorScheme.onSurface,
                                 ),
-                                children: [
-                                  TextSpan(
-                                    text: ' kali disewa',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w600,
-                                      color: Theme.of(
-                                        Get.context!,
-                                      ).colorScheme.onSurface,
-                                    ),
-                                  ),
-                                ],
                               ),
-                            ),
-                          ],
-                        ),
-                        const Gap(10),
-                        Text(
-                          'Tentang',
-                          style: GoogleFonts.poppins(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: Theme.of(Get.context!).colorScheme.onSurface,
+                              Text(
+                                car.categoryProduct,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  color: Theme.of(
+                                    Get.context!,
+                                  ).colorScheme.onSurface,
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                        const Gap(10),
-                        Text(
-                          car.descriptionProduct,
-                          style: GoogleFonts.poppins(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            color: Theme.of(Get.context!).colorScheme.onSurface,
+                          Row(
+                            children: [
+                              Text(
+                                'Tahun Rilis: ',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                  color: Theme.of(
+                                    Get.context!,
+                                  ).colorScheme.onSurface,
+                                ),
+                              ),
+                              Text(
+                                '${car.releaseProduct}',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  color: Theme.of(
+                                    Get.context!,
+                                  ).colorScheme.onSurface,
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                        const Gap(10),
-                        Row(
-                          children: [
-                            Text(
-                              'Kategori: ',
-                              style: GoogleFonts.poppins(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
-                                color: Theme.of(
-                                  Get.context!,
-                                ).colorScheme.onSurface,
+                          Row(
+                            children: [
+                              Text(
+                                'Transmisi: ',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                  color: Theme.of(
+                                    Get.context!,
+                                  ).colorScheme.onSurface,
+                                ),
                               ),
-                            ),
-                            Text(
-                              car.categoryProduct,
-                              style: GoogleFonts.poppins(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: Theme.of(
-                                  Get.context!,
-                                ).colorScheme.onSurface,
+                              Text(
+                                car.transmissionProduct,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  color: Theme.of(
+                                    Get.context!,
+                                  ).colorScheme.onSurface,
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            Text(
-                              'Tahun Rilis: ',
-                              style: GoogleFonts.poppins(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
-                                color: Theme.of(
-                                  Get.context!,
-                                ).colorScheme.onSurface,
-                              ),
-                            ),
-                            Text(
-                              '${car.releaseProduct}',
-                              style: GoogleFonts.poppins(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: Theme.of(
-                                  Get.context!,
-                                ).colorScheme.onSurface,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            Text(
-                              'Transmisi: ',
-                              style: GoogleFonts.poppins(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
-                                color: Theme.of(
-                                  Get.context!,
-                                ).colorScheme.onSurface,
-                              ),
-                            ),
-                            Text(
-                              car.transmissionProduct,
-                              style: GoogleFonts.poppins(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: Theme.of(
-                                  Get.context!,
-                                ).colorScheme.onSurface,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const Gap(30),
-                      ],
+                            ],
+                          ),
+                          const Gap(30),
+                        ],
+                      ),
                     ),
                   ),
-                ),
               ],
             ),
             const OfflineBanner(),
@@ -249,13 +306,15 @@ class DetailPage extends GetView<DetailViewModel> {
               buildCarPrice(car),
               const Gap(10),
               ButtonChat(
+                text: 'Chat Sekarang',
+                customIconSize: 24,
                 onTap: () async {
                   if (connectivity.isOnline.value) {
                     try {
                       String uid = authVM.account.value!.uid;
                       Chat chat = Chat(
                         chatId: uid,
-                        message: 'Ready?',
+                        message: '',
                         receiverId: 'cs',
                         senderId: uid,
                         productDetail: {
@@ -301,7 +360,7 @@ class DetailPage extends GetView<DetailViewModel> {
     return Container(
       height: 88,
       decoration: BoxDecoration(
-        color: const Color(0xFFFFB86C),
+        color: const Color(0xFF52575D),
         borderRadius: BorderRadius.circular(20),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
@@ -322,7 +381,7 @@ class DetailPage extends GetView<DetailViewModel> {
                   style: GoogleFonts.poppins(
                     fontSize: 21,
                     fontWeight: FontWeight.w700,
-                    color: Colors.black,
+                    color: Colors.white,
                   ),
                 ),
                 Text(
@@ -330,7 +389,7 @@ class DetailPage extends GetView<DetailViewModel> {
                   style: GoogleFonts.poppins(
                     fontSize: 14,
                     fontWeight: FontWeight.w400,
-                    color: Colors.black,
+                    color: Colors.white,
                   ),
                 ),
               ],
@@ -339,7 +398,7 @@ class DetailPage extends GetView<DetailViewModel> {
           SizedBox(
             width: 150,
             child: ButtonPrimary(
-              onTap: () {
+              onTap: () async {
                 if (connectivity.isOnline.value) {
                   Get.toNamed('/booking', arguments: car);
                 } else {
@@ -347,7 +406,7 @@ class DetailPage extends GetView<DetailViewModel> {
                 }
               },
               customBorderRadius: BorderRadius.circular(20),
-              text: 'Pesan Sekarang',
+              text: 'Booking Sekarang',
               customTextSize: 14,
             ),
           ),

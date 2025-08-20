@@ -10,6 +10,7 @@ class ButtonPrimary extends StatelessWidget {
     this.customTextColor = Colors.white,
     this.customTextSize = 16.0,
     this.customBorderRadius = const BorderRadius.all(Radius.circular(50)),
+    this.customHeight = 52,
   });
   final VoidCallback? onTap;
   final String text;
@@ -17,6 +18,7 @@ class ButtonPrimary extends StatelessWidget {
   final Color customBackgroundColor;
   final Color? customTextColor;
   final BorderRadius customBorderRadius;
+  final double? customHeight;
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +31,7 @@ class ButtonPrimary extends StatelessWidget {
         borderRadius: BorderRadius.circular(50),
         child: SizedBox(
           width: double.infinity,
-          height: 52,
+          height: customHeight,
           child: Center(
             child: Text(
               text,

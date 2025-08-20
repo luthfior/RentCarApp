@@ -8,11 +8,15 @@ Widget buildItemNav({
   required dynamic iconOn,
   bool isActive = false,
   required VoidCallback onTap,
+  bool isDisable = false,
   bool hasDot = false,
 }) {
-  final iconColor = isActive ? const Color(0xffFF5722) : Colors.white;
-
-  final labelColor = isActive ? const Color(0xffFF5722) : Colors.white;
+  final iconColor = isActive
+      ? const Color(0xffFF5722)
+      : (isDisable ? Colors.grey : Colors.white);
+  final labelColor = isActive
+      ? const Color(0xffFF5722)
+      : (isDisable ? Colors.grey : Colors.white);
 
   Widget getIconWidget(dynamic iconData) {
     if (iconData is String) {
@@ -25,7 +29,7 @@ Widget buildItemNav({
 
   return Expanded(
     child: GestureDetector(
-      onTap: onTap,
+      onTap: isDisable ? null : onTap,
       child: Container(
         color: Colors.transparent,
         height: 46,
@@ -55,7 +59,7 @@ Widget buildItemNav({
                     color: labelColor,
                   ),
                 ),
-                if (hasDot)
+                if (hasDot && !isDisable)
                   Container(
                     width: 6,
                     height: 6,
