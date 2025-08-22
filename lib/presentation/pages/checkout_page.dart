@@ -301,7 +301,6 @@ class CheckoutPage extends GetView<CheckoutViewModel> {
         SizedBox(
           height: 100,
           child: ListView.builder(
-            physics: const NeverScrollableScrollPhysics(),
             shrinkWrap: true,
             itemCount: controller.listPayment.length,
             scrollDirection: Axis.horizontal,

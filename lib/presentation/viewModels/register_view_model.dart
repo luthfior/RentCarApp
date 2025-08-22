@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:rent_car_app/core/constants/message.dart';
 import 'package:rent_car_app/data/sources/auth_source.dart';
 
-class RegisterViewmodel extends GetxController {
+class RegisterViewModel extends GetxController {
   final AuthSource _authSource = AuthSource();
 
   final nameController = TextEditingController();
@@ -80,7 +80,7 @@ class RegisterViewmodel extends GetxController {
     if (nameError.value != null ||
         emailError.value != null ||
         passwordError.value != null) {
-      Message.neutral('Semua field harus diisi');
+      Message.error('Semua field harus diisi');
       if (nameError.value != null) {
         FocusScope.of(context).requestFocus(nameFocus);
       } else if (emailError.value != null) {
@@ -104,7 +104,7 @@ class RegisterViewmodel extends GetxController {
     if (nameController.text.isEmpty ||
         emailController.text.isEmpty ||
         passwordController.text.isEmpty) {
-      Message.neutral('Semua field harus diisi');
+      Message.error('Semua field harus diisi');
       return;
     }
 

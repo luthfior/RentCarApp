@@ -14,6 +14,7 @@ import 'package:rent_car_app/presentation/bindings/discover_binding.dart';
 import 'package:rent_car_app/presentation/bindings/edit_profile_binding.dart';
 import 'package:rent_car_app/presentation/bindings/pin_binding.dart';
 import 'package:rent_car_app/presentation/bindings/pin_setup_binding.dart';
+import 'package:rent_car_app/presentation/bindings/top_up_binding.dart';
 import 'package:rent_car_app/presentation/pages/auth_page.dart';
 import 'package:rent_car_app/presentation/pages/booking_page.dart';
 import 'package:rent_car_app/presentation/pages/chatting_page.dart';
@@ -27,6 +28,7 @@ import 'package:rent_car_app/presentation/pages/onboarding_page.dart';
 import 'package:rent_car_app/presentation/pages/pin_setup_page.dart';
 import 'package:rent_car_app/presentation/pages/splash_screen.dart';
 import 'package:rent_car_app/data/services/connectivity_service.dart';
+import 'package:rent_car_app/presentation/pages/top_up_page.dart';
 import 'package:rent_car_app/presentation/viewModels/auth_view_model.dart';
 import 'package:rent_car_app/presentation/viewModels/detail_view_model.dart';
 import 'core/firebase_options.dart';
@@ -69,7 +71,7 @@ class MyApp extends StatelessWidget {
           ),
           GetPage(
             name: '/auth',
-            page: () => AuthPage(),
+            page: () => const AuthPage(),
             binding: AuthBinding(),
           ),
           GetPage(
@@ -116,6 +118,11 @@ class MyApp extends StatelessWidget {
             name: '/edit-profile',
             page: () => EditProfilePage(),
             binding: EditProfileBinding(),
+          ),
+          GetPage(
+            name: '/top-up',
+            page: () => TopUpPage(),
+            binding: TopUpBinding(),
           ),
         ],
       );

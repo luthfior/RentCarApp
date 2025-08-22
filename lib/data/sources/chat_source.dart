@@ -32,7 +32,7 @@ class ChatSource {
               'Halo, selamat datang! Ini adalah pesan otomatis, silakan tunggu penjual merespons pesan ini, ya. Terima kasih.',
           'productDetail': null,
           'receiverId': uid,
-          'senderId': 'cs',
+          'senderId': 'customerService',
           'timeStamp': FieldValue.serverTimestamp(),
         });
   }

@@ -1,6 +1,11 @@
+import 'dart:developer';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rent_car_app/data/models/account.dart';
+import 'package:rent_car_app/data/models/chat.dart';
+import 'package:rent_car_app/data/sources/chat_source.dart';
 import 'package:rent_car_app/presentation/viewModels/auth_view_model.dart';
 
 class ChatViewModel extends GetxController {
@@ -14,6 +19,8 @@ class ChatViewModel extends GetxController {
   String? get username => _username.value;
   set username(String? value) => _username.value = value;
 
+  final edtInput = TextEditingController();
+
   final _firestore = FirebaseFirestore.instance;
   final Rx<Stream<QuerySnapshot<Map<String, dynamic>>>?> _streamChat =
       Rx<Stream<QuerySnapshot<Map<String, dynamic>>>?>(null);
@@ -24,6 +31,7 @@ class ChatViewModel extends GetxController {
   void onInit() {
     super.onInit();
     authVM.loadUser();
+    resetForm();
     ever(authVM.account, (Account? account) {
       if (account != null) {
         uid = account.uid;
@@ -33,8 +41,42 @@ class ChatViewModel extends GetxController {
             .collection('Services')
             .doc(uid)
             .collection('chats')
+            .orderBy('timeStamp', descending: true)
             .snapshots();
       }
     });
+  }
+
+  @override
+  void onClose() {
+    edtInput.dispose();
+    super.onClose();
+  }
+
+  void resetForm() {
+    edtInput.clear();
+  }
+
+  Future<void> sendMessage() async {
+    final message = edtInput.text.trim();
+    if (message.isEmpty) {
+      return;
+    }
+    try {
+      Chat chat = Chat(
+        chatId: uid!,
+        message: message,
+        productDetail: null,
+        receiverId: 'CustomerService',
+        senderId: uid!,
+        timeStamp: Timestamp.now(),
+      );
+      ChatSource.send(chat, uid!).then((value) {
+        edtInput.clear();
+      });
+    } catch (e) {
+      Get.snackbar('Error', 'Gagal mengirim pesan: $e');
+      log('Error sending message: $e');
+    }
   }
 }

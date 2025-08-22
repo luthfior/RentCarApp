@@ -1,5 +1,4 @@
 import 'dart:developer';
-
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:rent_car_app/core/constants/message.dart';
@@ -112,8 +111,8 @@ class CheckoutViewModel extends GetxController {
       }
       if (balance < finalTotal) {
         Message.error(
-          'Gagal melakukan Pembayaran. Saldo Anda tidak mencukupi untuk melakukan pembayaran ini.',
-          fontSize: 13.5,
+          'Gagal melakukan Pembayaran. Saldo Anda tidak mencukupi untuk melakukan pembayaran ini. Silahkan lakukan Top Up untuk isi ulang',
+          fontSize: 13,
         );
         return;
       }
@@ -137,6 +136,9 @@ class CheckoutViewModel extends GetxController {
 
       await CarSource.updatePurchasedProduct(car.id);
       log('Jumlah produk yang disewa berhasil diupdate');
+
+      await userSource.bookProduct(userId, car);
+      log('Produk berhasil ditambahkan ke riwayat pesanan');
     } catch (e) {
       log('Gagal memproses pembayaran: $e');
       Message.error('Pembayaran gagal: ${e.toString()}');

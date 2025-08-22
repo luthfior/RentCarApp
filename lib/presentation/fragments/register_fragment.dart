@@ -9,7 +9,7 @@ import 'package:rent_car_app/presentation/widgets/button_primary.dart';
 import 'package:rent_car_app/presentation/widgets/custom_input.dart';
 import 'package:rent_car_app/presentation/widgets/offline_banner.dart';
 
-class RegisterFragment extends GetView<RegisterViewmodel> {
+class RegisterFragment extends GetView<RegisterViewModel> {
   final VoidCallback onSwitchToLogin;
   const RegisterFragment({super.key, required this.onSwitchToLogin});
 

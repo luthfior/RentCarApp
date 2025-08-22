@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class CustomInput extends StatelessWidget {
   const CustomInput({
     super.key,
-    required this.icon,
+    this.icon,
     required this.hint,
     this.editingController,
-    this.obsecure,
+    this.obsecure = false,
     this.enable = true,
     this.onTapBox,
     this.onChanged,
@@ -17,8 +18,12 @@ class CustomInput extends StatelessWidget {
     this.focusNode,
     this.customHintFontSize = 16,
     this.initialValue,
+    this.keyboardType,
+    this.inputFormatters,
+    this.prefixText,
   });
-  final String icon;
+
+  final String? icon;
   final String hint;
   final TextEditingController? editingController;
   final bool? obsecure;
@@ -30,6 +35,9 @@ class CustomInput extends StatelessWidget {
   final FocusNode? focusNode;
   final double? customHintFontSize;
   final String? initialValue;
+  final TextInputType? keyboardType;
+  final List<TextInputFormatter>? inputFormatters;
+  final String? prefixText;
 
   @override
   Widget build(BuildContext context) {
@@ -40,6 +48,8 @@ class CustomInput extends StatelessWidget {
       onTap: onTapBox,
       child: TextField(
         controller: localController,
+        keyboardType: keyboardType,
+        inputFormatters: inputFormatters,
         style: GoogleFonts.poppins(
           fontSize: 14,
           fontWeight: FontWeight.w400,
@@ -71,16 +81,28 @@ class CustomInput extends StatelessWidget {
             borderRadius: BorderRadius.circular(50),
             borderSide: const BorderSide(color: Color(0xffFF5722), width: 2),
           ),
-          prefixIcon: UnconstrainedBox(
-            alignment: const Alignment(0.5, 0),
-            child: ColorFiltered(
-              colorFilter: const ColorFilter.mode(
-                Color(0xffFF5722),
-                BlendMode.srcIn,
-              ),
-              child: Image.asset(icon, height: 24, width: 24),
-            ),
-          ),
+          prefix: prefixText != null && prefixText!.isNotEmpty
+              ? Text(
+                  prefixText!,
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                    color: Theme.of(Get.context!).colorScheme.onSurface,
+                  ),
+                )
+              : null,
+          prefixIcon: (icon != null && icon!.isNotEmpty)
+              ? UnconstrainedBox(
+                  alignment: const Alignment(0.5, 0),
+                  child: ColorFiltered(
+                    colorFilter: const ColorFilter.mode(
+                      Color(0xffFF5722),
+                      BlendMode.srcIn,
+                    ),
+                    child: Image.asset(icon!, height: 24, width: 24),
+                  ),
+                )
+              : null,
           suffixIcon: suffixIcon,
           errorText: errorText,
         ),

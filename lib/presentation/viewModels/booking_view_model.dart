@@ -10,9 +10,7 @@ class BookingViewModel extends GetxController {
   final Rx<Car> _car = (Get.arguments as Car).obs;
   Car get car => _car.value;
 
-  final RxString _name = ''.obs;
-  String get name => _name.value;
-  set name(String value) => _name.value = value;
+  final name = ''.obs;
 
   final TextEditingController nameController = TextEditingController();
   final TextEditingController startDateController = TextEditingController();
@@ -53,8 +51,8 @@ class BookingViewModel extends GetxController {
     super.onInit();
     authVM.loadUser();
     if (authVM.account.value != null) {
-      _name.value = authVM.account.value!.name;
-      nameController.text = _name.value;
+      name.value = authVM.account.value!.name;
+      nameController.text = name.value;
     }
   }
 

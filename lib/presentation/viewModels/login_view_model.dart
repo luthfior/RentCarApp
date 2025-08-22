@@ -56,7 +56,7 @@ class LoginViewModel extends GetxController {
     validateInputs();
 
     if (emailError.value != null || passwordError.value != null) {
-      Message.neutral('Semua field harus diisi');
+      Message.error('Semua field harus diisi');
       if (emailError.value != null) {
         FocusScope.of(context).requestFocus(emailFocus);
       } else if (passwordError.value != null) {
@@ -70,7 +70,7 @@ class LoginViewModel extends GetxController {
 
   Future<void> login() async {
     if (emailController.text.isEmpty || passwordController.text.isEmpty) {
-      Message.neutral('Semua field harus diisi');
+      Message.error('Semua field harus diisi');
       return;
     }
 

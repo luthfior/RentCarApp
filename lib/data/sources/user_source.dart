@@ -136,13 +136,29 @@ class UserSource {
 
     if (docSnapshot.exists) {
       await favProductRef.delete();
-      log('Produk berhasil dihapus dari favorit');
+      log('Produk dengan ID ${car.id} berhasil dihapus dari favorit');
     } else {
       await favProductRef.set({
         ...car.toJson(),
         'timeStamp': FieldValue.serverTimestamp(),
       });
-      log('Produk berhasil ditambahkan ke favorit');
+      log('Produk dengan ID ${car.id} berhasil ditambahkan ke favorit');
+    }
+  }
+
+  Future<void> deleteFavoriteProduct(String userId, String productId) async {
+    final favProductRef = _firestore
+        .collection('Users')
+        .doc(userId)
+        .collection('favProducts')
+        .doc(productId);
+
+    try {
+      await favProductRef.delete();
+      log('Produk dengan ID $productId berhasil dihapus dari Favorit');
+    } catch (e) {
+      log('Gagal menghapus produk dari Favorit: $e');
+      rethrow;
     }
   }
 
@@ -155,5 +171,52 @@ class UserSource {
 
     final docSnapshot = await favProductRef.get();
     return docSnapshot.exists;
+  }
+
+  Future<void> bookProduct(String userId, Car car) async {
+    try {
+      final bookProductRef = _firestore
+          .collection('Users')
+          .doc(userId)
+          .collection('bookedProducts')
+          .doc(car.id);
+
+      final docSnapshot = await bookProductRef.get();
+      if (!docSnapshot.exists) {
+        await bookProductRef.set({
+          ...car.toJson(),
+          'status': 'Menunggu untuk diproses.',
+          'timeStamp': FieldValue.serverTimestamp(),
+        });
+        log(
+          'Produk dengan ID ${car.id} berhasil di booking oleh pengguna $userId',
+        );
+      } else {
+        log('Produk dengan ID ${car.id} sudah ada dalam daftar pesanan.');
+      }
+    } catch (e) {
+      log('Gagal memproses pemesanan: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> addBalance(String userId, double amount) async {
+    final userRef = _firestore.collection('Users').doc(userId);
+    try {
+      await _firestore.runTransaction((transaction) async {
+        final userSnapshot = await transaction.get(userRef);
+        if (!userSnapshot.exists) {
+          throw Exception('User tidak ditemukan');
+        }
+        final currentBalance = (userSnapshot.data()?['balance'] as num)
+            .toDouble();
+        final newBalance = currentBalance + amount;
+        transaction.update(userRef, {'balance': newBalance});
+      });
+      log('Saldo User ID $userId berhasil ditambahkan: $amount');
+    } catch (e) {
+      log('Gagal menambahkan saldo: $e');
+      rethrow;
+    }
   }
 }

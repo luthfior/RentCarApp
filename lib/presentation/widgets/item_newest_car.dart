@@ -19,9 +19,9 @@ Widget itemNewestCar(Car car, EdgeInsetsGeometry margin) {
       }
     },
     child: Container(
-      height: 98,
+      height: 100,
       margin: margin,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
         color: Theme.of(Get.context!).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),

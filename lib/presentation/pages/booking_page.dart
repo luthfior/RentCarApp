@@ -18,7 +18,6 @@ class BookingPage extends GetView<BookingViewModel> {
   final connectivity = Get.find<ConnectivityService>();
   @override
   Widget build(BuildContext context) {
-    final BookingViewModel bookingVM = Get.find<BookingViewModel>();
     return Scaffold(
       body: Stack(
         children: [
@@ -31,15 +30,15 @@ class BookingPage extends GetView<BookingViewModel> {
                 child: SingleChildScrollView(
                   child: Column(
                     children: [
-                      _snippetCar(bookingVM),
+                      _snippetCar(),
                       const Gap(10),
-                      _buildInput(context, bookingVM),
+                      _buildInput(context),
                       const Gap(20),
-                      _buildAgency(bookingVM),
+                      _buildAgency(),
                       const Gap(20),
-                      _buildInsurance(bookingVM),
+                      _buildInsurance(),
                       const Gap(20),
-                      _buildDriverOption(bookingVM),
+                      _buildDriverOption(),
                     ],
                   ),
                 ),
@@ -58,7 +57,7 @@ class BookingPage extends GetView<BookingViewModel> {
             ButtonPrimary(
               onTap: () {
                 if (connectivity.isOnline.value) {
-                  bookingVM.goToCheckout();
+                  controller.goToCheckout();
                 } else {
                   null;
                 }
@@ -72,10 +71,10 @@ class BookingPage extends GetView<BookingViewModel> {
     );
   }
 
-  Widget _snippetCar(BookingViewModel bookingVM) {
-    final String productName = bookingVM.car.nameProduct.length > 16
-        ? '${bookingVM.car.nameProduct.substring(0, 14)}...'
-        : bookingVM.car.nameProduct;
+  Widget _snippetCar() {
+    final String productName = controller.car.nameProduct.length > 16
+        ? '${controller.car.nameProduct.substring(0, 14)}...'
+        : controller.car.nameProduct;
 
     return Container(
       height: 85,
@@ -88,7 +87,7 @@ class BookingPage extends GetView<BookingViewModel> {
       child: Row(
         children: [
           ExtendedImage.network(
-            bookingVM.car.imageProduct,
+            controller.car.imageProduct,
             width: 80,
             height: 80,
             fit: BoxFit.contain,
@@ -110,7 +109,7 @@ class BookingPage extends GetView<BookingViewModel> {
                   ),
                 ),
                 Text(
-                  bookingVM.car.transmissionProduct,
+                  controller.car.transmissionProduct,
                   style: GoogleFonts.poppins(
                     fontSize: 12,
                     fontWeight: FontWeight.w400,
@@ -118,7 +117,7 @@ class BookingPage extends GetView<BookingViewModel> {
                   ),
                 ),
                 Text(
-                  bookingVM.car.categoryProduct,
+                  controller.car.categoryProduct,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.poppins(
@@ -139,7 +138,7 @@ class BookingPage extends GetView<BookingViewModel> {
                   decimalDigits: 0,
                   locale: 'id',
                   symbol: 'Rp.',
-                ).format(bookingVM.car.priceProduct),
+                ).format(controller.car.priceProduct),
                 style: GoogleFonts.poppins(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
@@ -161,7 +160,7 @@ class BookingPage extends GetView<BookingViewModel> {
     );
   }
 
-  Widget _buildInput(BuildContext context, BookingViewModel bookingVM) {
+  Widget _buildInput(BuildContext context) {
     return Padding(
       padding: const EdgeInsetsGeometry.symmetric(horizontal: 24),
       child: Column(
@@ -179,11 +178,12 @@ class BookingPage extends GetView<BookingViewModel> {
           CustomInput(
             enable: connectivity.isOnline.value,
             icon: 'assets/ic_profile.png',
-            hint: bookingVM.nameController.text.isNotEmpty
-                ? bookingVM.nameController.text
+            initialValue: controller.name.value,
+            hint: controller.name.value.isNotEmpty
+                ? controller.name.value
                 : 'Nama Lengkap',
             customHintFontSize: 14,
-            editingController: bookingVM.nameController,
+            editingController: controller.nameController,
           ),
           const Gap(20),
           Row(
@@ -205,11 +205,11 @@ class BookingPage extends GetView<BookingViewModel> {
                       icon: 'assets/ic_calendar.png',
                       hint: 'Pilih Tanggal',
                       customHintFontSize: 14,
-                      editingController: bookingVM.startDateController,
+                      editingController: controller.startDateController,
                       enable: false,
-                      onTapBox: () => bookingVM.pickDate(
+                      onTapBox: () => controller.pickDate(
                         context,
-                        bookingVM.startDateController,
+                        controller.startDateController,
                       ),
                     ),
                   ],
@@ -233,11 +233,11 @@ class BookingPage extends GetView<BookingViewModel> {
                       icon: 'assets/ic_calendar.png',
                       hint: 'Pilih Tanggal',
                       customHintFontSize: 14,
-                      editingController: bookingVM.endDateController,
+                      editingController: controller.endDateController,
                       enable: false,
-                      onTapBox: () => bookingVM.pickDate(
+                      onTapBox: () => controller.pickDate(
                         context,
-                        bookingVM.endDateController,
+                        controller.endDateController,
                       ),
                     ),
                   ],
@@ -250,7 +250,7 @@ class BookingPage extends GetView<BookingViewModel> {
     );
   }
 
-  Widget _buildAgency(BookingViewModel bookingVM) {
+  Widget _buildAgency() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -269,17 +269,15 @@ class BookingPage extends GetView<BookingViewModel> {
         SizedBox(
           height: 100,
           child: ListView.builder(
-            physics: const NeverScrollableScrollPhysics(),
-            shrinkWrap: true,
-            itemCount: bookingVM.listAgency.length,
+            itemCount: controller.listAgency.length,
             scrollDirection: Axis.horizontal,
             itemBuilder: (context, index) {
-              final agency = bookingVM.listAgency[index];
+              final agency = controller.listAgency[index];
               return Obx(() {
                 return GestureDetector(
                   onTap: () {
                     if (connectivity.isOnline.value) {
-                      bookingVM.agencyPicked = agency;
+                      controller.agencyPicked = agency;
                     } else {
                       null;
                     }
@@ -292,12 +290,12 @@ class BookingPage extends GetView<BookingViewModel> {
                     width: 125,
                     margin: EdgeInsets.only(
                       left: index == 0 ? 24 : 8,
-                      right: index == bookingVM.listAgency.length - 1 ? 24 : 8,
+                      right: index == controller.listAgency.length - 1 ? 24 : 8,
                     ),
                     decoration: BoxDecoration(
                       color: Theme.of(Get.context!).colorScheme.surface,
                       borderRadius: BorderRadius.circular(20),
-                      border: bookingVM.agencyPicked == agency
+                      border: controller.agencyPicked == agency
                           ? Border.all(color: const Color(0xffFF5722))
                           : null,
                     ),
@@ -337,7 +335,7 @@ class BookingPage extends GetView<BookingViewModel> {
     );
   }
 
-  Widget _buildInsurance(BookingViewModel bookingVM) {
+  Widget _buildInsurance() {
     return Obx(() {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -357,8 +355,8 @@ class BookingPage extends GetView<BookingViewModel> {
               height: 45,
               child: DropdownButtonFormField(
                 isExpanded: true,
-                value: bookingVM.insurancePicked,
-                items: bookingVM.listInsurance.map((e) {
+                value: controller.insurancePicked,
+                items: controller.listInsurance.map((e) {
                   return DropdownMenuItem(
                     value: e,
                     child: Text(
@@ -411,8 +409,8 @@ class BookingPage extends GetView<BookingViewModel> {
                   ),
                 ),
                 onChanged: (value) {
-                  bookingVM.insurancePicked = value;
-                  log('Asuransi yang dipilih: $bookingVM.insurancePicked');
+                  controller.insurancePicked = value;
+                  log('Asuransi yang dipilih: $controller.insurancePicked');
                 },
                 icon: Image.asset(
                   'assets/ic_arrow_down.png',
@@ -428,9 +426,9 @@ class BookingPage extends GetView<BookingViewModel> {
     });
   }
 
-  Widget _buildDriverOption(BookingViewModel bookingVM) {
+  Widget _buildDriverOption() {
     return Obx(() {
-      final isWithDriver = bookingVM.withDriver;
+      final isWithDriver = controller.withDriver;
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24),
         child: Column(
@@ -451,7 +449,7 @@ class BookingPage extends GetView<BookingViewModel> {
                   child: GestureDetector(
                     onTap: () {
                       if (connectivity.isOnline.value) {
-                        bookingVM.withDriver = true;
+                        controller.withDriver = true;
                       } else {
                         null;
                       }
@@ -497,7 +495,7 @@ class BookingPage extends GetView<BookingViewModel> {
                   child: GestureDetector(
                     onTap: () {
                       if (connectivity.isOnline.value) {
-                        bookingVM.withDriver = false;
+                        controller.withDriver = false;
                       } else {
                         null;
                       }

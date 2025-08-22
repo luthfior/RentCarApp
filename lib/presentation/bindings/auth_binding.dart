@@ -5,7 +5,11 @@ import 'package:rent_car_app/presentation/viewModels/register_view_model.dart';
 class AuthBinding extends Bindings {
   @override
   void dependencies() {
-    Get.lazyPut<LoginViewModel>(() => LoginViewModel());
-    Get.lazyPut<RegisterViewmodel>(() => RegisterViewmodel());
+    final String? initialView = Get.arguments;
+    if (initialView == 'login') {
+      Get.lazyPut(() => LoginViewModel());
+    } else {
+      Get.lazyPut(() => RegisterViewModel());
+    }
   }
 }

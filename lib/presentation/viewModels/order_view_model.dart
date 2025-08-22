@@ -2,51 +2,51 @@ import 'dart:async';
 import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
-import 'package:rent_car_app/core/constants/message.dart';
+import 'package:rent_car_app/data/models/booked_car.dart';
 import 'package:rent_car_app/data/models/car.dart';
 import 'package:rent_car_app/data/sources/user_source.dart';
 import 'package:rent_car_app/presentation/viewModels/auth_view_model.dart';
 
-class FavoriteViewModel extends GetxController {
+class OrderViewModel extends GetxController {
   final firestore = FirebaseFirestore.instance;
   final authVM = Get.find<AuthViewModel>();
-  final favoriteProducts = <Car>[].obs;
   final userSource = UserSource();
 
   final status = ''.obs;
-  StreamSubscription<QuerySnapshot>? _favoritesSubscription;
+  final bookedProducts = <BookedCar>[].obs;
+  StreamSubscription<QuerySnapshot>? _ordersSubscription;
 
   @override
   void onInit() {
     super.onInit();
     if (authVM.account.value != null) {
-      fetchFavorites();
+      fetchBookedCars();
     } else {
-      favoriteProducts.clear();
+      bookedProducts.clear();
     }
   }
 
   @override
   void onClose() {
-    _favoritesSubscription?.cancel();
+    _ordersSubscription?.cancel();
     super.onClose();
   }
 
-  Future<void> fetchFavorites() async {
+  Future<void> fetchBookedCars() async {
     status.value = 'loading';
     final userId = authVM.account.value!.uid;
+    await _ordersSubscription?.cancel();
 
-    await _favoritesSubscription?.cancel();
-    _favoritesSubscription = firestore
+    _ordersSubscription = firestore
         .collection('Users')
         .doc(userId)
-        .collection('favProducts')
+        .collection('bookedProducts')
         .orderBy('timeStamp', descending: true)
         .snapshots()
         .listen(
           (snapshot) async {
             if (snapshot.docs.isEmpty) {
-              favoriteProducts.clear();
+              bookedProducts.clear();
               status.value = 'empty';
               return;
             }
@@ -61,42 +61,30 @@ class FavoriteViewModel extends GetxController {
                   .where(FieldPath.documentId, whereIn: carIds)
                   .get();
 
-              final List<Car> updatedCars = carsSnapshot.docs
-                  .map((doc) => Car.fromJson(doc.data()))
-                  .toList();
-
               final Map<String, Car> carMap = {
-                for (var car in updatedCars) car.id: car,
+                for (var doc in carsSnapshot.docs)
+                  doc.id: Car.fromJson(doc.data()),
               };
-              final List<Car> sortedCars = snapshot.docs.map((doc) {
-                return carMap[doc.id]!;
+
+              final List<BookedCar> updatedBookedCars = snapshot.docs.map((
+                doc,
+              ) {
+                final car = carMap[doc.id];
+                final orderStatus = doc.data()['status'] as String;
+                return BookedCar(car: car!, status: orderStatus);
               }).toList();
 
-              favoriteProducts.value = sortedCars;
+              bookedProducts.value = updatedBookedCars;
               status.value = 'success';
             } else {
-              favoriteProducts.clear();
+              bookedProducts.clear();
               status.value = 'empty';
             }
           },
           onError: (error) {
-            log('Gagal fetch favorit: $error');
+            log('Gagal fetch order: $error');
             status.value = 'error';
           },
         );
-  }
-
-  Future<void> deleteFavorite(Car car) async {
-    status.value = 'loading';
-    final userId = authVM.account.value!.uid;
-    try {
-      await userSource.deleteFavoriteProduct(userId, car.id);
-      Message.success('Produk berhasil dihapus dari Favorit');
-      status.value = 'success';
-    } catch (e) {
-      log('Failed to toggle favorite status: $e');
-      Message.error('Gagal menambahkan Produk ke Favorit');
-      status.value = 'error';
-    }
   }
 }

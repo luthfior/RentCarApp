@@ -9,8 +9,7 @@ Widget pinNumberInput(TextEditingController editingController) {
       width: 3,
     ),
   );
-  return SizedBox(
-    width: 30,
+  return Expanded(
     child: TextField(
       controller: editingController,
       obscureText: true,

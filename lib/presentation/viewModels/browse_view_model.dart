@@ -76,7 +76,11 @@ class BrowseViewModel extends GetxController {
           if (comparePurchased != 0) {
             return comparePurchased;
           }
-          return b.ratingProduct.compareTo(a.ratingProduct);
+          int compareRating = b.ratingProduct.compareTo(a.ratingProduct);
+          if (compareRating != 0) {
+            return compareRating;
+          }
+          return a.nameProduct.compareTo(b.nameProduct);
         });
 
         for (var car in featuredCars) {
@@ -99,6 +103,13 @@ class BrowseViewModel extends GetxController {
 
       if (newestCars != null) {
         _allNewestList = newestCars;
+        _allNewestList.sort((a, b) {
+          int compareReleased = b.releaseProduct.compareTo(a.releaseProduct);
+          if (compareReleased != 0) {
+            return compareReleased;
+          }
+          return a.nameProduct.compareTo(b.nameProduct);
+        });
         for (var car in newestCars) {
           if (car.imageProduct.isEmpty) {
             final imageUrl = await SerpApiService.fetchImageForCar(

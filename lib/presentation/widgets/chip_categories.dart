@@ -12,7 +12,7 @@ Widget chipCategories(List categories) {
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
+        padding: const EdgeInsets.fromLTRB(24, 18, 24, 0),
         child: Text(
           'Kategori',
           style: GoogleFonts.poppins(

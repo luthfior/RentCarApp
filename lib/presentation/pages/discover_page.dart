@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rent_car_app/data/services/theme_service.dart';
+import 'package:rent_car_app/presentation/fragments/browse_fragment.dart';
+import 'package:rent_car_app/presentation/fragments/favorite_fragment.dart';
+import 'package:rent_car_app/presentation/fragments/order_fragment.dart';
+import 'package:rent_car_app/presentation/fragments/setting_fragment.dart';
 import 'package:rent_car_app/presentation/viewModels/auth_view_model.dart';
 import 'package:rent_car_app/presentation/viewModels/discover_view_model.dart';
 import 'package:rent_car_app/presentation/widgets/button_bottom_bar.dart';
@@ -19,7 +23,20 @@ class DiscoverPage extends GetView<DiscoverViewModel> {
       extendBody: true,
       body: Stack(
         children: [
-          Obx(() => controller.fragments[controller.fragmentIndex.value]),
+          Obx(() {
+            switch (controller.fragmentIndex.value) {
+              case 0:
+                return BrowseFragment();
+              case 1:
+                return const OrderFragment();
+              case 2:
+                return const FavoriteFragment();
+              case 3:
+                return SettingFragment();
+              default:
+                return BrowseFragment();
+            }
+          }),
           GetBuilder<ThemeService>(
             builder: (themeService) {
               return Align(
@@ -65,7 +82,7 @@ class DiscoverPage extends GetView<DiscoverViewModel> {
                 },
               ),
               buildItemNav(
-                label: 'Order',
+                label: 'Pesanan',
                 icon: 'assets/ic_orders.png',
                 iconOn: 'assets/ic_orders_on.png',
                 isActive: controller.fragmentIndex.value == 1,
@@ -79,7 +96,7 @@ class DiscoverPage extends GetView<DiscoverViewModel> {
                 },
               ),
               buildItemNav(
-                label: 'Pesan',
+                label: 'Chat',
                 icon: 'assets/ic_chats.png',
                 iconOn: 'assets/ic_chats_on.png',
                 hasDot: true,

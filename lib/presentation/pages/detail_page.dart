@@ -315,14 +315,17 @@ class DetailPage extends GetView<DetailViewModel> {
                       Chat chat = Chat(
                         chatId: uid,
                         message: '',
-                        receiverId: 'cs',
+                        receiverId: 'customerService',
                         senderId: uid,
                         productDetail: {
                           'id': car.id,
                           'categoryProduct': car.categoryProduct,
+                          'descriptionProduct': car.descriptionProduct,
                           'imageProduct': car.imageProduct,
                           'nameProduct': car.nameProduct,
                           'priceProduct': car.priceProduct,
+                          'purchasedProduct': car.purchasedProduct,
+                          'ratingProduct': car.ratingProduct,
                           'releaseProduct': car.releaseProduct,
                           'transmissionProduct': car.transmissionProduct,
                         },

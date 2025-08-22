@@ -1,14 +1,15 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dotted_line/dotted_line.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:rent_car_app/data/models/chat.dart';
 import 'package:rent_car_app/data/services/connectivity_service.dart';
 import 'package:rent_car_app/presentation/viewModels/chat_view_model.dart';
 import 'package:rent_car_app/presentation/viewModels/discover_view_model.dart';
-import 'package:rent_car_app/presentation/widgets/button_primary.dart';
 import 'package:rent_car_app/presentation/widgets/custom_header.dart';
 import 'package:rent_car_app/presentation/widgets/offline_banner.dart';
 
@@ -16,6 +17,14 @@ class ChattingPage extends GetView<ChatViewModel> {
   ChattingPage({super.key});
 
   final connectivity = Get.find<ConnectivityService>();
+
+  String _formatTime(Timestamp? timestamp) {
+    if (timestamp == null) {
+      return '';
+    }
+    final dateTime = timestamp.toDate();
+    return DateFormat('HH:mm').format(dateTime);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,30 +42,11 @@ class ChattingPage extends GetView<ChatViewModel> {
                 },
               ),
               Expanded(child: _buildChat()),
-              const Gap(30),
+              inputChat(controller.authVM.account.value!.uid),
             ],
           ),
           const OfflineBanner(),
         ],
-      ),
-      bottomNavigationBar: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 0),
-        color: Colors.transparent,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ButtonPrimary(
-              onTap: () {
-                if (connectivity.isOnline.value) {
-                } else {
-                  null;
-                }
-              },
-              text: 'Kirim Pesan',
-            ),
-            const Gap(50),
-          ],
-        ),
       ),
     );
   }
@@ -157,7 +147,7 @@ class ChattingPage extends GetView<ChatViewModel> {
           if (snapshot.data!.docs.isEmpty) {
             return const Center(child: Text('Chat kosong'));
           }
-          final list = snapshot.data!.docs.reversed.toList();
+          final list = snapshot.data!.docs.toList();
           Chat? firstChatWithProduct;
           for (var doc in list) {
             final chat = Chat.fromJson(doc.data());
@@ -182,16 +172,15 @@ class ChattingPage extends GetView<ChatViewModel> {
                 ],
                 Expanded(
                   child: ListView.builder(
-                    physics: const NeverScrollableScrollPhysics(),
-                    shrinkWrap: true,
                     padding: EdgeInsets.only(
-                      top: (firstChatWithProduct != null) ? 16 : 0,
+                      top: (firstChatWithProduct != null) ? 12 : 0,
                     ),
+                    reverse: true,
                     itemCount: list.length,
                     itemBuilder: (context, index) {
                       Chat chat = Chat.fromJson(list[index].data());
                       final isFirstMessageOnScreen = index == list.length - 1;
-                      if (chat.senderId == 'cs') {
+                      if (chat.senderId == 'customerService') {
                         return _chatAdmin(chat);
                       } else {
                         return _chatUser(chat, isFirstMessageOnScreen);
@@ -213,18 +202,36 @@ class ChattingPage extends GetView<ChatViewModel> {
       children: [
         Container(
           padding: const EdgeInsets.all(10),
-          margin: EdgeInsets.only(top: isFirstMessage ? 24 : 0),
+          margin: EdgeInsets.only(top: isFirstMessage ? 18 : 14),
           decoration: BoxDecoration(
             color: Theme.of(Get.context!).colorScheme.surface,
             borderRadius: BorderRadius.circular(16),
           ),
-          child: Text(
-            chat.message,
-            style: GoogleFonts.poppins(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: Theme.of(Get.context!).colorScheme.onSurface,
-            ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Flexible(
+                child: Text(
+                  chat.message,
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(Get.context!).colorScheme.onSurface,
+                  ),
+                ),
+              ),
+              const Gap(12),
+              Text(
+                _formatTime(chat.timeStamp),
+                style: GoogleFonts.poppins(
+                  fontSize: 10,
+                  color: Theme.of(
+                    Get.context!,
+                  ).colorScheme.onSurface.withAlpha(127),
+                ),
+              ),
+            ],
           ),
         ),
         const Gap(12),
@@ -255,19 +262,37 @@ class ChattingPage extends GetView<ChatViewModel> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          margin: const EdgeInsets.only(top: 24),
+          margin: const EdgeInsets.only(top: 12),
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
             color: Theme.of(Get.context!).colorScheme.surface,
             borderRadius: BorderRadius.circular(16),
           ),
-          child: Text(
-            chat.message,
-            style: GoogleFonts.poppins(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: Theme.of(Get.context!).colorScheme.onSurface,
-            ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Flexible(
+                child: Text(
+                  chat.message,
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(Get.context!).colorScheme.onSurface,
+                  ),
+                ),
+              ),
+              const Gap(12),
+              Text(
+                _formatTime(chat.timeStamp),
+                style: GoogleFonts.poppins(
+                  fontSize: 10,
+                  color: Theme.of(
+                    Get.context!,
+                  ).colorScheme.onSurface.withAlpha(127),
+                ),
+              ),
+            ],
           ),
         ),
         const Gap(12),
@@ -297,6 +322,54 @@ class ChattingPage extends GetView<ChatViewModel> {
           ],
         ),
       ],
+    );
+  }
+
+  Widget inputChat(String uid) {
+    return Container(
+      height: 52,
+      margin: const EdgeInsets.fromLTRB(24, 24, 24, 30),
+      padding: const EdgeInsets.only(left: 16),
+      decoration: BoxDecoration(
+        color: Theme.of(Get.context!).colorScheme.surface,
+        borderRadius: BorderRadius.circular(50),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: TextField(
+              controller: controller.edtInput,
+              onSubmitted: (_) => controller.sendMessage(),
+              style: const TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 16,
+                color: Color(0xff070623),
+              ),
+              decoration: InputDecoration(
+                contentPadding: const EdgeInsets.all(0),
+                isDense: true,
+                border: InputBorder.none,
+                hintText: 'Kirim pesan Anda...',
+                hintStyle: TextStyle(
+                  fontWeight: FontWeight.w400,
+                  fontSize: 16,
+                  color: Theme.of(Get.context!).colorScheme.onSurface,
+                ),
+              ),
+            ),
+          ),
+          IconButton(
+            onPressed: () => controller.sendMessage(),
+            icon: ColorFiltered(
+              colorFilter: const ColorFilter.mode(
+                Color(0xffFF5722),
+                BlendMode.srcIn,
+              ),
+              child: Image.asset('assets/ic_send.png', height: 24, width: 24),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

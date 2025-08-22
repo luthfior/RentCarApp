@@ -1,29 +1,16 @@
 import 'package:get/get.dart';
 import 'package:rent_car_app/data/models/car.dart';
-import 'package:rent_car_app/presentation/fragments/browse_fragment.dart';
-import 'package:rent_car_app/presentation/fragments/favorite_fragment.dart';
-import 'package:rent_car_app/presentation/fragments/order_fragment.dart';
-import 'package:rent_car_app/presentation/fragments/setting_fragment.dart';
 import 'package:rent_car_app/presentation/viewModels/auth_view_model.dart';
 import 'package:rent_car_app/presentation/viewModels/browse_view_model.dart';
+import 'package:rent_car_app/presentation/viewModels/favorite_view_model.dart';
+import 'package:rent_car_app/presentation/viewModels/order_view_model.dart';
 
 class DiscoverViewModel extends GetxController {
   final fragmentIndex = 0.obs;
-  final AuthViewModel authVM = Get.find<AuthViewModel>();
-  final BrowseViewModel browseVM = Get.find<BrowseViewModel>();
-
-  final fragments = [
-    BrowseFragment(),
-    const OrderFragment(),
-    FavoriteFragment(),
-    SettingFragment(),
-  ];
 
   @override
   void onInit() {
     super.onInit();
-    authVM.loadUser();
-    browseVM.fetchAllCars();
     final arguments = Get.arguments;
     if (arguments != null) {
       final int? newIndex = arguments['fragmentIndex'];
@@ -33,6 +20,7 @@ class DiscoverViewModel extends GetxController {
         setFragmentIndex(newIndex);
       }
       if (bookedCar != null) {
+        final browseVM = Get.find<BrowseViewModel>();
         browseVM.car.value = bookedCar;
       }
     }
@@ -40,17 +28,18 @@ class DiscoverViewModel extends GetxController {
 
   void setFragmentIndex(int index) {
     fragmentIndex.value = index;
-
     switch (index) {
       case 0:
-        browseVM.fetchAllCars();
+        Get.find<BrowseViewModel>().fetchAllCars();
         break;
       case 1:
+        Get.find<OrderViewModel>().fetchBookedCars();
         break;
       case 2:
+        Get.find<FavoriteViewModel>().fetchFavorites();
         break;
       case 3:
-        authVM.loadUser();
+        Get.find<AuthViewModel>().loadUser();
         break;
     }
   }

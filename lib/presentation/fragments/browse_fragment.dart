@@ -40,7 +40,7 @@ class BrowseFragment extends GetView<BrowseViewModel> {
             children: [
               Gap(20 + MediaQuery.of(context).padding.top),
               buildHeader(context),
-              const Gap(20),
+              Obx(() => buildBookingStatus()),
               Obx(() {
                 if (controller.currentView.value == 'search') {
                   return buildSearchProducts();
@@ -202,7 +202,7 @@ class BrowseFragment extends GetView<BrowseViewModel> {
                     ),
                   ),
                   TextSpan(
-                    text: ' Anda telah diproses.',
+                    text: ' Anda menunggu diproses.',
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
@@ -237,8 +237,6 @@ class BrowseFragment extends GetView<BrowseViewModel> {
         SizedBox(
           height: 250,
           child: ListView.builder(
-            physics: const NeverScrollableScrollPhysics(),
-            shrinkWrap: true,
             itemCount: controller.featuredList.length,
             scrollDirection: Axis.horizontal,
             itemBuilder: (context, index) {
