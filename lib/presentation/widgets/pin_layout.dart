@@ -7,10 +7,11 @@ Widget pinLayout(PinViewModel pinVm) {
     builder: (context, constraints) {
       final itemWidth = (constraints.maxWidth - (25 * 2)) / 3;
       return SizedBox(
-        width: constraints.maxWidth > 300 ? 300 : constraints.maxWidth,
+        width: constraints.maxWidth > 350 ? 350 : constraints.maxWidth,
         child: GridView.count(
+          padding: const EdgeInsets.only(top: 24),
           crossAxisCount: 3,
-          childAspectRatio: itemWidth / 65,
+          childAspectRatio: itemWidth / 75,
           mainAxisSpacing: 25,
           crossAxisSpacing: 25,
           physics: const NeverScrollableScrollPhysics(),

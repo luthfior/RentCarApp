@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:rent_car_app/core/constants/message.dart';
@@ -10,8 +11,12 @@ import 'package:rent_car_app/presentation/viewModels/discover_view_model.dart';
 class ProfileViewModel extends GetxController {
   final userSource = UserSource();
   final authVM = Get.find<AuthViewModel>();
+  final discoverVM = Get.find<DiscoverViewModel>();
 
   final name = ''.obs;
+  final address = ''.obs;
+  final nameEdt = TextEditingController();
+  final addressEdt = TextEditingController();
   final isChanged = false.obs;
   final selectedPhotoFile = Rx<XFile?>(null);
 
@@ -22,14 +27,18 @@ class ProfileViewModel extends GetxController {
   void checkChanges() {
     isChanged.value =
         (name.value != authVM.account.value?.name) ||
+        address.value != authVM.account.value?.address ||
         (selectedPhotoFile.value != null);
   }
 
   @override
   void onInit() {
     super.onInit();
-    if (authVM.account.value?.name != null) {
+    if (authVM.account.value != null) {
       name.value = authVM.account.value!.name;
+      nameEdt.text = authVM.account.value!.name;
+      address.value = authVM.account.value!.address ?? '';
+      addressEdt.text = authVM.account.value!.address ?? '';
     }
   }
 
@@ -53,6 +62,7 @@ class ProfileViewModel extends GetxController {
     }
     status = 'loading';
     final uid = authVM.account.value?.uid;
+    final userRole = authVM.account.value?.role;
     if (uid == null) {
       status = 'failed';
       log('Error: User ID tidak ditemukan');
@@ -63,20 +73,31 @@ class ProfileViewModel extends GetxController {
       Message.error('Nama Lengkap tidak boleh kosong');
       return;
     }
+    if (address.value.trim().isEmpty) {
+      status = 'failed';
+      Message.error('Alamat Lengkap tidak boleh kosong');
+      return;
+    }
     try {
       if (selectedPhotoFile.value != null) {
-        await userSource.updateProfilePicture(uid, selectedPhotoFile.value!);
+        await userSource.updateProfilePicture(
+          uid,
+          userRole!,
+          selectedPhotoFile.value!,
+        );
       }
       if (name.value != authVM.account.value?.name) {
-        await userSource.updateUserName(uid, name.value);
+        await userSource.updateUserName(uid, userRole!, name.value);
       }
-      await authVM.loadUser();
+      if (address.value != authVM.account.value?.address) {
+        await userSource.updateUserAddress(uid, userRole!, address.value);
+      }
       status = 'success';
       isChanged.value = false;
       selectedPhotoFile.value = null;
       Message.success('Profil berhasil diperbarui');
       Get.until((route) => route.settings.name == '/discover');
-      Get.find<DiscoverViewModel>().setFragmentIndex(3);
+      discoverVM.setFragmentIndex(3);
     } catch (e) {
       status = 'failed';
       Message.error('Gagal memperbarui profil');

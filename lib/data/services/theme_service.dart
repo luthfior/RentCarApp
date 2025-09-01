@@ -5,15 +5,15 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:rent_car_app/core/utils/app_colors.dart';
 
 class ThemeService extends GetxController {
-  final _box = GetStorage();
-  final _key = 'isDarkMode';
+  final box = GetStorage();
+  final key = 'isDarkMode';
 
   final isDarkMode = false.obs;
 
   @override
   void onInit() {
     super.onInit();
-    final storedValue = _box.read(_key) ?? false;
+    final storedValue = box.read(key) ?? false;
     isDarkMode.value = storedValue;
   }
 
@@ -23,7 +23,7 @@ class ThemeService extends GetxController {
   void toggleTheme() {
     isDarkMode.value = !isDarkMode.value;
     Get.changeThemeMode(themeMode);
-    _box.write(_key, isDarkMode.value);
+    box.write(key, isDarkMode.value);
   }
 
   static final ThemeData lightTheme = ThemeData(

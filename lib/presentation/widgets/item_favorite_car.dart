@@ -7,16 +7,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:rent_car_app/data/models/car.dart';
 import 'package:rent_car_app/data/services/connectivity_service.dart';
-import 'package:rent_car_app/presentation/widgets/button_chat.dart';
-import 'package:rent_car_app/presentation/widgets/button_primary.dart';
 
-Widget itemFavoriteCar(
-  BuildContext context, {
-  required Car car,
-  required VoidCallback onRemoveFavorite,
-  required VoidCallback onChat,
-  required VoidCallback onBooking,
-}) {
+Widget itemFavoriteCar(BuildContext context, {required Car car}) {
   final connectivity = Get.find<ConnectivityService>();
   return GestureDetector(
     onTap: () {
@@ -201,75 +193,7 @@ Widget itemFavoriteCar(
               ),
             ],
           ),
-          const Gap(16),
-          Row(
-            children: [
-              Expanded(
-                child: ButtonPrimary(
-                  onTap: onBooking,
-                  customBorderRadius: BorderRadius.circular(8),
-                  text: 'Booking',
-                  customHeight: 32,
-                  customTextSize: 12,
-                ),
-              ),
-              const Gap(8),
-              Expanded(
-                child: ButtonChat(
-                  text: 'Chat',
-                  customHeight: 32,
-                  customTextSize: 12,
-                  customIconSize: 18,
-                  customBorderRadius: BorderRadius.circular(8),
-                  onTap: onChat,
-                ),
-              ),
-              const Gap(8),
-              Expanded(child: _deleteButton(onTap: onRemoveFavorite)),
-            ],
-          ),
         ],
-      ),
-    ),
-  );
-}
-
-Widget _deleteButton({required VoidCallback onTap}) {
-  return Material(
-    borderRadius: BorderRadius.circular(8),
-    color: Theme.of(Get.context!).colorScheme.surface,
-    child: InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Theme.of(Get.context!).colorScheme.surface,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: Theme.of(Get.context!).colorScheme.onSurface,
-          ),
-        ),
-        width: double.infinity,
-        height: 32,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const ColorFiltered(
-              colorFilter: ColorFilter.mode(Color(0xffFF5722), BlendMode.srcIn),
-              child: Icon(Icons.delete_outline_rounded, size: 20),
-            ),
-            const Gap(8),
-            Text(
-              'Hapus',
-              style: GoogleFonts.poppins(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: Theme.of(Get.context!).colorScheme.onSurface,
-              ),
-            ),
-          ],
-        ),
       ),
     ),
   );

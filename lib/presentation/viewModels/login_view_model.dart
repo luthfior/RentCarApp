@@ -2,9 +2,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:rent_car_app/core/constants/message.dart';
 import 'package:rent_car_app/data/sources/auth_source.dart';
+import 'package:rent_car_app/presentation/viewModels/auth_view_model.dart';
 
 class LoginViewModel extends GetxController {
   final AuthSource _authSource = AuthSource();
+  final AuthViewModel authVM = Get.find<AuthViewModel>();
 
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
@@ -82,13 +84,20 @@ class LoginViewModel extends GetxController {
       );
 
       if (response.isSuccess) {
-        resetForm();
-        Get.offAllNamed('/discover', arguments: {'fragmentIndex': 0});
+        final success = await authVM.loadUser();
+        if (success) {
+          Get.offAllNamed('/discover', arguments: {'fragmentIndex': 0});
+          resetForm();
+        } else {
+          return;
+        }
       } else {
-        Message.error(response.error.toString());
+        Message.error(
+          response.error ?? 'Gagal melakukan proses Masuk. Silahkan coba lagi',
+        );
       }
     } catch (e) {
-      Message.error(e.toString());
+      Message.error('Gagal melakukan proses Masuk. Silahkan coba lagi');
     } finally {
       isLoading.value = false;
     }

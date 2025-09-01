@@ -21,6 +21,7 @@ class RegisterViewModel extends GetxController {
   final isNameTouched = false.obs;
   final isEmailTouched = false.obs;
   final isPasswordTouched = false.obs;
+  final selectedRole = 'customer'.obs;
 
   @override
   void onInit() {
@@ -114,17 +115,20 @@ class RegisterViewModel extends GetxController {
         name: nameController.text,
         email: emailController.text,
         password: passwordController.text,
+        role: selectedRole.value,
       );
 
       if (response.isSuccess) {
-        Get.snackbar('Berhasil', 'Akun Berhasil Dibuat');
+        Message.success('Berhasil membuat Akun');
         resetForm();
         onRegisterSuccess();
       } else {
-        Message.error(response.error.toString());
+        Message.error(
+          response.error ?? 'Gagal melakukan proses Daftar. Silahkan coba lagi',
+        );
       }
     } catch (e) {
-      Message.error(e.toString());
+      Message.error('Gagal melakukan proses Daftar. Silahkan coba lagi');
     } finally {
       isLoading.value = false;
     }
@@ -142,5 +146,6 @@ class RegisterViewModel extends GetxController {
     nameError.value = null;
     emailError.value = null;
     passwordError.value = null;
+    selectedRole.value = 'customer';
   }
 }

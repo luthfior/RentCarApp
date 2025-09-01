@@ -33,7 +33,7 @@ class DetailViewModel extends GetxController {
     status = 'loading';
 
     try {
-      final data = await CarSource.fetchCar(idProduct);
+      final data = await CarSource.fetchDetailCar(idProduct);
       if (data == null) {
         status = '';
         return;

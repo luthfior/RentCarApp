@@ -49,7 +49,6 @@ class BookingViewModel extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    authVM.loadUser();
     if (authVM.account.value != null) {
       name.value = authVM.account.value!.name;
       nameController.text = name.value;

@@ -26,7 +26,13 @@ class LoginFragment extends GetView<LoginViewModel> {
             padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 24),
             children: [
               const Gap(20),
-              Image.asset('assets/logo_text_16_9.png', height: 90),
+              ColorFiltered(
+                colorFilter: ColorFilter.mode(
+                  Theme.of(context).colorScheme.onSurface,
+                  BlendMode.srcIn,
+                ),
+                child: Image.asset('assets/logo_text_16_9.png', height: 90),
+              ),
               const Gap(20),
               Text(
                 'Masuk Akun',
@@ -50,6 +56,7 @@ class LoginFragment extends GetView<LoginViewModel> {
                 () => CustomInput(
                   icon: 'assets/ic_profile.png',
                   hint: 'Masukkan Alamat Email Anda',
+                  customHintFontSize: 14,
                   editingController: controller.emailController,
                   errorText: controller.emailError.value,
                   focusNode: controller.emailFocus,
@@ -73,7 +80,8 @@ class LoginFragment extends GetView<LoginViewModel> {
               Obx(
                 () => CustomInput(
                   icon: 'assets/ic_key.png',
-                  hint: 'Masukkan Password',
+                  hint: 'Masukkan Kata Sandi Anda',
+                  customHintFontSize: 14,
                   editingController: controller.passwordController,
                   errorText: controller.passwordError.value,
                   obsecure: !controller.isPasswordVisible.value,
@@ -104,13 +112,14 @@ class LoginFragment extends GetView<LoginViewModel> {
                       : () => controller.handleLogin(context),
                 ),
               ),
-              const Gap(30),
+              const Gap(20),
               Row(
                 children: [
                   const Expanded(
                     child: DottedLine(
-                      dashLength: 5,
-                      dashGapLength: 5,
+                      lineThickness: 2,
+                      dashLength: 6,
+                      dashGapLength: 6,
                       dashColor: Color(0xffCECED5),
                     ),
                   ),
@@ -127,19 +136,20 @@ class LoginFragment extends GetView<LoginViewModel> {
                   ),
                   const Expanded(
                     child: DottedLine(
-                      dashLength: 5,
-                      dashGapLength: 5,
+                      lineThickness: 2,
+                      dashLength: 6,
+                      dashGapLength: 6,
                       dashColor: Color(0xffCECED5),
                     ),
                   ),
                 ],
               ),
-              const Gap(30),
+              const Gap(20),
               ButtonPrimary(
                 onTap: (!connectivity.isOnline.value)
                     ? null
                     : onSwitchToRegister,
-                text: 'Daftar',
+                text: 'Daftar Akun',
                 customTextColor: Theme.of(Get.context!).colorScheme.onSurface,
                 customBackgroundColor: const Color(0xffFFFFFF),
               ),

@@ -19,7 +19,7 @@ class SettingFragment extends StatelessWidget {
       children: [
         Gap(30 + MediaQuery.of(context).padding.top),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32),
+          padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Text(
             'Pengaturan',
             style: GoogleFonts.poppins(
@@ -29,76 +29,85 @@ class SettingFragment extends StatelessWidget {
             ),
           ),
         ),
-        const Gap(30),
-        Flexible(
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 24),
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                buildProfile(),
-                const Gap(40),
-                Flexible(
-                  child: ListView(
-                    padding: EdgeInsets.zero,
-                    shrinkWrap: true,
-                    children: [
-                      buildDarkMode(),
-                      const Gap(20),
-                      buildItemSettings(
-                        icon: 'assets/ic_profile.png',
-                        title: 'Sunting Profil',
-                        isDisable: !connectivity.isOnline.value,
-                        onTap: () {
-                          Get.toNamed('/edit-profile');
-                        },
-                      ),
-                      const Gap(20),
-                      buildItemSettings(
-                        icon: 'assets/ic_wallet.png',
-                        title: 'Top Up Saldo',
-                        isDisable: !connectivity.isOnline.value,
-                        onTap: () {
-                          Get.toNamed('/top-up');
-                        },
-                      ),
-                      const Gap(20),
-                      buildItemSettings(
-                        icon: 'assets/ic_key.png',
-                        title: 'Ganti Pin Dompet Ku',
-                        isDisable: !connectivity.isOnline.value,
-                        onTap: () {
-                          final pin = authVM.account.value?.pin;
-                          if (pin != null && pin.isNotEmpty) {
-                            Get.toNamed(
-                              '/pin',
-                              arguments: {'isForVerification': true},
-                            );
-                          } else {
-                            Get.toNamed('/pin-setup');
-                          }
-                        },
-                      ),
-                      const Gap(20),
-                      buildItemSettings(
-                        icon: 'assets/ic_logout.png',
-                        title: 'Keluar',
-                        isDisable: !connectivity.isOnline.value,
-                        onTap: () => authVM.logout(),
-                      ),
-                    ],
+        const Gap(20),
+        Expanded(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final containerHeight = constraints.maxHeight * 0.85;
+              return Align(
+                alignment: Alignment.topCenter,
+                child: SizedBox(
+                  height: containerHeight,
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 24),
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surface,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Column(
+                      children: [
+                        buildProfile(),
+                        const Gap(40),
+                        Expanded(
+                          child: ListView(
+                            padding: EdgeInsets.zero,
+                            children: [
+                              buildDarkMode(),
+                              const Gap(20),
+                              buildItemSettings(
+                                icon: 'assets/ic_profile.png',
+                                title: 'Sunting Profil',
+                                isDisable: !connectivity.isOnline.value,
+                                onTap: () {
+                                  Get.toNamed('/edit-profile');
+                                },
+                              ),
+                              const Gap(20),
+                              buildItemSettings(
+                                icon: 'assets/ic_wallet.png',
+                                title: 'Top Up Saldo',
+                                isDisable: !connectivity.isOnline.value,
+                                onTap: () {
+                                  Get.toNamed('/top-up');
+                                },
+                              ),
+                              const Gap(20),
+                              buildItemSettings(
+                                icon: 'assets/ic_key.png',
+                                title: 'Ganti Pin Dompet Ku',
+                                isDisable: !connectivity.isOnline.value,
+                                onTap: () {
+                                  final pin = authVM.account.value?.pin;
+                                  if (pin != null && pin.isNotEmpty) {
+                                    Get.toNamed(
+                                      '/pin',
+                                      arguments: {'isForVerification': true},
+                                    );
+                                  } else {
+                                    Get.toNamed('/pin-setup');
+                                  }
+                                },
+                              ),
+                              const Gap(20),
+                              buildItemSettings(
+                                icon: 'assets/ic_logout.png',
+                                title: 'Keluar',
+                                isDisable: !connectivity.isOnline.value,
+                                onTap: () => authVM.logout(),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ],
-            ),
+              );
+            },
           ),
         ),
-        const Gap(30),
+        const Gap(20),
       ],
     );
   }

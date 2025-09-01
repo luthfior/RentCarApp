@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dotted_line/dotted_line.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
@@ -8,28 +9,35 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:rent_car_app/data/models/booked_car.dart';
 
-Widget itemOrderCar(BookedCar bookedCar, EdgeInsetsGeometry margin) {
+Widget itemOrderCar(BuildContext context, {required BookedCar bookedCar}) {
   String statusText;
   Color statusColor;
 
-  if (bookedCar.status.toLowerCase().contains('menunggu')) {
-    statusText = 'Status: Menunggu untuk diproses.';
+  if (bookedCar.order.orderStatus.toLowerCase().contains('pending')) {
+    statusText = 'Status: Orderan sedang menunggu diproses.';
     statusColor = const Color(0xffFF5722);
-  } else if (bookedCar.status.toLowerCase().contains('berhasil')) {
-    statusText = 'Status: Berhasil diproses.';
+  } else if (bookedCar.order.orderStatus.toLowerCase().contains('success')) {
+    statusText = 'Status: Orderan dikonfirmasi oleh Penyewa.';
     statusColor = const Color.fromARGB(255, 76, 175, 80);
-  } else if (bookedCar.status.toLowerCase().contains('gagal')) {
-    statusText = 'Status: Gagal diproses.';
+  } else if (bookedCar.order.orderStatus.toLowerCase().contains('failed')) {
+    statusText = 'Status: Orderan dibatalkan oleh Penyewa.';
     statusColor = const Color.fromARGB(255, 244, 67, 54);
   } else {
     statusText = 'Status: Tidak diketahui.';
     statusColor = Colors.grey;
   }
 
+  // ignore: unnecessary_type_check
+  final String formattedDate = bookedCar.order.orderDate is Timestamp
+      ? DateFormat(
+          'dd MMMM yyyy HH:mm',
+        ).format(bookedCar.order.orderDate.toDate())
+      : bookedCar.order.orderDate.toString();
+
   return Container(
-    height: 130,
-    margin: margin,
-    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+    height: 175,
+    margin: const EdgeInsets.symmetric(vertical: 8),
+    padding: const EdgeInsets.fromLTRB(16, 6, 16, 8),
     decoration: BoxDecoration(
       color: Theme.of(Get.context!).colorScheme.surface,
       borderRadius: BorderRadius.circular(16),
@@ -178,15 +186,40 @@ Widget itemOrderCar(BookedCar bookedCar, EdgeInsetsGeometry margin) {
             ),
           ],
         ),
-        const Gap(10),
+        const Gap(24),
         const Expanded(
           child: DottedLine(
-            dashLength: 5,
-            dashGapLength: 5,
+            lineThickness: 2,
+            dashLength: 6,
+            dashGapLength: 6,
             dashColor: Color(0xffCECED5),
           ),
         ),
-        const Gap(10),
+        const Gap(8),
+        Row(
+          children: [
+            Text(
+              "Tanggal Order: ",
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: Theme.of(Get.context!).colorScheme.onSurface,
+              ),
+            ),
+            const Gap(10),
+            Expanded(
+              child: Text(
+                formattedDate,
+                style: GoogleFonts.poppins(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: Theme.of(Get.context!).colorScheme.onSurface,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const Gap(4),
         Row(
           children: [
             Container(
@@ -199,12 +232,14 @@ Widget itemOrderCar(BookedCar bookedCar, EdgeInsetsGeometry margin) {
               ),
             ),
             const Gap(10),
-            Text(
-              statusText,
-              style: GoogleFonts.poppins(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: Theme.of(Get.context!).colorScheme.onSurface,
+            Expanded(
+              child: Text(
+                statusText,
+                style: GoogleFonts.poppins(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: Theme.of(Get.context!).colorScheme.onSurface,
+                ),
               ),
             ),
           ],

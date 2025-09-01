@@ -16,40 +16,42 @@ import 'package:rent_car_app/presentation/widgets/offline_banner.dart';
 class BookingPage extends GetView<BookingViewModel> {
   BookingPage({super.key});
   final connectivity = Get.find<ConnectivityService>();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
         children: [
-          Column(
-            children: [
-              Gap(20 + MediaQuery.of(context).padding.top),
-              CustomHeader(title: 'Pemesanan'),
-              const Gap(20),
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      _snippetCar(),
-                      const Gap(10),
-                      _buildInput(context),
-                      const Gap(20),
-                      _buildAgency(),
-                      const Gap(20),
-                      _buildInsurance(),
-                      const Gap(20),
-                      _buildDriverOption(),
-                    ],
+          SafeArea(
+            child: Column(
+              children: [
+                CustomHeader(title: 'Pemesanan'),
+                const Gap(20),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        snippetCar(),
+                        const Gap(10),
+                        buildInput(context),
+                        const Gap(20),
+                        buildAgency(),
+                        const Gap(20),
+                        buildInsurance(),
+                        const Gap(20),
+                        buildDriverOption(),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
           const OfflineBanner(),
         ],
       ),
       bottomNavigationBar: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 0),
+        padding: const EdgeInsets.fromLTRB(24, 10, 24, 24),
         color: Colors.transparent,
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -64,14 +66,13 @@ class BookingPage extends GetView<BookingViewModel> {
               },
               text: 'Lanjutkan ke Pembayaran',
             ),
-            const Gap(20),
           ],
         ),
       ),
     );
   }
 
-  Widget _snippetCar() {
+  Widget snippetCar() {
     final String productName = controller.car.nameProduct.length > 16
         ? '${controller.car.nameProduct.substring(0, 14)}...'
         : controller.car.nameProduct;
@@ -142,7 +143,7 @@ class BookingPage extends GetView<BookingViewModel> {
                 style: GoogleFonts.poppins(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
-                  color: Theme.of(Get.context!).colorScheme.onSurface,
+                  color: const Color(0xffFF5722),
                 ),
               ),
               Text(
@@ -160,7 +161,7 @@ class BookingPage extends GetView<BookingViewModel> {
     );
   }
 
-  Widget _buildInput(BuildContext context) {
+  Widget buildInput(BuildContext context) {
     return Padding(
       padding: const EdgeInsetsGeometry.symmetric(horizontal: 24),
       child: Column(
@@ -178,7 +179,6 @@ class BookingPage extends GetView<BookingViewModel> {
           CustomInput(
             enable: connectivity.isOnline.value,
             icon: 'assets/ic_profile.png',
-            initialValue: controller.name.value,
             hint: controller.name.value.isNotEmpty
                 ? controller.name.value
                 : 'Nama Lengkap',
@@ -250,7 +250,7 @@ class BookingPage extends GetView<BookingViewModel> {
     );
   }
 
-  Widget _buildAgency() {
+  Widget buildAgency() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -335,7 +335,7 @@ class BookingPage extends GetView<BookingViewModel> {
     );
   }
 
-  Widget _buildInsurance() {
+  Widget buildInsurance() {
     return Obx(() {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -426,7 +426,7 @@ class BookingPage extends GetView<BookingViewModel> {
     });
   }
 
-  Widget _buildDriverOption() {
+  Widget buildDriverOption() {
     return Obx(() {
       final isWithDriver = controller.withDriver;
       return Padding(

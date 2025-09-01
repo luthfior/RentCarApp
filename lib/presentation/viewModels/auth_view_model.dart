@@ -9,25 +9,23 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthViewModel extends GetxController {
   Rx<Account?> account = Rx<Account?>(null);
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
-  @override
-  void onInit() {
-    super.onInit();
-    checkSession();
-  }
+  final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
   Future<void> checkSession() async {
-    await Future.delayed(const Duration(seconds: 2));
-
+    await Future.delayed(const Duration(seconds: 3));
     try {
       var user = await DSession.getUser();
       final prefs = await SharedPreferences.getInstance();
       bool isFirstTime = prefs.getBool('is_first_time') ?? true;
 
       if (user != null) {
-        await loadUser();
-        Get.offAllNamed('/discover', arguments: {'fragmentIndex': 0});
+        final success = await loadUser();
+        if (success) {
+          Get.offAllNamed('/discover', arguments: {'fragmentIndex': 0});
+        } else {
+          await DSession.removeUser();
+          Get.offAllNamed('/auth');
+        }
       } else if (isFirstTime) {
         await prefs.setBool("is_first_time", false);
         Get.offAllNamed('/onboarding');
@@ -40,36 +38,52 @@ class AuthViewModel extends GetxController {
     }
   }
 
-  Future<void> loadUser() async {
+  Future<bool> loadUser() async {
     final user = await DSession.getUser();
     if (user != null) {
       final userId = user['uid'] as String;
       try {
-        final docSnapshot = await _firestore
+        final userDocSnapshot = await firestore
             .collection('Users')
             .doc(userId)
             .get();
-        if (docSnapshot.exists) {
-          final updatedAccount = Account.fromJson(docSnapshot.data()!);
+        if (userDocSnapshot.exists) {
+          final updatedAccount = Account.fromJson(userDocSnapshot.data()!);
           account.value = updatedAccount;
-          await DSession.setUser(docSnapshot.data()!);
-        } else {
-          account.value = null;
+          await DSession.setUser(userDocSnapshot.data()!);
+          log('Data pengguna dari koleksi Users berhasil dimuat');
+          return true;
         }
+
+        final adminDocSnapshot = await firestore
+            .collection('Admin')
+            .doc(userId)
+            .get();
+        if (adminDocSnapshot.exists) {
+          final updatedAccount = Account.fromJson(adminDocSnapshot.data()!);
+          account.value = updatedAccount;
+          await DSession.setUser(adminDocSnapshot.data()!);
+          log('Data pengguna dari koleksi Admin berhasil dimuat');
+          return true;
+        }
+
+        account.value = null;
+        log('Data pengguna tidak ditemukan di Users maupun Admin');
+        return false;
       } catch (e) {
         log('Gagal memuat data pengguna dari Firebase: $e');
-        account.value = Account.fromJson(Map.from(user));
+        account.value = null;
+        return false;
       }
     } else {
       account.value = null;
+      return false;
     }
   }
 
   Future<void> logout() async {
     await DSession.removeUser().then((removed) {
-      if (!removed) {
-        return;
-      } else {
+      if (removed) {
         Get.offAllNamed('/auth', arguments: 'login');
       }
     });

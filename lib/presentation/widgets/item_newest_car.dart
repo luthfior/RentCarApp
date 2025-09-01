@@ -6,18 +6,10 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:rent_car_app/data/models/car.dart';
-import 'package:rent_car_app/data/services/connectivity_service.dart';
 
-Widget itemNewestCar(Car car, EdgeInsetsGeometry margin) {
-  final connectivity = Get.find<ConnectivityService>();
+Widget itemNewestCar(Car car, EdgeInsetsGeometry margin, VoidCallback onTap) {
   return GestureDetector(
-    onTap: () {
-      if (connectivity.isOnline.value) {
-        Get.toNamed('/detail', arguments: car.id);
-      } else {
-        null;
-      }
-    },
+    onTap: onTap,
     child: Container(
       height: 100,
       margin: margin,
@@ -30,7 +22,7 @@ Widget itemNewestCar(Car car, EdgeInsetsGeometry margin) {
         children: [
           SizedBox(
             width: 90,
-            height: 70,
+            height: 80,
             child: ClipRRect(
               borderRadius: BorderRadius.circular(12),
               child: ExtendedImage.network(
@@ -41,7 +33,7 @@ Widget itemNewestCar(Car car, EdgeInsetsGeometry margin) {
                     case LoadState.loading:
                       return const SizedBox(
                         width: 90,
-                        height: 70,
+                        height: 80,
                         child: Center(
                           child: CircularProgressIndicator(
                             valueColor: AlwaysStoppedAnimation<Color>(
@@ -54,14 +46,14 @@ Widget itemNewestCar(Car car, EdgeInsetsGeometry margin) {
                       return ExtendedImage(
                         image: state.imageProvider,
                         width: 90,
-                        height: 70,
+                        height: 80,
                         fit: BoxFit.cover,
                       );
                     case LoadState.failed:
                       return Image.asset(
                         'assets/splash_screen.png',
                         width: 90,
-                        height: 70,
+                        height: 80,
                       );
                   }
                 },
@@ -76,7 +68,7 @@ Widget itemNewestCar(Car car, EdgeInsetsGeometry margin) {
               children: [
                 Row(
                   children: [
-                    Expanded(
+                    Flexible(
                       child: Text(
                         car.nameProduct,
                         maxLines: 1,
@@ -100,11 +92,11 @@ Widget itemNewestCar(Car car, EdgeInsetsGeometry margin) {
                 ),
                 const Gap(4),
                 Text(
-                  car.categoryProduct,
+                  car.transmissionProduct,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.poppins(
-                    fontSize: 10,
+                    fontSize: 12,
                     fontWeight: FontWeight.w400,
                     color: Theme.of(Get.context!).colorScheme.secondary,
                   ),
@@ -130,6 +122,27 @@ Widget itemNewestCar(Car car, EdgeInsetsGeometry margin) {
                         fontSize: 10,
                         fontWeight: FontWeight.w400,
                         color: Theme.of(Get.context!).colorScheme.onSurface,
+                      ),
+                    ),
+                  ],
+                ),
+                const Gap(4),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Icon(
+                      Icons.location_pin,
+                      color: Theme.of(Get.context!).colorScheme.secondary,
+                      size: 12,
+                    ),
+                    Expanded(
+                      child: Text(
+                        " ${car.city}",
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w400,
+                          color: Theme.of(Get.context!).colorScheme.secondary,
+                        ),
                       ),
                     ),
                   ],

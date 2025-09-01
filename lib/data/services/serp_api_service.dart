@@ -4,7 +4,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
 class SerpApiService {
-  static final String _apiKey = dotenv.env['API_KEY'] ?? '';
+  static final String _apiKey = dotenv.env['SERP_API_KEY'] ?? '';
   static const _baseUrl = 'https://serpapi.com/search.json';
 
   static Future<String?> fetchImageForCar(

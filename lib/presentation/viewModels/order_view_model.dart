@@ -2,8 +2,11 @@ import 'dart:async';
 import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
+import 'package:intl/intl.dart';
+import 'package:rent_car_app/core/constants/message.dart';
 import 'package:rent_car_app/data/models/booked_car.dart';
-import 'package:rent_car_app/data/models/car.dart';
+import 'package:rent_car_app/data/sources/seller_source.dart';
 import 'package:rent_car_app/data/sources/user_source.dart';
 import 'package:rent_car_app/presentation/viewModels/auth_view_model.dart';
 
@@ -11,18 +14,27 @@ class OrderViewModel extends GetxController {
   final firestore = FirebaseFirestore.instance;
   final authVM = Get.find<AuthViewModel>();
   final userSource = UserSource();
+  final sellerSource = SellerSource();
 
   final status = ''.obs;
-  final bookedProducts = <BookedCar>[].obs;
-  StreamSubscription<QuerySnapshot>? _ordersSubscription;
+  final isSeller = false.obs;
+  final myOrders = <BookedCar>[].obs;
+  StreamSubscription<List<BookedCar>>? _ordersSubscription;
+  final hasShownTutorial = false.obs;
+  final box = GetStorage();
 
   @override
   void onInit() {
     super.onInit();
+    hasShownTutorial.value = box.read('hasShownSwipeTutorial') ?? false;
     if (authVM.account.value != null) {
-      fetchBookedCars();
+      isSeller.value =
+          authVM.account.value!.role == 'seller' ||
+          authVM.account.value!.role == 'admin';
+      startOrdersListener();
     } else {
-      bookedProducts.clear();
+      myOrders.clear();
+      status.value = 'empty';
     }
   }
 
@@ -32,59 +44,84 @@ class OrderViewModel extends GetxController {
     super.onClose();
   }
 
-  Future<void> fetchBookedCars() async {
+  void showTutorial() {
+    box.write('hasShownSwipeTutorial', true);
+    hasShownTutorial.value = true;
+  }
+
+  void dismissTutorial() {
+    box.write('hasShownSwipeTutorial', true);
+    hasShownTutorial.value = true;
+  }
+
+  Future<void> startOrdersListener() async {
     status.value = 'loading';
     final userId = authVM.account.value!.uid;
-    await _ordersSubscription?.cancel();
 
-    _ordersSubscription = firestore
-        .collection('Users')
-        .doc(userId)
-        .collection('bookedProducts')
-        .orderBy('timeStamp', descending: true)
-        .snapshots()
+    if (authVM.account.value?.uid == null) {
+      status.value = 'empty';
+      myOrders.clear();
+      return;
+    }
+
+    _ordersSubscription?.cancel();
+    _ordersSubscription = userSource
+        .fetchBookedCarStream(userId, isSeller.value)
         .listen(
-          (snapshot) async {
-            if (snapshot.docs.isEmpty) {
-              bookedProducts.clear();
+          (updatedOrders) {
+            if (updatedOrders.isEmpty) {
+              myOrders.clear();
               status.value = 'empty';
-              return;
-            }
-
-            final List<String> carIds = snapshot.docs
-                .map((doc) => doc.id)
-                .toList();
-
-            if (carIds.isNotEmpty) {
-              final carsSnapshot = await firestore
-                  .collection('Cars')
-                  .where(FieldPath.documentId, whereIn: carIds)
-                  .get();
-
-              final Map<String, Car> carMap = {
-                for (var doc in carsSnapshot.docs)
-                  doc.id: Car.fromJson(doc.data()),
-              };
-
-              final List<BookedCar> updatedBookedCars = snapshot.docs.map((
-                doc,
-              ) {
-                final car = carMap[doc.id];
-                final orderStatus = doc.data()['status'] as String;
-                return BookedCar(car: car!, status: orderStatus);
-              }).toList();
-
-              bookedProducts.value = updatedBookedCars;
-              status.value = 'success';
             } else {
-              bookedProducts.clear();
-              status.value = 'empty';
+              myOrders.value = updatedOrders;
+              status.value = 'success';
             }
           },
           onError: (error) {
-            log('Gagal fetch order: $error');
+            myOrders.clear();
             status.value = 'error';
+            log('Gagal Mengambil Data Order');
+            if (box.read('hasShownSwipeTutorial') != false) {
+              box.write('hasShownSwipeTutorial', false);
+              hasShownTutorial.value = false;
+            }
           },
         );
+    await Future.microtask(() => null);
+  }
+
+  Future<void> confirmOrder(String orderId) async {
+    try {
+      if (orderId.isEmpty) {
+        log('Gagal mengkonfirmasi pesanan: Order ID kosong');
+        Message.error('Gagal mengkonfirmasi pesanan. ID pesanan tidak valid.');
+        return;
+      }
+      await sellerSource.updateOrderStatus(orderId, 'success');
+      log('Pesanan dengan ID $orderId berhasil dikonfirmasi');
+    } catch (e) {
+      log('Gagal mengkonfirmasi pesanan: $e');
+      Message.error('Gagal mengkonfirmasi pesanan.');
+    }
+  }
+
+  Future<void> cancelOrder(String orderId) async {
+    try {
+      if (orderId.isEmpty) {
+        log('Gagal membatalkan pesanan: Order ID kosong');
+        Message.error('Gagal membatalkan pesanan. ID pesanan tidak valid.');
+        return;
+      }
+      await sellerSource.updateOrderStatus(orderId, 'failed');
+      log('Pesanan dengan ID $orderId berhasil dibatalkan');
+    } catch (e) {
+      log('Gagal membatalkan pesanan: $e');
+      Message.error('Gagal membatalkan pesanan.');
+    }
+  }
+
+  String formatDate(DateTime date) {
+    final orderDateFormatter = DateFormat("dd MMMM yyyy", "id_ID");
+    return orderDateFormatter.format(date);
   }
 }

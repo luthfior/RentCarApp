@@ -6,18 +6,10 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:rent_car_app/data/models/car.dart';
-import 'package:rent_car_app/data/services/connectivity_service.dart';
 
-Widget itemGridCar(Car car) {
-  final connectivity = Get.find<ConnectivityService>();
+Widget itemGridCar(Car car, VoidCallback onTap) {
   return GestureDetector(
-    onTap: () {
-      if (connectivity.isOnline.value) {
-        Get.toNamed('/detail', arguments: car.id);
-      } else {
-        null;
-      }
-    },
+    onTap: onTap,
     child: Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
@@ -117,6 +109,27 @@ Widget itemGridCar(Car car) {
               fontWeight: FontWeight.w400,
               color: Theme.of(Get.context!).colorScheme.secondary,
             ),
+          ),
+          const Gap(4),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Icon(
+                Icons.location_pin,
+                color: Theme.of(Get.context!).colorScheme.secondary,
+                size: 12,
+              ),
+              Expanded(
+                child: Text(
+                  " ${car.city}",
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400,
+                    color: Theme.of(Get.context!).colorScheme.secondary,
+                  ),
+                ),
+              ),
+            ],
           ),
           const Gap(16),
           Row(

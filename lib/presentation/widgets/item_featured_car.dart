@@ -25,13 +25,14 @@ Widget itemFeaturedCar(Car car, EdgeInsetsGeometry margin, bool isTrending) {
     child: Container(
       width: 245,
       margin: margin,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
       decoration: BoxDecoration(
         color: Theme.of(Get.context!).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           Stack(
             children: [
@@ -103,7 +104,7 @@ Widget itemFeaturedCar(Car car, EdgeInsetsGeometry margin, bool isTrending) {
                 ),
             ],
           ),
-          const Gap(10),
+          const Gap(16),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -178,6 +179,27 @@ Widget itemFeaturedCar(Car car, EdgeInsetsGeometry margin, bool isTrending) {
                     ),
                   ),
                 ],
+              ),
+            ],
+          ),
+          const Gap(4),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Icon(
+                Icons.location_pin,
+                color: Theme.of(Get.context!).colorScheme.secondary,
+                size: 12,
+              ),
+              Expanded(
+                child: Text(
+                  " ${car.city}",
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400,
+                    color: Theme.of(Get.context!).colorScheme.secondary,
+                  ),
+                ),
               ),
             ],
           ),

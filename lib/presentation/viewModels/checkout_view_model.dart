@@ -2,7 +2,6 @@ import 'dart:developer';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:rent_car_app/core/constants/message.dart';
-import 'package:rent_car_app/data/models/account.dart';
 import 'package:rent_car_app/data/models/car.dart';
 import 'package:rent_car_app/data/sources/car_source.dart';
 import 'package:rent_car_app/data/sources/user_source.dart';
@@ -45,19 +44,18 @@ class CheckoutViewModel extends GetxController {
     insurance = arguments['insurance'] as String?;
     withDriver = arguments['withDriver'] as bool;
     _calculateCosts();
-    authVM.loadUser();
 
-    ever(authVM.account, (Account? account) {
-      if (account != null) {
-        userBalance.value = account.balance;
-        hasPin.value = account.pin != null && account.pin!.isNotEmpty;
-        log('User account updated. hasPin: ${hasPin.value}');
-      } else {
-        userBalance.value = null;
-        hasPin.value = false;
-        log('User account is null. hasPin: ${hasPin.value}');
-      }
-    });
+    if (authVM.account.value != null) {
+      userBalance.value = authVM.account.value!.balance;
+      hasPin.value =
+          authVM.account.value!.pin != null &&
+          authVM.account.value!.pin!.isNotEmpty;
+      log('User account updated. hasPin: ${hasPin.value}');
+    } else {
+      userBalance.value = null;
+      hasPin.value = false;
+      log('User account is null. hasPin: ${hasPin.value}');
+    }
   }
 
   void _calculateCosts() {
@@ -127,18 +125,21 @@ class CheckoutViewModel extends GetxController {
   Future<void> processPayment(String enteredPin) async {
     try {
       final userId = authVM.account.value?.uid;
-      if (userId == null) {
-        throw Exception('User tidak terauntentikasi');
+      final sellerOrAdmin = car.ownerId;
+      if (userId != null || sellerOrAdmin.isEmpty) {
+        await userSource.updateUserBalance(userId!, finalTotal);
+        log('Saldo berhasil dipotong');
+
+        await CarSource.updatePurchasedProduct(car.id);
+        log('Jumlah produk yang disewa berhasil diupdate');
+
+        await UserSource().createOrder(authVM.account.value!, car);
+        log(
+          'Produk berhasil ditambahkan ke riwayat pesanan customer: $userId dan seller: $sellerOrAdmin',
+        );
+      } else {
+        throw Exception('User atau pemilik mobil tidak terautentikasi');
       }
-
-      await userSource.updateUserBalance(userId, finalTotal);
-      log('Saldo berhasil dipotong');
-
-      await CarSource.updatePurchasedProduct(car.id);
-      log('Jumlah produk yang disewa berhasil diupdate');
-
-      await userSource.bookProduct(userId, car);
-      log('Produk berhasil ditambahkan ke riwayat pesanan');
     } catch (e) {
       log('Gagal memproses pembayaran: $e');
       Message.error('Pembayaran gagal: ${e.toString()}');

@@ -25,10 +25,19 @@ class OnBoardingPage extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Gap(20 + MediaQuery.of(context).padding.top),
-                        Image.asset('assets/logo_text_16_9.png', height: 90),
+                        ColorFiltered(
+                          colorFilter: ColorFilter.mode(
+                            Theme.of(context).colorScheme.onSurface,
+                            BlendMode.srcIn,
+                          ),
+                          child: Image.asset(
+                            'assets/logo_text_16_9.png',
+                            height: 90,
+                          ),
+                        ),
                         const Gap(10),
                         Text(
-                          'Bebas Berkendara, Tanpa Beli Mobil',
+                          ' ',
                           style: GoogleFonts.poppins(
                             fontSize: 18,
                             fontWeight: FontWeight.w700,
@@ -52,7 +61,7 @@ class OnBoardingPage extends StatelessWidget {
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 24),
                           child: Text(
-                            'Nikmati kemudahan menyewa mobil langsung dari genggamanmu, kapan saja, dan di mana saja.',
+                            'Nikmati kemudahan menyewa mobil langsung dari genggamanmu, kapan saja dan di mana saja.',
                             style: GoogleFonts.poppins(
                               fontSize: 16,
                               fontWeight: FontWeight.w500,

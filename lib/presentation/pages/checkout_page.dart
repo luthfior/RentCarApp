@@ -20,34 +20,35 @@ class CheckoutPage extends GetView<CheckoutViewModel> {
     return Scaffold(
       body: Stack(
         children: [
-          Column(
-            children: [
-              Gap(20 + MediaQuery.of(context).padding.top),
-              CustomHeader(title: 'Pembayaran'),
-              const Gap(20),
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      _snippetCar(),
-                      const Gap(20),
-                      _buildReceipt(),
-                      const Gap(20),
-                      _buildPaymentMethod(),
-                      const Gap(20),
-                      _buildWallet(),
-                      const Gap(20),
-                    ],
+          SafeArea(
+            child: Column(
+              children: [
+                CustomHeader(title: 'Pembayaran'),
+                const Gap(20),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        snippetCar(),
+                        const Gap(20),
+                        buildReceipt(),
+                        const Gap(20),
+                        buildPaymentMethod(),
+                        const Gap(20),
+                        buildWallet(),
+                        const Gap(20),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
           const OfflineBanner(),
         ],
       ),
       bottomNavigationBar: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 0),
+        padding: const EdgeInsets.fromLTRB(24, 10, 24, 24),
         color: Colors.transparent,
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -62,14 +63,13 @@ class CheckoutPage extends GetView<CheckoutViewModel> {
               },
               text: 'Bayar Sekarang',
             ),
-            const Gap(20),
           ],
         ),
       ),
     );
   }
 
-  Widget _snippetCar() {
+  Widget snippetCar() {
     final String productName = controller.car.nameProduct.length > 16
         ? '${controller.car.nameProduct.substring(0, 14)}...'
         : controller.car.nameProduct;
@@ -157,7 +157,7 @@ class CheckoutPage extends GetView<CheckoutViewModel> {
     );
   }
 
-  Widget _buildReceipt() {
+  Widget buildReceipt() {
     Widget buildReceiptRow(
       String title,
       String value, {
@@ -282,7 +282,7 @@ class CheckoutPage extends GetView<CheckoutViewModel> {
     );
   }
 
-  Widget _buildPaymentMethod() {
+  Widget buildPaymentMethod() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -372,7 +372,7 @@ class CheckoutPage extends GetView<CheckoutViewModel> {
     );
   }
 
-  Widget _buildWallet() {
+  Widget buildWallet() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Stack(
@@ -390,7 +390,7 @@ class CheckoutPage extends GetView<CheckoutViewModel> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  '${controller.nameOrder}',
+                  controller.authVM.account.value!.name,
                   style: GoogleFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.w400,

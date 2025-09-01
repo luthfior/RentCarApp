@@ -16,10 +16,9 @@ class PinViewModel extends GetxController {
     this.car,
   });
 
-  final AuthViewModel authVM = Get.find<AuthViewModel>();
-
+  final authVM = Get.find<AuthViewModel>();
+  final discoverVM = Get.find<DiscoverViewModel>();
   late Car? car;
-
   final pin1 = TextEditingController();
   final pin2 = TextEditingController();
   final pin3 = TextEditingController();
@@ -93,9 +92,8 @@ class PinViewModel extends GetxController {
       if (isChangingPin) {
         await userSource.updatePin(userId, pin);
         Message.success('Pin berhasil diubah');
-        await authVM.loadUser();
         Get.until((route) => route.settings.name == '/discover');
-        Get.find<DiscoverViewModel>().setFragmentIndex(3);
+        discoverVM.setFragmentIndex(3);
       } else {
         await userSource.createPin(userId, pin);
         if (Get.isRegistered<CheckoutViewModel>()) {
@@ -105,7 +103,7 @@ class PinViewModel extends GetxController {
         } else {
           Message.success('PIN berhasil dibuat');
           Get.until((route) => route.settings.name == '/discover');
-          Get.find<DiscoverViewModel>().setFragmentIndex(3);
+          discoverVM.setFragmentIndex(3);
         }
       }
     } catch (e) {
@@ -139,7 +137,7 @@ class PinViewModel extends GetxController {
           );
           await Future.delayed(const Duration(seconds: 2));
           Get.until((route) => route.settings.name == '/discover');
-          Get.find<DiscoverViewModel>().setFragmentIndex(3);
+          discoverVM.setFragmentIndex(3);
         } else {
           Message.error(
             'PIN yang Anda masukkan salah. Anda masih memiliki ${3 - _failedAttempts.value} kali percobaan lagi.',
@@ -166,8 +164,7 @@ class PinViewModel extends GetxController {
 
       final checkoutVm = Get.find<CheckoutViewModel>();
       await checkoutVm.processPayment(enteredPin);
-      await authVM.loadUser();
-      Message.success('Pembayaran berhasil!');
+      Message.success('Pembayaran berhasil. Pesanan telah dibuat!');
       Get.offAllNamed(
         '/complete',
         arguments: {'fragmentIndex': 0, 'bookedCar': car},
@@ -184,7 +181,7 @@ class PinViewModel extends GetxController {
           );
           await Future.delayed(const Duration(seconds: 2));
           Get.until((route) => route.settings.name == '/discover');
-          Get.find<DiscoverViewModel>().setFragmentIndex(0);
+          discoverVM.setFragmentIndex(0);
         } else {
           Message.error(
             'PIN yang Anda masukkan salah. Anda masih memiliki ${3 - _failedAttempts.value} kali percobaan lagi.',

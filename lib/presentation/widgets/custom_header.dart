@@ -19,17 +19,10 @@ class CustomHeader extends StatelessWidget {
     this.onBackTap,
   });
 
-  final Widget _backIcon = Image.asset(
-    'assets/ic_arrow_back.png',
-    height: 24,
-    width: 24,
-    color: Theme.of(Get.context!).colorScheme.onSurface,
-  );
-
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
+      padding: const EdgeInsets.fromLTRB(24, 20, 24, 10),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -54,7 +47,12 @@ class CustomHeader extends StatelessWidget {
                   color: Theme.of(Get.context!).colorScheme.surface,
                 ),
                 alignment: Alignment.center,
-                child: _backIcon,
+                child: Image.asset(
+                  'assets/ic_arrow_back.png',
+                  height: 24,
+                  width: 24,
+                  color: Theme.of(Get.context!).colorScheme.onSurface,
+                ),
               ),
             )
           else

@@ -2,22 +2,22 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:get/get.dart';
 
 class ConnectivityService extends GetxController {
-  final _connectivity = Connectivity();
+  final connectivity = Connectivity();
   final isOnline = true.obs;
 
   @override
   void onInit() {
     super.onInit();
-    _connectivity.onConnectivityChanged.listen((results) {
+    connectivity.onConnectivityChanged.listen((results) {
       isOnline.value =
           results.contains(ConnectivityResult.mobile) ||
           results.contains(ConnectivityResult.wifi);
     });
-    _initConnectivity();
+    initConnectivity();
   }
 
-  Future<void> _initConnectivity() async {
-    final results = await _connectivity.checkConnectivity();
+  Future<void> initConnectivity() async {
+    final results = await connectivity.checkConnectivity();
     isOnline.value =
         results.contains(ConnectivityResult.mobile) ||
         results.contains(ConnectivityResult.wifi);

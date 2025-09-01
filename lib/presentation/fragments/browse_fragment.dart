@@ -35,29 +35,42 @@ class BrowseFragment extends GetView<BrowseViewModel> {
           if (status != 'success') {
             return Center(child: FailedUi(message: status));
           }
-          return ListView(
-            padding: const EdgeInsets.all(0),
-            children: [
-              Gap(20 + MediaQuery.of(context).padding.top),
-              buildHeader(context),
-              Obx(() => buildBookingStatus()),
-              Obx(() {
-                if (controller.currentView.value == 'search') {
-                  return buildSearchProducts();
-                } else {
-                  return Column(
-                    children: [
-                      chipCategories(controller.categories),
-                      const Gap(20),
-                      buildPopular(),
-                      const Gap(20),
-                      buildNewest(),
-                    ],
-                  );
-                }
-              }),
-              const Gap(100),
-            ],
+          return SafeArea(
+            child: Column(
+              children: [
+                buildHeader(context),
+                Expanded(
+                  child: RefreshIndicator(
+                    onRefresh: () async {
+                      await controller.startCarListeners();
+                    },
+                    child: ListView(
+                      padding: const EdgeInsets.all(0),
+                      children: [
+                        Obx(() => buildBookingStatus()),
+                        Obx(() {
+                          if (controller.currentView.value == 'search') {
+                            return buildSearchProducts(controller.car.value!);
+                          } else {
+                            return Column(
+                              children: [
+                                const Gap(10),
+                                chipCategories(controller.categories),
+                                const Gap(20),
+                                buildPopular(),
+                                const Gap(20),
+                                buildNewest(),
+                              ],
+                            );
+                          }
+                        }),
+                        const Gap(100),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
           );
         }),
       ],
@@ -66,7 +79,7 @@ class BrowseFragment extends GetView<BrowseViewModel> {
 
   Widget buildHeader(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
+      padding: const EdgeInsets.fromLTRB(24, 20, 24, 10),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -102,10 +115,7 @@ class BrowseFragment extends GetView<BrowseViewModel> {
                     width: 2,
                   ),
                 ),
-                contentPadding: const EdgeInsets.symmetric(
-                  vertical: 14,
-                  horizontal: 16,
-                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                 prefixIcon: const Icon(Icons.search),
                 suffixIcon: Obx(() {
                   if (controller.searchQuery.isNotEmpty) {
@@ -223,7 +233,7 @@ class BrowseFragment extends GetView<BrowseViewModel> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+          padding: const EdgeInsets.fromLTRB(24, 0, 24, 10),
           child: Text(
             'Populer',
             style: GoogleFonts.poppins(
@@ -233,9 +243,8 @@ class BrowseFragment extends GetView<BrowseViewModel> {
             ),
           ),
         ),
-        const Gap(10),
         SizedBox(
-          height: 250,
+          height: 275,
           child: ListView.builder(
             itemCount: controller.featuredList.length,
             scrollDirection: Axis.horizontal,
@@ -280,14 +289,20 @@ class BrowseFragment extends GetView<BrowseViewModel> {
               top: index == 0 ? 10 : 9,
               bottom: index == controller.newestList.length - 1 ? 16 : 9,
             );
-            return itemNewestCar(car, margin);
+            return itemNewestCar(car, margin, () {
+              if (connectivity.isOnline.value) {
+                Get.toNamed('/detail', arguments: car.id);
+              } else {
+                null;
+              }
+            });
           },
         ),
       ],
     );
   }
 
-  Widget buildSearchProducts() {
+  Widget buildSearchProducts(Car car) {
     return Padding(
       padding: const EdgeInsetsGeometry.symmetric(horizontal: 24),
       child: Column(
@@ -320,6 +335,13 @@ class BrowseFragment extends GetView<BrowseViewModel> {
               child: itemNewestCar(
                 controller.searchResults.first,
                 EdgeInsets.zero,
+                () {
+                  if (connectivity.isOnline.value) {
+                    Get.toNamed('/detail', arguments: car.id);
+                  } else {
+                    null;
+                  }
+                },
               ),
             )
           else
@@ -335,7 +357,13 @@ class BrowseFragment extends GetView<BrowseViewModel> {
               ),
               itemBuilder: (context, index) {
                 final car = controller.searchResults[index];
-                return itemGridCar(car);
+                return itemGridCar(car, () {
+                  if (connectivity.isOnline.value) {
+                    Get.toNamed('/detail', arguments: car.id);
+                  } else {
+                    null;
+                  }
+                });
               },
             ),
         ],

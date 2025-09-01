@@ -1,11 +1,14 @@
+import 'dart:async';
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:rent_car_app/data/services/serp_api_service.dart';
 import 'package:rent_car_app/data/sources/car_source.dart';
 import 'package:rent_car_app/data/models/car.dart';
+import 'package:rent_car_app/presentation/viewModels/auth_view_model.dart';
 
 class BrowseViewModel extends GetxController {
   final Rx<Car?> car = Rx<Car?>(null);
+  final authVM = Get.find<AuthViewModel>();
 
   final _featuredList = <Car>[].obs;
   List<Car> get featuredList => _featuredList;
@@ -15,8 +18,8 @@ class BrowseViewModel extends GetxController {
   List<Car> get newestList => _newestList;
   set newestList(List<Car> value) => _newestList.value = value;
 
-  List<Car> _allFeaturedList = [];
-  List<Car> _allNewestList = [];
+  final List<Car> _allFeaturedList = [];
+  final List<Car> _allNewestList = [];
 
   final _status = ''.obs;
   String get status => _status.value;
@@ -34,12 +37,16 @@ class BrowseViewModel extends GetxController {
   final _currentView = 'home'.obs;
   RxString get currentView => _currentView;
 
+  StreamSubscription<List<Car>>? _featuredSubscription;
+  StreamSubscription<List<Car>>? _newestSubscription;
+
   @override
   void onInit() {
     super.onInit();
-    fetchAllCars();
-    fetchCategories();
-
+    if (authVM.account.value != null) {
+      startCarListeners();
+      fetchCategories();
+    }
     searchController.addListener(() {
       _searchQuery.value = searchController.text;
     });
@@ -47,6 +54,8 @@ class BrowseViewModel extends GetxController {
 
   @override
   void onClose() {
+    _featuredSubscription?.cancel();
+    _newestSubscription?.cancel();
     searchController.dispose();
     super.onClose();
   }
@@ -62,19 +71,23 @@ class BrowseViewModel extends GetxController {
     categories.assignAll(result);
   }
 
-  Future<void> fetchAllCars() async {
+  Future<void> startCarListeners() async {
     status = 'loading';
+    _featuredSubscription?.cancel();
+    _newestSubscription?.cancel();
+
     try {
-      final featuredCars = await CarSource.fetchFeatureCars();
-      final newestCars = await CarSource.fetchNewestCars();
-      if (featuredCars != null) {
-        _allFeaturedList = featuredCars;
-        _allFeaturedList.sort((a, b) {
-          int comparePurchased = b.purchasedProduct.compareTo(
+      _featuredSubscription = CarSource.fetchFeaturedCarsStream().listen((
+        cars,
+      ) {
+        _allFeaturedList.clear();
+        _allFeaturedList.addAll(cars);
+        cars.sort((a, b) {
+          int comparedPurchased = b.purchasedProduct.compareTo(
             a.purchasedProduct,
           );
-          if (comparePurchased != 0) {
-            return comparePurchased;
+          if (comparedPurchased != 0) {
+            return comparedPurchased;
           }
           int compareRating = b.ratingProduct.compareTo(a.ratingProduct);
           if (compareRating != 0) {
@@ -82,56 +95,36 @@ class BrowseViewModel extends GetxController {
           }
           return a.nameProduct.compareTo(b.nameProduct);
         });
+        _featuredList.assignAll(cars);
+        log('Fetch mobil populer secara real-time.');
+        status = 'success';
+      });
+    } catch (e) {
+      log('Gagal fetch mobil terbaru secara real-time.');
+      status = 'error';
+    }
 
-        for (var car in featuredCars) {
-          if (car.imageProduct.isEmpty) {
-            final imageUrl = await SerpApiService.fetchImageForCar(
-              car.nameProduct,
-              car.releaseProduct.toString(),
-            );
-            if (imageUrl != null) {
-              await CarSource.updateImageProduct(car.id, imageUrl);
-              car.imageProduct = imageUrl;
-            }
-          }
-        }
-        featuredList = _allFeaturedList;
-      } else {
-        status = 'Failed to fetch featured cars';
-        return;
-      }
-
-      if (newestCars != null) {
-        _allNewestList = newestCars;
-        _allNewestList.sort((a, b) {
+    try {
+      _newestSubscription = CarSource.fetchNewestCarsStream().listen((cars) {
+        _allNewestList.clear();
+        _allNewestList.addAll(cars);
+        cars.sort((a, b) {
           int compareReleased = b.releaseProduct.compareTo(a.releaseProduct);
           if (compareReleased != 0) {
             return compareReleased;
           }
           return a.nameProduct.compareTo(b.nameProduct);
         });
-        for (var car in newestCars) {
-          if (car.imageProduct.isEmpty) {
-            final imageUrl = await SerpApiService.fetchImageForCar(
-              car.nameProduct,
-              car.releaseProduct.toString(),
-            );
-            if (imageUrl != null) {
-              await CarSource.updateImageProduct(car.id, imageUrl);
-              car.imageProduct = imageUrl;
-            }
-          }
-        }
-        newestList = _allNewestList;
-      } else {
-        status = 'Failed to fetch newest cars';
-        return;
-      }
-
-      status = 'success';
+        _newestList.assignAll(cars);
+        log('Fetch mobil terbaru secara real-time.');
+        status = 'success';
+      });
     } catch (e) {
+      log('Gagal fetch mobil terbaru secara real-time.');
       status = 'error';
     }
+
+    await Future.microtask(() => null);
   }
 
   void filterCars(String category) {

@@ -17,8 +17,9 @@ class ChattingPage extends GetView<ChatViewModel> {
   ChattingPage({super.key});
 
   final connectivity = Get.find<ConnectivityService>();
+  final discoverVM = Get.find<DiscoverViewModel>();
 
-  String _formatTime(Timestamp? timestamp) {
+  String formatTime(Timestamp? timestamp) {
     if (timestamp == null) {
       return '';
     }
@@ -28,22 +29,40 @@ class ChattingPage extends GetView<ChatViewModel> {
 
   @override
   Widget build(BuildContext context) {
+    final args = Get.arguments as Map<String, dynamic>;
+    final from = args['from'] as String? ?? 'listchat';
+    final currentUser = controller.authVM.account.value;
+    if (currentUser == null) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(Color(0xffFF5722)),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       body: Stack(
         children: [
-          Column(
-            children: [
-              Gap(20 + MediaQuery.of(context).padding.top),
-              CustomHeader(
-                title: 'Chat',
-                onBackTap: () {
-                  Get.until((route) => route.settings.name == '/discover');
-                  Get.find<DiscoverViewModel>().setFragmentIndex(0);
-                },
-              ),
-              Expanded(child: _buildChat()),
-              inputChat(controller.authVM.account.value!.uid),
-            ],
+          SafeArea(
+            child: Column(
+              children: [
+                CustomHeader(
+                  title: 'Chat',
+                  onBackTap: () {
+                    if (from == 'detail') {
+                      Get.back();
+                    } else {
+                      Get.until((route) => route.settings.name == '/discover');
+                      discoverVM.setFragmentIndex(2);
+                    }
+                  },
+                ),
+                Expanded(child: buildChat()),
+                inputChat(currentUser.uid),
+              ],
+            ),
           ),
           const OfflineBanner(),
         ],
@@ -51,7 +70,7 @@ class ChattingPage extends GetView<ChatViewModel> {
     );
   }
 
-  Widget _snippetCar(Map car) {
+  Widget snippetCar(Map car) {
     final String productName = car['nameProduct'].length > 16
         ? '${car['nameProduct'].substring(0, 14)}...'
         : car['nameProduct'];
@@ -59,7 +78,7 @@ class ChattingPage extends GetView<ChatViewModel> {
     return Container(
       height: 80,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      margin: const EdgeInsets.only(top: 24),
+      margin: const EdgeInsets.only(top: 8),
       decoration: BoxDecoration(
         color: Theme.of(Get.context!).colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
@@ -114,13 +133,11 @@ class ChattingPage extends GetView<ChatViewModel> {
               Get.toNamed('/detail', arguments: car['id'].toString());
             },
             child: Text(
-              'Lihat Detail',
+              'Booking',
               style: GoogleFonts.poppins(
-                decorationThickness: 1,
-                decoration: TextDecoration.underline,
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: Theme.of(Get.context!).colorScheme.onSurface,
+                color: const Color(0xffFF5722),
               ),
             ),
           ),
@@ -129,7 +146,7 @@ class ChattingPage extends GetView<ChatViewModel> {
     );
   }
 
-  Widget _buildChat() {
+  Widget buildChat() {
     return Obx(() {
       if (controller.streamChat == null) {
         return const Center(child: Text('Memuat Chat...'));
@@ -144,10 +161,13 @@ class ChattingPage extends GetView<ChatViewModel> {
               ),
             );
           }
-          if (snapshot.data!.docs.isEmpty) {
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
             return const Center(child: Text('Chat kosong'));
           }
+
           final list = snapshot.data!.docs.toList();
+          final Set<String> skippedIds = {};
+
           Chat? firstChatWithProduct;
           for (var doc in list) {
             final chat = Chat.fromJson(doc.data());
@@ -156,36 +176,70 @@ class ChattingPage extends GetView<ChatViewModel> {
               break;
             }
           }
+
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Column(
               children: [
                 if (firstChatWithProduct != null) ...[
-                  _snippetCar(firstChatWithProduct.productDetail!),
+                  snippetCar(firstChatWithProduct.productDetail!),
                   const Gap(16),
                   const DottedLine(
-                    lineThickness: 1,
+                    lineThickness: 2,
                     dashLength: 6,
                     dashGapLength: 6,
                     dashColor: Color(0xff393e52),
                   ),
                 ],
                 Expanded(
-                  child: ListView.builder(
-                    padding: EdgeInsets.only(
-                      top: (firstChatWithProduct != null) ? 12 : 0,
+                  child: Align(
+                    alignment: Alignment.topCenter,
+                    child: ListView.builder(
+                      padding: EdgeInsets.only(
+                        top: (firstChatWithProduct != null) ? 12 : 0,
+                        bottom: 8,
+                      ),
+                      reverse: true,
+                      shrinkWrap: true,
+                      itemCount: list.length,
+                      itemBuilder: (context, index) {
+                        Chat chat = Chat.fromJson(list[index].data());
+
+                        if (skippedIds.contains(chat.chatId)) {
+                          return const SizedBox.shrink();
+                        }
+
+                        if (chat.productDetail != null) {
+                          Chat? nextChat;
+                          if (index + 1 < list.length) {
+                            nextChat = Chat.fromJson(list[index + 1].data());
+                          }
+
+                          if (nextChat != null &&
+                              nextChat.senderId == controller.ownerId &&
+                              nextChat.message.isNotEmpty) {
+                            skippedIds.add(nextChat.chatId);
+                          }
+
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              productSnippetInChat(chat.productDetail!),
+                              const SizedBox(height: 8),
+
+                              if (chat.message.isNotEmpty)
+                                chatBubble(chat, index == list.length - 1),
+
+                              if (nextChat != null &&
+                                  nextChat.message.isNotEmpty)
+                                chatBubble(nextChat, false),
+                            ],
+                          );
+                        }
+
+                        return chatBubble(chat, index == list.length - 1);
+                      },
                     ),
-                    reverse: true,
-                    itemCount: list.length,
-                    itemBuilder: (context, index) {
-                      Chat chat = Chat.fromJson(list[index].data());
-                      final isFirstMessageOnScreen = index == list.length - 1;
-                      if (chat.senderId == 'customerService') {
-                        return _chatAdmin(chat);
-                      } else {
-                        return _chatUser(chat, isFirstMessageOnScreen);
-                      }
-                    },
                   ),
                 ),
               ],
@@ -196,76 +250,24 @@ class ChattingPage extends GetView<ChatViewModel> {
     });
   }
 
-  Widget _chatUser(Chat chat, bool isFirstMessage) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        Container(
-          padding: const EdgeInsets.all(10),
-          margin: EdgeInsets.only(top: isFirstMessage ? 18 : 14),
-          decoration: BoxDecoration(
-            color: Theme.of(Get.context!).colorScheme.surface,
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Flexible(
-                child: Text(
-                  chat.message,
-                  style: GoogleFonts.poppins(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Theme.of(Get.context!).colorScheme.onSurface,
-                  ),
-                ),
-              ),
-              const Gap(12),
-              Text(
-                _formatTime(chat.timeStamp),
-                style: GoogleFonts.poppins(
-                  fontSize: 10,
-                  color: Theme.of(
-                    Get.context!,
-                  ).colorScheme.onSurface.withAlpha(127),
-                ),
-              ),
-            ],
-          ),
-        ),
-        const Gap(12),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            Expanded(
-              child: Text(
-                controller.username.toString(),
-                textAlign: TextAlign.end,
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: Theme.of(Get.context!).colorScheme.onSurface,
-                ),
-              ),
-            ),
-            const Gap(8),
-            Image.asset('assets/chat_profile.png', width: 30, height: 30),
-          ],
-        ),
-      ],
-    );
-  }
+  Widget chatBubble(Chat chat, bool isFirstMessage) {
+    final currentUser = controller.authVM.account.value;
+    final isCurrentUser = chat.senderId == currentUser?.uid;
 
-  Widget _chatAdmin(Chat chat) {
+    final partner = isCurrentUser ? currentUser : controller.partner;
+
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: isCurrentUser
+          ? CrossAxisAlignment.end
+          : CrossAxisAlignment.start,
       children: [
         Container(
-          margin: const EdgeInsets.only(top: 12),
+          margin: EdgeInsets.only(top: isFirstMessage ? 0 : 24),
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: Theme.of(Get.context!).colorScheme.surface,
+            color: isCurrentUser
+                ? const Color(0xffFF5722).withAlpha(50)
+                : Theme.of(Get.context!).colorScheme.surface,
             borderRadius: BorderRadius.circular(16),
           ),
           child: Row(
@@ -282,43 +284,53 @@ class ChattingPage extends GetView<ChatViewModel> {
                   ),
                 ),
               ),
-              const Gap(12),
+              const Gap(8),
               Text(
-                _formatTime(chat.timeStamp),
+                formatTime(chat.timeStamp),
                 style: GoogleFonts.poppins(
                   fontSize: 10,
                   color: Theme.of(
                     Get.context!,
-                  ).colorScheme.onSurface.withAlpha(127),
+                  ).colorScheme.onSurface.withAlpha(128),
                 ),
               ),
             ],
           ),
         ),
-        const Gap(12),
+        const Gap(6),
         Row(
-          mainAxisAlignment: MainAxisAlignment.start,
+          mainAxisAlignment: isCurrentUser
+              ? MainAxisAlignment.end
+              : MainAxisAlignment.start,
           children: [
-            Container(
-              padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(50),
+            if (!isCurrentUser) ...[
+              CircleAvatar(
+                radius: 14,
+                backgroundImage: (partner?.photoUrl?.isNotEmpty ?? false)
+                    ? NetworkImage(partner!.photoUrl!)
+                    : const AssetImage('assets/ic_profile.png')
+                          as ImageProvider,
               ),
-              child: Image.asset('assets/logo_app.png', width: 25, height: 25),
-            ),
-            const Gap(8),
-            Expanded(
-              child: Text(
-                chat.senderId,
-                textAlign: TextAlign.start,
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: Theme.of(Get.context!).colorScheme.onSurface,
-                ),
+              const Gap(8),
+            ],
+            Text(
+              partner?.name ?? "Loading...",
+              style: GoogleFonts.poppins(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: Theme.of(Get.context!).colorScheme.onSurface,
               ),
             ),
+            if (isCurrentUser) ...[
+              const Gap(8),
+              CircleAvatar(
+                radius: 14,
+                backgroundImage: (partner?.photoUrl?.isNotEmpty ?? false)
+                    ? NetworkImage(partner!.photoUrl!)
+                    : const AssetImage('assets/ic_profile.png')
+                          as ImageProvider,
+              ),
+            ],
           ],
         ),
       ],
@@ -367,6 +379,90 @@ class ChattingPage extends GetView<ChatViewModel> {
               ),
               child: Image.asset('assets/ic_send.png', height: 24, width: 24),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget productSnippetInChat(Map car) {
+    final String productName = car['nameProduct'].length > 16
+        ? '${car['nameProduct'].substring(0, 14)}...'
+        : car['nameProduct'];
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(0, 12, 80, 0),
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Theme.of(Get.context!).colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "Kamu bertanya tentang produk ini",
+            style: GoogleFonts.poppins(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: Theme.of(Get.context!).colorScheme.secondary,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              ExtendedImage.network(
+                car['imageProduct'],
+                width: 60,
+                height: 60,
+                fit: BoxFit.cover,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      productName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Theme.of(Get.context!).colorScheme.onSurface,
+                      ),
+                    ),
+                    Text(
+                      car['transmissionProduct'],
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        color: Theme.of(Get.context!).colorScheme.secondary,
+                      ),
+                    ),
+                    Text(
+                      car['categoryProduct'],
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        color: Theme.of(Get.context!).colorScheme.secondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  Get.toNamed('/detail', arguments: car['id'].toString());
+                },
+                child: Text(
+                  'Lihat',
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xffFF5722),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),

@@ -23,30 +23,34 @@ class PinPage extends GetView<PinViewModel> {
     return Scaffold(
       body: Stack(
         children: [
-          Column(
-            children: [
-              Gap(20 + MediaQuery.of(context).padding.top),
-              CustomHeader(title: title),
-              const Gap(100),
-              Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      pinNumberInput(controller.pin1),
-                      const Gap(30),
-                      pinNumberInput(controller.pin2),
-                      const Gap(30),
-                      pinNumberInput(controller.pin3),
-                      const Gap(30),
-                      pinNumberInput(controller.pin4),
-                    ],
-                  ),
-                  const Gap(30),
-                  pinLayout(controller),
-                ],
-              ),
-            ],
+          SafeArea(
+            child: Column(
+              children: [
+                CustomHeader(title: title),
+                const Gap(100),
+                Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 52),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          pinNumberInput(controller.pin1),
+                          const Gap(30),
+                          pinNumberInput(controller.pin2),
+                          const Gap(30),
+                          pinNumberInput(controller.pin3),
+                          const Gap(30),
+                          pinNumberInput(controller.pin4),
+                        ],
+                      ),
+                    ),
+                    const Gap(30),
+                    pinLayout(controller),
+                  ],
+                ),
+              ],
+            ),
           ),
           const OfflineBanner(),
         ],

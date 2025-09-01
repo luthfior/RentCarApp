@@ -3,9 +3,11 @@ import 'package:get/get.dart';
 import 'package:rent_car_app/core/constants/message.dart';
 import 'package:rent_car_app/data/sources/user_source.dart';
 import 'package:rent_car_app/presentation/viewModels/auth_view_model.dart';
+import 'package:rent_car_app/presentation/viewModels/discover_view_model.dart';
 
 class TopUpViewModel extends GetxController {
   final authVM = Get.find<AuthViewModel>();
+  final discoverVM = Get.find<DiscoverViewModel>();
   final userSource = UserSource();
 
   final amountEdt = TextEditingController();
@@ -16,11 +18,9 @@ class TopUpViewModel extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    authVM.loadUser();
     if (authVM.account.value != null) {
       currentBalance.value = authVM.account.value!.balance;
     }
-
     amountEdt.addListener(checkChanges);
   }
 
@@ -57,7 +57,8 @@ class TopUpViewModel extends GetxController {
       amountEdt.clear();
       isChanged.value = false;
       status.value = 'success';
-      Get.offAllNamed('/discover', arguments: {'fragmentIndex': 3});
+      Get.until((route) => route.settings.name == '/discover');
+      discoverVM.setFragmentIndex(3);
     } catch (e) {
       status.value = 'failed';
       Message.error('Gagal top up: ${e.toString()}');

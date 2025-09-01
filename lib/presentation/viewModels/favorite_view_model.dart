@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:rent_car_app/core/constants/message.dart';
 import 'package:rent_car_app/data/models/car.dart';
 import 'package:rent_car_app/data/sources/user_source.dart';
@@ -13,12 +14,19 @@ class FavoriteViewModel extends GetxController {
   final favoriteProducts = <Car>[].obs;
   final userSource = UserSource();
 
+  final Rx<Car> _car = Car.empty.obs;
+  Car get car => _car.value;
+  set car(Car value) => _car.value = value;
+
   final status = ''.obs;
+  final hasShownTutorial = false.obs;
   StreamSubscription<QuerySnapshot>? _favoritesSubscription;
+  final box = GetStorage();
 
   @override
   void onInit() {
     super.onInit();
+    hasShownTutorial.value = box.read('hasShownSwipeTutorial') ?? false;
     if (authVM.account.value != null) {
       fetchFavorites();
     } else {
@@ -30,6 +38,16 @@ class FavoriteViewModel extends GetxController {
   void onClose() {
     _favoritesSubscription?.cancel();
     super.onClose();
+  }
+
+  void showTutorial() {
+    box.write('hasShownSwipeTutorial', true);
+    hasShownTutorial.value = true;
+  }
+
+  void dismissTutorial() {
+    box.write('hasShownSwipeTutorial', true);
+    hasShownTutorial.value = true;
   }
 
   Future<void> fetchFavorites() async {
@@ -48,6 +66,10 @@ class FavoriteViewModel extends GetxController {
             if (snapshot.docs.isEmpty) {
               favoriteProducts.clear();
               status.value = 'empty';
+              if (box.read('hasShownSwipeTutorial') != false) {
+                box.write('hasShownSwipeTutorial', false);
+                hasShownTutorial.value = false;
+              }
               return;
             }
 
@@ -56,34 +78,52 @@ class FavoriteViewModel extends GetxController {
                 .toList();
 
             if (carIds.isNotEmpty) {
-              final carsSnapshot = await firestore
-                  .collection('Cars')
-                  .where(FieldPath.documentId, whereIn: carIds)
-                  .get();
+              try {
+                final carsSnapshot = await firestore
+                    .collection('Cars')
+                    .where(FieldPath.documentId, whereIn: carIds)
+                    .get();
 
-              final List<Car> updatedCars = carsSnapshot.docs
-                  .map((doc) => Car.fromJson(doc.data()))
-                  .toList();
+                final List<Car> updatedCars = carsSnapshot.docs
+                    .map((doc) => Car.fromJson(doc.data()))
+                    .toList();
 
-              final Map<String, Car> carMap = {
-                for (var car in updatedCars) car.id: car,
-              };
-              final List<Car> sortedCars = snapshot.docs.map((doc) {
-                return carMap[doc.id]!;
-              }).toList();
+                final Map<String, Car> carMap = {
+                  for (var car in updatedCars) car.id: car,
+                };
+                final List<Car> sortedCars = snapshot.docs.map((doc) {
+                  return carMap[doc.id]!;
+                }).toList();
 
-              favoriteProducts.value = sortedCars;
-              status.value = 'success';
+                favoriteProducts.value = sortedCars;
+                status.value = 'success';
+              } catch (e) {
+                log('Gagal fetch data mobil: $e');
+                status.value = 'error';
+                if (box.read('hasShownSwipeTutorial') != false) {
+                  box.write('hasShownSwipeTutorial', false);
+                  hasShownTutorial.value = false;
+                }
+              }
             } else {
               favoriteProducts.clear();
               status.value = 'empty';
+              if (box.read('hasShownSwipeTutorial') != false) {
+                box.write('hasShownSwipeTutorial', false);
+                hasShownTutorial.value = false;
+              }
             }
           },
           onError: (error) {
             log('Gagal fetch favorit: $error');
             status.value = 'error';
+            if (box.read('hasShownSwipeTutorial') != false) {
+              box.write('hasShownSwipeTutorial', false);
+              hasShownTutorial.value = false;
+            }
           },
         );
+    await Future.microtask(() => null);
   }
 
   Future<void> deleteFavorite(Car car) async {
@@ -92,11 +132,9 @@ class FavoriteViewModel extends GetxController {
     try {
       await userSource.deleteFavoriteProduct(userId, car.id);
       Message.success('Produk berhasil dihapus dari Favorit');
-      status.value = 'success';
     } catch (e) {
       log('Failed to toggle favorite status: $e');
       Message.error('Gagal menambahkan Produk ke Favorit');
-      status.value = 'error';
     }
   }
 }
