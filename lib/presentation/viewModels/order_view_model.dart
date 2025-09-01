@@ -90,7 +90,7 @@ class OrderViewModel extends GetxController {
     await Future.microtask(() => null);
   }
 
-  Future<void> confirmOrder(String orderId) async {
+  Future<void> confirmOrder(String orderId, num orderPrice) async {
     try {
       if (orderId.isEmpty) {
         log('Gagal mengkonfirmasi pesanan: Order ID kosong');
@@ -98,6 +98,13 @@ class OrderViewModel extends GetxController {
         return;
       }
       await sellerSource.updateOrderStatus(orderId, 'success');
+      await sellerSource.markOrderAsSuccess(
+        orderId,
+        authVM.account.value!.uid,
+        authVM.account.value!.role,
+        orderPrice,
+      );
+      Message.success('Silahkan Cek Saldo Anda di Pengaturan');
       log('Pesanan dengan ID $orderId berhasil dikonfirmasi');
     } catch (e) {
       log('Gagal mengkonfirmasi pesanan: $e');

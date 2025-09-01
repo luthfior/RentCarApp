@@ -14,4 +14,6 @@ abstract class AppRoutes {
   static const editProfile = '/edit-profile';
   static const topUp = '/top-up';
   static const addProduct = '/add-product';
+  static const notification = '/notification';
+  static const saldo = '/saldo';
 }

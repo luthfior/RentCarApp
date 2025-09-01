@@ -38,7 +38,7 @@ class DetailPage extends GetView<DetailViewModel> {
                   CustomHeader(
                     title: '',
                     rightIcon: GestureDetector(
-                      onTap: () {
+                      onTap: () async {
                         if (!connectivity.isOnline.value) {
                           null;
                         }
@@ -391,6 +391,7 @@ class DetailPage extends GetView<DetailViewModel> {
                       Get.toNamed(
                         '/chatting',
                         arguments: {
+                          'roomId': '${uid}_${car.ownerId}',
                           'uid': uid,
                           'ownerId': car.ownerId,
                           'ownerType': car.ownerType,

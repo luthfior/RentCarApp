@@ -19,9 +19,11 @@ import 'package:rent_car_app/presentation/pages/complete_booking_page.dart';
 import 'package:rent_car_app/presentation/pages/detail_page.dart';
 import 'package:rent_car_app/presentation/pages/discover_page.dart';
 import 'package:rent_car_app/presentation/pages/edit_profile_page.dart';
+import 'package:rent_car_app/presentation/pages/notification_page.dart';
 import 'package:rent_car_app/presentation/pages/onboarding_page.dart';
 import 'package:rent_car_app/presentation/pages/pin_page.dart';
 import 'package:rent_car_app/presentation/pages/pin_setup_page.dart';
+import 'package:rent_car_app/presentation/pages/saldo_page.dart';
 import 'package:rent_car_app/presentation/pages/splash_screen.dart';
 import 'package:rent_car_app/presentation/pages/top_up_page.dart';
 import 'package:rent_car_app/presentation/viewModels/detail_view_model.dart';
@@ -100,5 +102,7 @@ class AppPages {
       page: () => AddProductPage(),
       binding: AddProductBinding(),
     ),
+    GetPage(name: AppRoutes.notification, page: () => NotificationPage()),
+    GetPage(name: AppRoutes.saldo, page: () => SaldoPage()),
   ];
 }

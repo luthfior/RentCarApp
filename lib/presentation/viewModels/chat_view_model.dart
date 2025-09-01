@@ -13,6 +13,10 @@ import 'package:uuid/uuid.dart';
 class ChatViewModel extends GetxController {
   final authVM = Get.find<AuthViewModel>();
 
+  final Rx<String?> _roomId = Rx<String?>(null);
+  String? get roomId => _roomId.value;
+  set roomId(String? value) => _roomId.value = value;
+
   final Rx<String?> _uid = Rx<String?>(null);
   String? get uid => _uid.value;
   set uid(String? value) => _uid.value = value;
@@ -50,6 +54,7 @@ class ChatViewModel extends GetxController {
     super.onReady();
     final args = Get.arguments;
     if (args is Map<String, dynamic>) {
+      roomId = args['roomId'] as String?;
       uid = args['uid'] as String?;
       ownerId = args['ownerId'] as String?;
       ownerType = args['ownerType'] as String?;
@@ -77,7 +82,7 @@ class ChatViewModel extends GetxController {
       if (uid != null && ownerId != null) {
         _streamChat.value = _firestore
             .collection('Services')
-            .doc("${uid}_${ownerId}")
+            .doc("${uid}_$ownerId")
             .collection('chats')
             .orderBy('timeStamp', descending: true)
             .snapshots();

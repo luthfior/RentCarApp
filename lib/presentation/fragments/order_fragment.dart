@@ -174,6 +174,7 @@ class OrderFragment extends GetView<OrderViewModel> {
                                     Get.toNamed(
                                       '/chatting',
                                       arguments: {
+                                        'roomId': '${uid}_${car.car.ownerId}',
                                         'uid': uid,
                                         'ownerId': car.car.ownerId,
                                         'ownerType': car.car.ownerType,

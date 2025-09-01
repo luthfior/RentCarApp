@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:rent_car_app/core/constants/message.dart';
 import 'package:rent_car_app/data/models/car.dart';
 import 'package:rent_car_app/data/services/connectivity_service.dart';
 import 'package:rent_car_app/presentation/viewModels/browse_view_model.dart';
+import 'package:rent_car_app/presentation/viewModels/notification_view_model.dart';
 import 'package:rent_car_app/presentation/widgets/chip_categories.dart';
 import 'package:rent_car_app/presentation/widgets/failed_ui.dart';
 import 'package:rent_car_app/presentation/widgets/item_featured_car.dart';
@@ -17,6 +17,7 @@ class BrowseFragment extends GetView<BrowseViewModel> {
   BrowseFragment({super.key});
 
   final connectivity = Get.find<ConnectivityService>();
+  final notifVM = Get.find<NotificationViewModel>();
 
   @override
   Widget build(BuildContext context) {
@@ -116,12 +117,18 @@ class BrowseFragment extends GetView<BrowseViewModel> {
                   ),
                 ),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                prefixIcon: const Icon(Icons.search),
+                prefixIcon: Icon(
+                  Icons.search,
+                  color: Theme.of(Get.context!).colorScheme.onSurface,
+                ),
                 suffixIcon: Obx(() {
                   if (controller.searchQuery.isNotEmpty) {
                     return IconButton(
                       onPressed: controller.clearSearch,
-                      icon: const Icon(Icons.close),
+                      icon: Icon(
+                        Icons.close,
+                        color: Theme.of(Get.context!).colorScheme.onSurface,
+                      ),
                     );
                   }
                   return const SizedBox.shrink();
@@ -130,30 +137,48 @@ class BrowseFragment extends GetView<BrowseViewModel> {
             ),
           ),
           const Gap(16),
-          GestureDetector(
-            onTap: () {
-              if (connectivity.isOnline.value) {
-                return Message.neutral(
-                  'Maaf. Saat ini, fitur tersebut belum tersedia',
-                );
-              } else {
-                null;
-              }
-            },
-            child: Container(
-              width: 46,
-              height: 46,
-              decoration: BoxDecoration(
-                color: Theme.of(Get.context!).colorScheme.surface,
-                shape: BoxShape.circle,
-              ),
-              alignment: Alignment.center,
-              child: Icon(
-                Icons.notifications,
-                color: Theme.of(Get.context!).colorScheme.onSurface,
-              ),
-            ),
-          ),
+          Obx(() {
+            final hasUnread = notifVM.hasUnread;
+            return Stack(
+              children: [
+                GestureDetector(
+                  onTap: () async {
+                    if (connectivity.isOnline.value) {
+                      Get.toNamed('/notification');
+                    } else {
+                      null;
+                    }
+                  },
+                  child: Container(
+                    width: 46,
+                    height: 46,
+                    decoration: BoxDecoration(
+                      color: Theme.of(Get.context!).colorScheme.surface,
+                      shape: BoxShape.circle,
+                    ),
+                    alignment: Alignment.center,
+                    child: Icon(
+                      Icons.notifications,
+                      color: Theme.of(Get.context!).colorScheme.onSurface,
+                    ),
+                  ),
+                ),
+                if (hasUnread)
+                  Positioned(
+                    right: 10,
+                    top: 10,
+                    child: Container(
+                      width: 10,
+                      height: 10,
+                      decoration: const BoxDecoration(
+                        color: Colors.red,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+              ],
+            );
+          }),
         ],
       ),
     );

@@ -156,6 +156,7 @@ class FavoriteFragment extends GetView<FavoriteViewModel> {
                                   Get.toNamed(
                                     '/chatting',
                                     arguments: {
+                                      'roomId': '${uid}_${car.ownerId}',
                                       'uid': uid,
                                       'ownerId': car.ownerId,
                                       'ownerType': car.ownerType,
@@ -244,8 +245,8 @@ Widget buildSlidableFavoriteItem(
       children: [
         SlidableAction(
           onPressed: (context) => onBooking(),
-          backgroundColor: const Color(0xff070623),
-          foregroundColor: Colors.white,
+          backgroundColor: Theme.of(Get.context!).colorScheme.surface,
+          foregroundColor: Theme.of(Get.context!).colorScheme.onSurface,
           icon: Icons.car_rental,
           label: 'Order',
         ),

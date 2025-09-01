@@ -62,7 +62,7 @@ class RegisterFragment extends GetView<RegisterViewModel> {
                           decoration: BoxDecoration(
                             color: controller.selectedRole.value == 'customer'
                                 ? const Color(0xffFF5722)
-                                : Colors.grey[200],
+                                : Theme.of(context).colorScheme.surface,
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
                               color: controller.selectedRole.value == 'customer'
@@ -92,7 +92,7 @@ class RegisterFragment extends GetView<RegisterViewModel> {
                           decoration: BoxDecoration(
                             color: controller.selectedRole.value == 'seller'
                                 ? const Color(0xffFF5722)
-                                : Colors.grey[200],
+                                : Theme.of(context).colorScheme.surface,
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
                               color: controller.selectedRole.value == 'seller'
@@ -272,8 +272,8 @@ class RegisterFragment extends GetView<RegisterViewModel> {
               ButtonPrimary(
                 onTap: (!connectivity.isOnline.value) ? null : onSwitchToLogin,
                 text: 'Masuk',
-                customTextColor: Theme.of(Get.context!).colorScheme.onSurface,
-                customBackgroundColor: const Color(0xffFFFFFF),
+                customTextColor: const Color(0xff070623),
+                customBackgroundColor: Colors.white,
               ),
               const Gap(50),
             ],
@@ -283,7 +283,7 @@ class RegisterFragment extends GetView<RegisterViewModel> {
         Obx(() {
           if (!controller.isLoading.value) return const SizedBox.shrink();
           return Container(
-            color: const Color(0xff000000).withAlpha(179),
+            color: const Color(0xff000000).withAlpha(175),
             child: const Center(
               child: CircularProgressIndicator(
                 valueColor: AlwaysStoppedAnimation<Color>(Color(0xffFF5722)),

@@ -21,7 +21,7 @@ class TutorialOverlay extends StatelessWidget {
         margin: const EdgeInsets.fromLTRB(24, 0, 24, 120),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: const Color(0xff070623).withAlpha(175),
+          color: const Color(0xff292929).withAlpha(215),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
@@ -30,7 +30,7 @@ class TutorialOverlay extends StatelessWidget {
               child: Text(
                 message,
                 style: GoogleFonts.poppins(
-                  color: const Color(0xffFFFFFF),
+                  color: Colors.white,
                   fontSize: 12.0,
                   fontWeight: FontWeight.w400,
                 ),

@@ -6,6 +6,7 @@ class Account {
   final String? photoUrl;
   final String role;
   final num balance;
+  final num income;
   final String? pin;
   final Map? favProducts;
   final Map? myOrders;
@@ -18,6 +19,7 @@ class Account {
         'https://res.cloudinary.com/dodjmyloc/image/upload/v1756392698/profile_blirky.png',
     required this.role,
     this.balance = 9786500,
+    this.income = 0,
     this.pin,
     this.favProducts,
     this.myOrders,
@@ -32,6 +34,7 @@ class Account {
       'photoUrl': photoUrl,
       'role': role,
       'balance': balance,
+      'income': income,
       'pin': pin,
       'favProducts': favProducts,
       'myOrders': myOrders,
@@ -47,6 +50,7 @@ class Account {
       photoUrl: json['photoUrl'] as String?,
       role: json['role'] as String,
       balance: json['balance'] as num? ?? 0,
+      income: json['income'] as num? ?? 0,
       pin: json['pin'] as String?,
       favProducts: json['favProducts'] != null
           ? Map.from(json['favProducts'] as Map<String, dynamic>)

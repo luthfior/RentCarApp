@@ -8,6 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:rent_car_app/data/models/chat.dart';
 import 'package:rent_car_app/data/services/connectivity_service.dart';
+import 'package:rent_car_app/data/services/notification_service.dart';
 import 'package:rent_car_app/presentation/viewModels/chat_view_model.dart';
 import 'package:rent_car_app/presentation/viewModels/discover_view_model.dart';
 import 'package:rent_car_app/presentation/widgets/custom_header.dart';
@@ -351,7 +352,24 @@ class ChattingPage extends GetView<ChatViewModel> {
           Expanded(
             child: TextField(
               controller: controller.edtInput,
-              onSubmitted: (_) => controller.sendMessage(),
+              onSubmitted: (_) async {
+                if (connectivity.isOnline.value) {
+                  controller.sendMessage();
+                  final partner = controller.partner;
+                  if (partner != null) {
+                    await NotificationService.addNotification(
+                      userId: partner.uid,
+                      title: "Chat Baru",
+                      body:
+                          "Kamu mendapatkan Chat baru dari ${controller.authVM.account.value?.name ?? 'Pengguna'}",
+                      type: "chat",
+                      referenceId: controller.roomId,
+                    );
+                  }
+                } else {
+                  null;
+                }
+              },
               style: const TextStyle(
                 fontWeight: FontWeight.w600,
                 fontSize: 16,
@@ -371,7 +389,24 @@ class ChattingPage extends GetView<ChatViewModel> {
             ),
           ),
           IconButton(
-            onPressed: () => controller.sendMessage(),
+            onPressed: () async {
+              if (connectivity.isOnline.value) {
+                controller.sendMessage();
+                final partner = controller.partner;
+                if (partner != null) {
+                  await NotificationService.addNotification(
+                    userId: partner.uid,
+                    title: "Chat Baru",
+                    body:
+                        "Kamu mendapatkan Chat baru dari ${controller.authVM.account.value?.name ?? 'Pengguna'}",
+                    type: "chat",
+                    referenceId: controller.roomId,
+                  );
+                }
+              } else {
+                null;
+              }
+            },
             icon: ColorFiltered(
               colorFilter: const ColorFilter.mode(
                 Color(0xffFF5722),

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rent_car_app/core/constants/message.dart';
 import 'package:rent_car_app/data/models/car.dart';
+import 'package:rent_car_app/data/services/notification_service.dart';
 import 'package:rent_car_app/presentation/viewModels/auth_view_model.dart';
 import 'package:rent_car_app/presentation/viewModels/checkout_view_model.dart';
 import 'package:rent_car_app/data/sources/user_source.dart';
@@ -168,6 +169,13 @@ class PinViewModel extends GetxController {
       Get.offAllNamed(
         '/complete',
         arguments: {'fragmentIndex': 0, 'bookedCar': car},
+      );
+      await NotificationService.addNotification(
+        userId: car!.ownerId,
+        title: "Info Order",
+        body: "Ada Orderan baru di Toko Anda",
+        type: "order",
+        referenceId: "${authVM.account.value!.uid}_${car?.ownerId}",
       );
     } catch (e) {
       log('Error dari PinViewModel: $e');

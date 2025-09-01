@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:rent_car_app/core/utils/number_formatter.dart';
 import 'package:rent_car_app/data/services/connectivity_service.dart';
+import 'package:rent_car_app/presentation/viewModels/discover_view_model.dart';
 import 'package:rent_car_app/presentation/viewModels/top_up_view_model.dart';
 import 'package:rent_car_app/presentation/widgets/button_primary.dart';
 import 'package:rent_car_app/presentation/widgets/custom_header.dart';
@@ -15,6 +16,7 @@ class TopUpPage extends GetView<TopUpViewModel> {
   TopUpPage({super.key});
 
   final connectivity = Get.find<ConnectivityService>();
+  final discoverVM = Get.find<DiscoverViewModel>();
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +26,26 @@ class TopUpPage extends GetView<TopUpViewModel> {
           SafeArea(
             child: Column(
               children: [
-                CustomHeader(title: 'Top Up Saldo'),
+                CustomHeader(
+                  title: 'Top Up Saldo',
+                  onBackTap: () {
+                    if (connectivity.isOnline.value) {
+                      if (controller.authVM.account.value?.role == 'customer') {
+                        Get.until(
+                          (route) => route.settings.name == '/discover',
+                        );
+                        discoverVM.setFragmentIndex(3);
+                      } else {
+                        Get.until(
+                          (route) => route.settings.name == '/discover',
+                        );
+                        discoverVM.setFragmentIndex(4);
+                      }
+                    } else {
+                      null;
+                    }
+                  },
+                ),
                 const Gap(20),
                 Expanded(
                   child: SingleChildScrollView(

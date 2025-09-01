@@ -9,6 +9,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:rent_car_app/data/models/booked_car.dart';
 import 'package:rent_car_app/data/services/connectivity_service.dart';
+import 'package:rent_car_app/data/services/notification_service.dart';
 import 'package:rent_car_app/presentation/viewModels/order_view_model.dart';
 import 'package:rent_car_app/presentation/widgets/button_primary.dart';
 
@@ -261,9 +262,18 @@ Widget itemOrderSeller(
             children: [
               Expanded(
                 child: ButtonPrimary(
-                  onTap: () {
+                  onTap: () async {
                     if (connectivity.isOnline.value) {
                       controller.cancelOrder(bookedCar.order.id);
+                      await NotificationService.addNotification(
+                        userId: bookedCar.order.customerId,
+                        title: "Info Status Order",
+                        body:
+                            "Ada pembaruan status pada produk yang Anda sedang Order",
+                        type: "order",
+                        referenceId:
+                            "${bookedCar.order.customerId}_${bookedCar.order.sellerId}",
+                      );
                     } else {
                       null;
                     }
@@ -278,9 +288,21 @@ Widget itemOrderSeller(
               const Gap(10),
               Expanded(
                 child: ButtonPrimary(
-                  onTap: () {
+                  onTap: () async {
                     if (connectivity.isOnline.value) {
-                      controller.confirmOrder(bookedCar.order.id);
+                      controller.confirmOrder(
+                        bookedCar.order.id,
+                        bookedCar.order.productPrice,
+                      );
+                      await NotificationService.addNotification(
+                        userId: bookedCar.order.customerId,
+                        title: "Info Status Order",
+                        body:
+                            "Ada pembaruan status pada produk yang Anda sedang Order",
+                        type: "order",
+                        referenceId:
+                            "${bookedCar.order.customerId}_${bookedCar.order.sellerId}",
+                      );
                     } else {
                       null;
                     }

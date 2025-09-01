@@ -8,7 +8,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:rent_car_app/core/constants/message.dart';
 import 'package:rent_car_app/data/services/connectivity_service.dart';
-import 'package:rent_car_app/presentation/viewModels/auth_view_model.dart';
 
 class ChatListFragment extends StatelessWidget {
   final String uid;
@@ -37,7 +36,6 @@ class ChatListFragment extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final firestore = FirebaseFirestore.instance;
-    Get.find<AuthViewModel>();
     final servicesRef = firestore.collection('Services');
 
     return Column(
@@ -280,6 +278,7 @@ class ChatListFragment extends StatelessWidget {
                                   Get.toNamed(
                                     '/chatting',
                                     arguments: {
+                                      'roomId': roomId,
                                       'uid': buyerId,
                                       'ownerId': ownerId,
                                       'ownerType': ownerType,

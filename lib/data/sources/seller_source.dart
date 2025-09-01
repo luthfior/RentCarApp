@@ -130,4 +130,18 @@ class SellerSource {
       rethrow;
     }
   }
+
+  Future<void> markOrderAsSuccess(
+    String orderId,
+    String userId,
+    String userRole,
+    num productPrice,
+  ) async {
+    final firestore = FirebaseFirestore.instance;
+    final String userCollection = userRole == 'admin' ? 'Admin' : 'Users';
+
+    await firestore.collection(userCollection).doc(userId).update({
+      'income': FieldValue.increment(productPrice),
+    });
+  }
 }
