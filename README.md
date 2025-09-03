@@ -21,30 +21,30 @@ Lihat pratinjau desain interaktif kami langsung dari Figma.
 
 <p align="center">
     <img src="docs/preview/beranda_customer.png" width="180"/>
-    <img src="docs/preview/beranda_customer_setelah_order.png.png" width="180"/>
-    <img src="docs/preview/chat_list.png.png.png" width="180"/>
-    <img src="docs/preview/chat_customer.png.png.png" width="180"/>
+    <img src="docs/preview/beranda_customer_setelah_order.png" width="180"/>
+    <img src="docs/preview/chat_list.png" width="180"/>
+    <img src="docs/preview/chat_customer.png" width="180"/>
 </p>
 
 <p align="center">
-    <img src="docs/preview/chatting_customer_typing.png.png.png.png" width="180"/>
-    <img src="docs/preview/notifikasi_customer.png.png.png.png" width="180"/>
+    <img src="docs/preview/chatting_customer_typing.png" width="180"/>
+    <img src="docs/preview/notifikasi_custome.png" width="180"/>
     <img src="docs/preview/pesanan_customer.png" width="180"/>
-    <img src="docs/preview/favorit_customer.png.png.png" width="180"/>
+    <img src="docs/preview/favorit_customer.png" width="180"/>
 </p>
 
 <p align="center">
-    <img src="docs/preview/detail_customer.png.png" width="180"/>
-    <img src="docs/preview/booking_customer.png.png" width="180"/>
-    <img src="docs/preview/booking_customer_field_kosong.png.png" width="180"/>
-    <img src="docs/preview/checkout_customer.png.png" width="180"/>
+    <img src="docs/preview/detail_customer.png" width="180"/>
+    <img src="docs/preview/booking_customer.png" width="180"/>
+    <img src="docs/preview/booking_customer_field_kosong.png" width="180"/>
+    <img src="docs/preview/checkout_customer.png" width="180"/>
 </p>
 
 <p align="center">
-    <img src="docs/preview/checkout_customer_saldo0.png.png" width="180"/>
+    <img src="docs/preview/checkout_customer_saldo0.png" width="180"/>
     <img src="docs/preview/pin.png" width="180"/>
-    <img src="docs/preview/booking_sukses.png.png" width="180"/>
-    <img src="docs/preview/pengaturan_customer.png.png.png.png" width="180"/>
+    <img src="docs/preview/booking_sukses.png" width="180"/>
+    <img src="docs/preview/pengaturan_customer.png" width="180"/>
 </p>
 
 ---
