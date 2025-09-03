@@ -222,7 +222,7 @@ class ChatListFragment extends StatelessWidget {
                                   Container(
                                     padding: const EdgeInsets.all(6),
                                     decoration: const BoxDecoration(
-                                      color: Color(0xffFF2056),
+                                      color: Color(0xffFF5722),
                                       shape: BoxShape.circle,
                                     ),
                                     child: Text(
