@@ -13,35 +13,35 @@ Lihat pratinjau desain interaktif kami langsung dari Figma.
 ### 📸 Preview UI
 
 <p align="center">
-    <img src="docs/preview/splash_screen.png" width="180"/>
-    <img src="docs/preview/daftar.png" width="180"/>
-    <img src="docs/preview/daftar_state.png" width="180"/>
-    <img src="docs/preview/masuk.png" width="180"/>
-    <img src="docs/preview/beranda_customer.png" width="180"/>
+    <img src="docs/preview/splash_screen.png" width="150"/>
+    <img src="docs/preview/daftar.png" width="150"/>
+    <img src="docs/preview/daftar_state.png" width="150"/>
+    <img src="docs/preview/masuk.png" width="150"/>
+    <img src="docs/preview/beranda_customer.png" width="150"/>
 </p>
 
 <p align="center">
-    <img src="docs/preview/beranda_customer_setelah_order.png" width="180"/>
-    <img src="docs/preview/chat_list.png" width="180"/>
-    <img src="docs/preview/chat_customer.png" width="180"/>
-    <img src="docs/preview/chatting_customer_typing.png" width="180"/>
-    <img src="docs/preview/notifikasi_customer.png" width="180"/>
+    <img src="docs/preview/beranda_customer_setelah_order.png" width="150"/>
+    <img src="docs/preview/chat_list.png" width="150"/>
+    <img src="docs/preview/chat_customer.png" width="150"/>
+    <img src="docs/preview/chatting_customer_typing.png" width="150"/>
+    <img src="docs/preview/notifikasi_customer.png" width="150"/>
 </p>
 
 <p align="center">
-    <img src="docs/preview/pesanan_customer.png" width="180"/>
-    <img src="docs/preview/favorit_customer.png" width="180"/>
-    <img src="docs/preview/detail_customer.png" width="180"/>
-    <img src="docs/preview/booking_customer.png" width="180"/>
-    <img src="docs/preview/booking_customer_field_kosong.png" width="180"/>
+    <img src="docs/preview/pesanan_customer.png" width="150"/>
+    <img src="docs/preview/favorit_customer.png" width="150"/>
+    <img src="docs/preview/detail_customer.png" width="150"/>
+    <img src="docs/preview/booking_customer.png" width="150"/>
+    <img src="docs/preview/booking_customer_field_kosong.png" width="150"/>
 </p>
 
 <p align="center">
-    <img src="docs/preview/checkout_customer.png" width="180"/>
-    <img src="docs/preview/checkout_customer_saldo0.png" width="180"/>
-    <img src="docs/preview/pin.png" width="180"/>
-    <img src="docs/preview/booking_sukses.png" width="180"/>
-    <img src="docs/preview/pengaturan_customer.png" width="180"/>
+    <img src="docs/preview/checkout_customer.png" width="150"/>
+    <img src="docs/preview/checkout_customer_saldo0.png" width="150"/>
+    <img src="docs/preview/pin.png" width="150"/>
+    <img src="docs/preview/booking_sukses.png" width="150"/>
+    <img src="docs/preview/pengaturan_customer.png" width="150"/>
 </p>
 
 ---
