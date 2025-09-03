@@ -7,7 +7,7 @@ Terdapat 3 Antarmuka Pengguna (User Interface/UI) yang berbeda, yaitu: **Pembeli
 
 ## 📱 Desain Aplikasi (UI/UX)
 
-Lihat pratinjau desain interaktif kami langsung dari Figma.
+Lihat pratinjau desain interaktif langsung dari Figma.
 [👉 Link Figma](https://www.figma.com/design/72flWeSJv6ZKEyxYKSNmbZ/RentCar--App?node-id=0-1&p=f&t=OZkWQbtmndWUNdzD-0)
 
 ### 📸 Preview UI
