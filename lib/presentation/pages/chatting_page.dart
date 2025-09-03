@@ -131,7 +131,7 @@ class ChattingPage extends GetView<ChatViewModel> {
           ),
           GestureDetector(
             onTap: () {
-              Get.toNamed('/detail', arguments: car['id'].toString());
+              Get.toNamed('/booking', arguments: car);
             },
             child: Text(
               'Booking',
@@ -425,6 +425,8 @@ class ChattingPage extends GetView<ChatViewModel> {
         ? '${car['nameProduct'].substring(0, 14)}...'
         : car['nameProduct'];
 
+    final currentUser = controller.authVM.account.value;
+
     return Container(
       margin: const EdgeInsets.fromLTRB(0, 12, 80, 0),
       padding: const EdgeInsets.all(10),
@@ -436,7 +438,9 @@ class ChattingPage extends GetView<ChatViewModel> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Kamu bertanya tentang produk ini",
+            (currentUser?.role == 'customer')
+                ? "Kamu bertanya tentang produk ini"
+                : "Customer bertanya tentang produk ini",
             style: GoogleFonts.poppins(
               fontSize: 12,
               fontWeight: FontWeight.w500,

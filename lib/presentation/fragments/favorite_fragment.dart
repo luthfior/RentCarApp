@@ -245,8 +245,8 @@ Widget buildSlidableFavoriteItem(
       children: [
         SlidableAction(
           onPressed: (context) => onBooking(),
-          backgroundColor: Theme.of(Get.context!).colorScheme.surface,
-          foregroundColor: Theme.of(Get.context!).colorScheme.onSurface,
+          backgroundColor: const Color(0xff52575D),
+          foregroundColor: Colors.white,
           icon: Icons.car_rental,
           label: 'Order',
         ),

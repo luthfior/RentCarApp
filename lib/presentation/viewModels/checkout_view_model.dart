@@ -64,7 +64,7 @@ class CheckoutViewModel extends GetxController {
     totalDriverCost = withDriver ? driverCostPerDay * rentDurationInDays : 0;
     subTotal = pricePerDay * rentDurationInDays + totalDriverCost;
 
-    totalInsuranceCost = pricePerDay * 0.20;
+    totalInsuranceCost = subTotal * 0.20;
 
     finalTotal = subTotal + totalInsuranceCost + additionalCost;
   }

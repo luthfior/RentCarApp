@@ -101,7 +101,7 @@ class RegisterFragment extends GetView<RegisterViewModel> {
                             ),
                           ),
                           child: Text(
-                            'Penjual',
+                            'Penyewa',
                             textAlign: TextAlign.center,
                             style: GoogleFonts.poppins(
                               color: controller.selectedRole.value == 'seller'
@@ -120,7 +120,7 @@ class RegisterFragment extends GetView<RegisterViewModel> {
               Obx(
                 () => Text(
                   controller.selectedRole.value == 'seller'
-                      ? 'Nama Toko'
+                      ? 'Nama Penyedia'
                       : 'Nama Lengkap',
                   style: GoogleFonts.poppins(
                     fontSize: 16,
@@ -134,7 +134,7 @@ class RegisterFragment extends GetView<RegisterViewModel> {
                 () => CustomInput(
                   icon: 'assets/ic_profile.png',
                   hint: controller.selectedRole.value == 'seller'
-                      ? 'Masukkan Nama Toko Anda'
+                      ? 'Masukkan Nama Penyedia Anda'
                       : 'Masukkan Nama Lengkap Anda',
                   customHintFontSize: 14,
                   editingController: controller.nameController,
@@ -151,7 +151,7 @@ class RegisterFragment extends GetView<RegisterViewModel> {
               Obx(
                 () => Text(
                   controller.selectedRole.value == 'seller'
-                      ? 'Alamat Email Toko'
+                      ? 'Alamat Email Penyedia'
                       : 'Alamat Email',
                   style: GoogleFonts.poppins(
                     fontSize: 16,
@@ -165,7 +165,7 @@ class RegisterFragment extends GetView<RegisterViewModel> {
                 () => CustomInput(
                   icon: 'assets/ic_email.png',
                   hint: controller.selectedRole.value == 'seller'
-                      ? 'Masukkan Alamat Email Toko Anda'
+                      ? 'Masukkan Alamat Email Penyedia Anda'
                       : 'Masukkan Alamat Email Anda',
                   customHintFontSize: 14,
                   editingController: controller.emailController,
@@ -182,7 +182,7 @@ class RegisterFragment extends GetView<RegisterViewModel> {
               Obx(
                 () => Text(
                   controller.selectedRole.value == 'seller'
-                      ? 'Kata Sandi Toko'
+                      ? 'Kata Sandi Penyedia'
                       : 'Kata Sandi',
                   style: GoogleFonts.poppins(
                     fontSize: 16,
@@ -196,7 +196,7 @@ class RegisterFragment extends GetView<RegisterViewModel> {
                 () => CustomInput(
                   icon: 'assets/ic_key.png',
                   hint: controller.selectedRole.value == 'seller'
-                      ? 'Masukkan Kata Sandi Toko Anda'
+                      ? 'Masukkan Kata Sandi Penyedia Anda'
                       : 'Masukkan Kata Sandi Anda',
                   customHintFontSize: 14,
                   editingController: controller.passwordController,

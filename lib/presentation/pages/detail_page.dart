@@ -248,7 +248,7 @@ class DetailPage extends GetView<DetailViewModel> {
                             Row(
                               children: [
                                 Text(
-                                  'Kategori: ',
+                                  'Tahun Rilis: ',
                                   style: GoogleFonts.poppins(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w700,
@@ -258,7 +258,7 @@ class DetailPage extends GetView<DetailViewModel> {
                                   ),
                                 ),
                                 Text(
-                                  car.categoryProduct,
+                                  '${car.releaseProduct}',
                                   style: GoogleFonts.poppins(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w500,
@@ -272,7 +272,7 @@ class DetailPage extends GetView<DetailViewModel> {
                             Row(
                               children: [
                                 Text(
-                                  'Tahun Rilis: ',
+                                  'Kategori: ',
                                   style: GoogleFonts.poppins(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w700,
@@ -282,7 +282,7 @@ class DetailPage extends GetView<DetailViewModel> {
                                   ),
                                 ),
                                 Text(
-                                  '${car.releaseProduct}',
+                                  car.categoryProduct,
                                   style: GoogleFonts.poppins(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w500,

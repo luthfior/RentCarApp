@@ -52,7 +52,7 @@ class ChatSource {
           await chatsRef.add({
             'chatId': roomId,
             'message':
-                'Halo, selamat datang! Ini adalah pesan otomatis, silakan tunggu penjual merespons pesan ini, ya. Terima kasih.',
+                'Halo, selamat datang! Ini adalah pesan otomatis, silakan tunggu penyedia merespons pesan ini, ya. Terima kasih.',
             'productDetail': null,
             'receiverId': buyerId,
             'senderId': ownerId,

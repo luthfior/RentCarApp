@@ -215,7 +215,7 @@ class CheckoutPage extends GetView<CheckoutViewModel> {
             ),
             const Divider(color: Color(0xffEFEEF7), height: 24),
             buildReceiptRow(
-              'Harga',
+              'Harga Sewa',
               isBold: true,
               '${controller.formatCurrency(controller.car.priceProduct.toDouble())}/hari',
             ),

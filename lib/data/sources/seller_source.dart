@@ -70,7 +70,7 @@ class SellerSource {
       log('Firebase Error: ${e.code} - ${e.message}');
       rethrow;
     } catch (e) {
-      log('Gagal fetch produk toko: $e');
+      log('Gagal fetch produk penyedia: $e');
       rethrow;
     }
   }

@@ -193,7 +193,7 @@ class BrowseFragment extends GetView<BrowseViewModel> {
       margin: const EdgeInsets.fromLTRB(24, 14, 24, 0),
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFB86C),
+        color: const Color(0xffFF5722),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
@@ -221,11 +221,11 @@ class BrowseFragment extends GetView<BrowseViewModel> {
               overflow: TextOverflow.ellipsis,
               maxLines: 2,
               text: TextSpan(
-                text: 'Booking Produk ',
+                text: 'Produk ',
                 style: GoogleFonts.poppins(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: const Color(0xff070623),
+                  color: Colors.white,
                 ),
                 children: [
                   TextSpan(
@@ -237,11 +237,11 @@ class BrowseFragment extends GetView<BrowseViewModel> {
                     ),
                   ),
                   TextSpan(
-                    text: ' Anda menunggu diproses.',
+                    text: ' yang Anda Booking sedang menunggu untuk diproses.',
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: const Color(0xff070623),
+                      color: Colors.white,
                     ),
                   ),
                 ],

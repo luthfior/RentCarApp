@@ -296,7 +296,7 @@ class BookingPage extends GetView<BookingViewModel> {
                       color: Theme.of(Get.context!).colorScheme.surface,
                       borderRadius: BorderRadius.circular(20),
                       border: controller.agencyPicked == agency
-                          ? Border.all(color: const Color(0xffFF5722))
+                          ? Border.all(color: const Color(0xffFF5722), width: 2)
                           : null,
                     ),
                     child: Column(
@@ -463,6 +463,7 @@ class BookingPage extends GetView<BookingViewModel> {
                           color: isWithDriver
                               ? const Color(0xffFF5722)
                               : Colors.transparent,
+                          width: 2,
                         ),
                       ),
                       child: Column(

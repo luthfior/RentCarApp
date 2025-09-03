@@ -271,7 +271,7 @@ class UserSource {
             'orderId': orderDocRef.id,
             'orderDate': FieldValue.serverTimestamp(),
           });
-      log('Referensi pesanan berhasil ditambahkan ke riwayat pesanan penjual');
+      log('Referensi pesanan berhasil ditambahkan ke riwayat pesanan penyedia');
 
       final bookedProductUserRef = firestore
           .collection('Users')

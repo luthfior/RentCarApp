@@ -16,7 +16,7 @@ class CompleteBookingPage extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 24),
         children: [
-          const Gap(120),
+          const Gap(100),
           Text(
             'Pemesanan Berhasil\nSelamat Menikmati Perjalanan Anda!',
             textAlign: TextAlign.center,
@@ -29,15 +29,15 @@ class CompleteBookingPage extends StatelessWidget {
           const Gap(50),
           ExtendedImage.network(
             car.imageProduct,
-            width: 240,
-            height: 220,
+            width: 220,
+            height: 200,
             fit: BoxFit.cover,
             loadStateChanged: (state) {
               switch (state.extendedImageLoadState) {
                 case LoadState.loading:
                   return const SizedBox(
-                    width: 240,
-                    height: 220,
+                    width: 220,
+                    height: 200,
                     child: Center(
                       child: CircularProgressIndicator(
                         valueColor: AlwaysStoppedAnimation<Color>(
@@ -64,7 +64,7 @@ class CompleteBookingPage extends StatelessWidget {
           ),
           const Gap(50),
           Text(
-            car.nameProduct,
+            "${car.nameProduct} (${car.releaseProduct})",
             textAlign: TextAlign.center,
             style: GoogleFonts.poppins(
               fontWeight: FontWeight.w600,
@@ -72,6 +72,7 @@ class CompleteBookingPage extends StatelessWidget {
               color: Theme.of(Get.context!).colorScheme.onSurface,
             ),
           ),
+          const Gap(20),
           Text(
             car.categoryProduct,
             textAlign: TextAlign.center,
@@ -81,8 +82,19 @@ class CompleteBookingPage extends StatelessWidget {
               color: const Color(0xff838384),
             ),
           ),
+          Text(
+            car.transmissionProduct,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.poppins(
+              fontWeight: FontWeight.w400,
+              fontSize: 18,
+              color: const Color(0xff838384),
+            ),
+          ),
           const Gap(50),
           ButtonPrimary(
+            customBackgroundColor: const Color(0xffFF5722),
+            customTextColor: Colors.white,
             text: 'Cari Produk Lainnya',
             onTap: () {
               Get.offAllNamed(
