@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:rent_car_app/core/constants/message.dart';
@@ -6,22 +8,26 @@ import 'package:rent_car_app/data/sources/auth_source.dart';
 class RegisterViewModel extends GetxController {
   final AuthSource _authSource = AuthSource();
 
-  final nameController = TextEditingController();
+  final fullNameController = TextEditingController();
+  final storeNameController = TextEditingController();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
-  final nameFocus = FocusNode();
+  final fullNameFocus = FocusNode();
+  final storeNameFocus = FocusNode();
   final emailFocus = FocusNode();
   final passwordFocus = FocusNode();
-
-  final nameError = RxnString();
+  final fullNameError = RxnString();
+  final storeNameError = RxnString();
   final emailError = RxnString();
   final passwordError = RxnString();
   final isLoading = false.obs;
   final isPasswordVisible = false.obs;
-  final isNameTouched = false.obs;
+  final isFullNameTouched = false.obs;
+  final isStoreNameTouched = false.obs;
   final isEmailTouched = false.obs;
   final isPasswordTouched = false.obs;
   final selectedRole = 'customer'.obs;
+  final storeNameSuggestion = ''.obs;
 
   @override
   void onInit() {
@@ -31,10 +37,11 @@ class RegisterViewModel extends GetxController {
 
   @override
   void onClose() {
-    nameController.dispose();
+    fullNameController.dispose();
+    storeNameController.dispose();
     emailController.dispose();
     passwordController.dispose();
-    nameFocus.dispose();
+    fullNameFocus.dispose();
     emailFocus.dispose();
     passwordFocus.dispose();
     super.onClose();
@@ -45,9 +52,15 @@ class RegisterViewModel extends GetxController {
   }
 
   void validateInputs() {
-    if (isNameTouched.value) {
-      nameError.value = nameController.text.isEmpty
+    if (isFullNameTouched.value) {
+      fullNameError.value = fullNameController.text.isEmpty
           ? 'Nama lengkap tidak boleh kosong'
+          : null;
+    }
+
+    if (isStoreNameTouched.value) {
+      storeNameError.value = storeNameController.text.isEmpty
+          ? 'Nama Toko tidak boleh kosong'
           : null;
     }
 
@@ -72,18 +85,22 @@ class RegisterViewModel extends GetxController {
     BuildContext context, {
     required VoidCallback onRegisterSuccess,
   }) {
-    isNameTouched.value = true;
+    isFullNameTouched.value = true;
+    isStoreNameTouched.value = true;
     isEmailTouched.value = true;
     isPasswordTouched.value = true;
 
     validateInputs();
 
-    if (nameError.value != null ||
+    if (fullNameError.value != null ||
+        storeNameError.value != null ||
         emailError.value != null ||
         passwordError.value != null) {
       Message.error('Semua field harus diisi');
-      if (nameError.value != null) {
-        FocusScope.of(context).requestFocus(nameFocus);
+      if (fullNameError.value != null) {
+        FocusScope.of(context).requestFocus(fullNameFocus);
+      } else if (storeNameError.value != null) {
+        FocusScope.of(context).requestFocus(storeNameFocus);
       } else if (emailError.value != null) {
         FocusScope.of(context).requestFocus(emailFocus);
       } else if (passwordError.value != null) {
@@ -97,12 +114,14 @@ class RegisterViewModel extends GetxController {
 
   Future<void> createNewAccount(VoidCallback onRegisterSuccess) async {
     validateInputs();
-    if (nameError.value != null ||
+    if (fullNameError.value != null ||
+        storeNameError.value != null ||
         emailError.value != null ||
         passwordError.value != null) {
       return;
     }
-    if (nameController.text.isEmpty ||
+    if (fullNameController.text.isEmpty ||
+        storeNameController.text.isEmpty ||
         emailController.text.isEmpty ||
         passwordController.text.isEmpty) {
       Message.error('Semua field harus diisi');
@@ -112,10 +131,13 @@ class RegisterViewModel extends GetxController {
     isLoading.value = true;
     try {
       final response = await _authSource.register(
-        name: nameController.text,
+        fullName: fullNameController.text,
         email: emailController.text,
         password: passwordController.text,
         role: selectedRole.value,
+        storeName: selectedRole.value == 'seller'
+            ? storeNameController.text
+            : null,
       );
 
       if (response.isSuccess) {
@@ -123,6 +145,16 @@ class RegisterViewModel extends GetxController {
         resetForm();
         onRegisterSuccess();
       } else {
+        if (selectedRole.value == 'seller' &&
+            response.error?.contains('Nama Toko sudah digunakan') == true) {
+          final suggestion = [
+            '${storeNameController.text} Store',
+            '${storeNameController.text} Official',
+            '${storeNameController.text} ${Random().nextInt(999)}',
+          ];
+          storeNameSuggestion.value =
+              "Nama Toko telah digunakan. Coba: ${suggestion.join(", ")}";
+        }
         Message.error(
           response.error ?? 'Gagal melakukan proses Daftar. Silahkan coba lagi',
         );
@@ -135,15 +167,18 @@ class RegisterViewModel extends GetxController {
   }
 
   void resetForm() {
-    nameController.clear();
+    fullNameController.clear();
+    storeNameController.clear();
     emailController.clear();
     passwordController.clear();
-    isNameTouched.value = false;
+    isFullNameTouched.value = false;
+    isStoreNameTouched.value = false;
     isEmailTouched.value = false;
     isPasswordTouched.value = false;
     isPasswordVisible.value = false;
     isLoading.value = false;
-    nameError.value = null;
+    fullNameError.value = null;
+    storeNameError.value = null;
     emailError.value = null;
     passwordError.value = null;
     selectedRole.value = 'customer';

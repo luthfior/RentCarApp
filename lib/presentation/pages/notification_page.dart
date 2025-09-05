@@ -114,18 +114,18 @@ class NotificationPage extends GetView<NotificationViewModel> {
                                       Text(
                                         notif.body,
                                         style: GoogleFonts.poppins(
-                                          fontSize: 12,
+                                          fontSize: 13,
                                           fontWeight: FontWeight.w400,
                                           color: Theme.of(
                                             context,
                                           ).colorScheme.onSurface,
                                         ),
                                       ),
-                                      const SizedBox(height: 4),
+                                      const Gap(4),
                                       Text(
                                         formattedTime,
                                         style: GoogleFonts.poppins(
-                                          fontSize: 11,
+                                          fontSize: 12,
                                           fontWeight: FontWeight.w400,
                                           color: Theme.of(
                                             context,

@@ -134,10 +134,12 @@ class FavoriteFragment extends GetView<FavoriteViewModel> {
                               ChatSource.openChat(
                                 buyerId: uid,
                                 ownerId: car.ownerId,
-                                buyerName: authVM.account.value!.name,
+                                buyerFullName: authVM.account.value!.fullName,
+                                buyerUsername: authVM.account.value!.username!,
                                 buyerEmail: authVM.account.value!.email,
                                 buyerPhotoUrl: authVM.account.value!.photoUrl!,
-                                ownerName: car.ownerName,
+                                ownerStoreName: car.ownerStoreName,
+                                ownerUsername: car.ownerUsername,
                                 ownerEmail: car.ownerEmail,
                                 ownerPhotoUrl: car.ownerPhotoUrl,
                                 ownerType: car.ownerType,
@@ -145,14 +147,16 @@ class FavoriteFragment extends GetView<FavoriteViewModel> {
                                 ChatSource.send(chat, uid, car.ownerId).then((
                                   value,
                                 ) {
-                                  final partnerInfo = {
-                                    'id': uid,
-                                    'type': authVM.account.value!.role,
-                                    'name': authVM.account.value!.name,
-                                    'email': authVM.account.value!.email,
-                                    'photoUrl': authVM.account.value!.photoUrl,
-                                  };
                                   Get.back();
+                                  final partnerInfo = {
+                                    'id': car.ownerId,
+                                    'type': car.ownerType,
+                                    'fullName': car.ownerFullName,
+                                    'username': car.ownerUsername,
+                                    'storeName': car.ownerStoreName,
+                                    'email': car.ownerEmail,
+                                    'photoUrl': car.ownerPhotoUrl,
+                                  };
                                   Get.toNamed(
                                     '/chatting',
                                     arguments: {
@@ -161,7 +165,7 @@ class FavoriteFragment extends GetView<FavoriteViewModel> {
                                       'ownerId': car.ownerId,
                                       'ownerType': car.ownerType,
                                       'partner': partnerInfo,
-                                      'from': 'favorite',
+                                      'from': 'detail',
                                     },
                                   );
                                 });

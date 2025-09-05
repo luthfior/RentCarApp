@@ -390,7 +390,7 @@ class CheckoutPage extends GetView<CheckoutViewModel> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  controller.authVM.account.value!.name,
+                  controller.authVM.account.value!.fullName,
                   style: GoogleFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.w400,

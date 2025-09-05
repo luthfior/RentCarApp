@@ -117,8 +117,9 @@ class ChatListFragment extends StatelessWidget {
                           final roomId = data['roomId'] as String;
                           final lastMessage =
                               data['lastMessage'] as String? ?? '';
-                          final ownerName =
-                              data['ownerName'] as String? ?? 'Tidak diketahui';
+                          final ownerStoreName =
+                              data['ownerStoreName'] as String? ??
+                              'Tidak diketahui';
                           final ownerEmail =
                               data['ownerEmail'] as String? ??
                               'Tidak diketahui';
@@ -126,9 +127,29 @@ class ChatListFragment extends StatelessWidget {
                               data['ownerPhotoUrl'] as String? ?? '';
                           final ownerType = data['ownerType'] as String? ?? '';
 
-                          final customerName =
-                              data['customerName'] as String? ??
-                              'Tidak diketahui';
+                          String customerUsername;
+                          if (data['customerUsername'] != null &&
+                              (data['customerUsername'] as String).contains(
+                                '#',
+                              )) {
+                            final parts = (data['customerUsername'] as String)
+                                .split('#');
+                            final rawName = parts[0].replaceAll('_', ' ');
+                            final suffix = parts[1];
+                            final capitalized = rawName
+                                .split(' ')
+                                .map(
+                                  (w) => w.isNotEmpty
+                                      ? "${w[0].toUpperCase()}${w.substring(1)}"
+                                      : w,
+                                )
+                                .join(' ');
+                            customerUsername = "$capitalized #$suffix";
+                          } else {
+                            customerUsername =
+                                data['customerFullname'] ?? 'Tidak diketahui';
+                          }
+
                           final customerEmail =
                               data['customerEmail'] as String? ??
                               'Tidak diketahui';
@@ -144,8 +165,8 @@ class ChatListFragment extends StatelessWidget {
                           final ownerId = parts.length > 1 ? parts[1] : '';
 
                           final chatName = (role == 'customer')
-                              ? ownerName
-                              : customerName;
+                              ? ownerStoreName
+                              : customerUsername;
                           final chatEmail = (role == 'customer')
                               ? ownerEmail
                               : customerEmail;
@@ -257,7 +278,13 @@ class ChatListFragment extends StatelessWidget {
                                     'type': (role == 'customer')
                                         ? ownerType
                                         : 'user',
-                                    'name': chatName,
+                                    'fullName': chatName,
+                                    'username': (role == 'customer')
+                                        ? ownerStoreName
+                                        : customerUsername,
+                                    'storeName': (role == 'customer')
+                                        ? ownerStoreName
+                                        : '',
                                     'email': chatEmail,
                                     'photoUrl': chatPhotoUrl,
                                   };

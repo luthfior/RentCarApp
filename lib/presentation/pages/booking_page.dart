@@ -183,7 +183,7 @@ class BookingPage extends GetView<BookingViewModel> {
                 ? controller.name.value
                 : 'Nama Lengkap',
             customHintFontSize: 14,
-            editingController: controller.nameController,
+            editingController: controller.fullNameController,
           ),
           const Gap(20),
           Row(

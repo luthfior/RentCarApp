@@ -1,7 +1,9 @@
 class Account {
   final String uid;
-  final String name;
+  final String fullName;
   final String email;
+  final String? username;
+  final String? storeName;
   final String? address;
   final String? photoUrl;
   final String role;
@@ -12,7 +14,9 @@ class Account {
   final Map? myOrders;
   Account({
     required this.uid,
-    required this.name,
+    required this.fullName,
+    required this.username,
+    required this.storeName,
     required this.email,
     this.address = '',
     this.photoUrl =
@@ -28,7 +32,9 @@ class Account {
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'uid': uid,
-      'name': name,
+      'fullName': fullName,
+      'username': username,
+      'storeName': storeName,
       'email': email,
       'address': address,
       'photoUrl': photoUrl,
@@ -44,7 +50,9 @@ class Account {
   factory Account.fromJson(Map<String, dynamic> json) {
     return Account(
       uid: json['uid'] as String,
-      name: json['name'] as String,
+      fullName: json['fullName'] as String,
+      username: json['username'] as String,
+      storeName: json['storeName'] as String,
       email: json['email'] as String,
       address: json['address'] as String?,
       photoUrl: json['photoUrl'] as String?,

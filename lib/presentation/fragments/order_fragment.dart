@@ -148,11 +148,14 @@ class OrderFragment extends GetView<OrderViewModel> {
                                 ChatSource.openChat(
                                   buyerId: uid,
                                   ownerId: car.car.ownerId,
-                                  buyerName: authVM.account.value!.name,
+                                  buyerFullName: authVM.account.value!.fullName,
+                                  buyerUsername:
+                                      authVM.account.value!.username!,
                                   buyerEmail: authVM.account.value!.email,
                                   buyerPhotoUrl:
                                       authVM.account.value!.photoUrl!,
-                                  ownerName: car.car.ownerName,
+                                  ownerStoreName: car.car.ownerStoreName,
+                                  ownerUsername: car.car.ownerUsername,
                                   ownerEmail: car.car.ownerEmail,
                                   ownerPhotoUrl: car.car.ownerPhotoUrl,
                                   ownerType: car.car.ownerType,
@@ -162,15 +165,16 @@ class OrderFragment extends GetView<OrderViewModel> {
                                     uid,
                                     car.car.ownerId,
                                   ).then((value) {
-                                    final partnerInfo = {
-                                      'id': uid,
-                                      'type': authVM.account.value!.role,
-                                      'name': authVM.account.value!.name,
-                                      'email': authVM.account.value!.email,
-                                      'photoUrl':
-                                          authVM.account.value!.photoUrl,
-                                    };
                                     Get.back();
+                                    final partnerInfo = {
+                                      'id': car.car.ownerId,
+                                      'type': car.car.ownerType,
+                                      'fullName': car.car.ownerFullName,
+                                      'username': car.car.ownerUsername,
+                                      'storeName': car.car.ownerStoreName,
+                                      'email': car.car.ownerEmail,
+                                      'photoUrl': car.car.ownerPhotoUrl,
+                                    };
                                     Get.toNamed(
                                       '/chatting',
                                       arguments: {
@@ -179,7 +183,7 @@ class OrderFragment extends GetView<OrderViewModel> {
                                         'ownerId': car.car.ownerId,
                                         'ownerType': car.car.ownerType,
                                         'partner': partnerInfo,
-                                        'from': 'order',
+                                        'from': 'detail',
                                       },
                                     );
                                   });

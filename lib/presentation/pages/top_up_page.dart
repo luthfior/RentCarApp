@@ -34,7 +34,7 @@ class TopUpPage extends GetView<TopUpViewModel> {
                         Get.until(
                           (route) => route.settings.name == '/discover',
                         );
-                        discoverVM.setFragmentIndex(3);
+                        discoverVM.setFragmentIndex(4);
                       } else {
                         Get.until(
                           (route) => route.settings.name == '/discover',

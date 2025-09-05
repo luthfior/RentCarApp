@@ -101,7 +101,7 @@ class RegisterFragment extends GetView<RegisterViewModel> {
                             ),
                           ),
                           child: Text(
-                            'Penyewa',
+                            'Penyedia',
                             textAlign: TextAlign.center,
                             style: GoogleFonts.poppins(
                               color: controller.selectedRole.value == 'seller'
@@ -117,125 +117,155 @@ class RegisterFragment extends GetView<RegisterViewModel> {
                 ),
               ),
               const Gap(20),
-              Obx(
-                () => Text(
-                  controller.selectedRole.value == 'seller'
-                      ? 'Nama Penyedia'
-                      : 'Nama Lengkap',
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Theme.of(Get.context!).colorScheme.onSurface,
-                  ),
-                ),
-              ),
-              const Gap(12),
-              Obx(
-                () => CustomInput(
-                  icon: 'assets/ic_profile.png',
-                  hint: controller.selectedRole.value == 'seller'
-                      ? 'Masukkan Nama Penyedia Anda'
-                      : 'Masukkan Nama Lengkap Anda',
-                  customHintFontSize: 14,
-                  editingController: controller.nameController,
-                  onChanged: (_) {
-                    controller.isNameTouched.value = true;
-                    controller.validateInputs();
-                  },
-                  errorText: controller.nameError.value,
-                  focusNode: controller.nameFocus,
-                  enable: connectivity.isOnline.value,
-                ),
-              ),
-              const Gap(20),
-              Obx(
-                () => Text(
-                  controller.selectedRole.value == 'seller'
-                      ? 'Alamat Email Penyedia'
-                      : 'Alamat Email',
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Theme.of(Get.context!).colorScheme.onSurface,
-                  ),
-                ),
-              ),
-              const Gap(12),
-              Obx(
-                () => CustomInput(
-                  icon: 'assets/ic_email.png',
-                  hint: controller.selectedRole.value == 'seller'
-                      ? 'Masukkan Alamat Email Penyedia Anda'
-                      : 'Masukkan Alamat Email Anda',
-                  customHintFontSize: 14,
-                  editingController: controller.emailController,
-                  onChanged: (_) {
-                    controller.isEmailTouched.value = true;
-                    controller.validateInputs();
-                  },
-                  errorText: controller.emailError.value,
-                  focusNode: controller.emailFocus,
-                  enable: connectivity.isOnline.value,
-                ),
-              ),
-              const Gap(20),
-              Obx(
-                () => Text(
-                  controller.selectedRole.value == 'seller'
-                      ? 'Kata Sandi Penyedia'
-                      : 'Kata Sandi',
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Theme.of(Get.context!).colorScheme.onSurface,
-                  ),
-                ),
-              ),
-              const Gap(12),
-              Obx(
-                () => CustomInput(
-                  icon: 'assets/ic_key.png',
-                  hint: controller.selectedRole.value == 'seller'
-                      ? 'Masukkan Kata Sandi Penyedia Anda'
-                      : 'Masukkan Kata Sandi Anda',
-                  customHintFontSize: 14,
-                  editingController: controller.passwordController,
-                  onChanged: (_) {
-                    controller.isPasswordTouched.value = true;
-                    controller.validateInputs();
-                  },
-                  errorText: controller.passwordError.value,
-                  obsecure: !controller.isPasswordVisible.value,
-                  focusNode: controller.passwordFocus,
-                  suffixIcon: IconButton(
-                    onPressed: () => controller.isPasswordVisible.toggle(),
-                    icon: Icon(
-                      controller.isPasswordVisible.value
-                          ? Icons.visibility
-                          : Icons.visibility_off,
-                    ),
-                  ),
-                  enable: connectivity.isOnline.value,
-                ),
-              ),
-              const Gap(30),
-              Obx(
-                () => ButtonPrimary(
-                  text: controller.selectedRole.value == 'seller'
-                      ? 'Daftar Toko'
-                      : 'Daftar',
-                  onTap:
-                      (!connectivity.isOnline.value ||
-                          controller.isLoading.value)
-                      ? null
-                      : () => controller.handleRegister(
-                          context,
-                          onRegisterSuccess: () {
-                            onSwitchToLogin();
-                          },
+              Obx(() {
+                final role = controller.selectedRole.value;
+                final isSeller = role == 'seller';
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // ==== Nama Toko hanya untuk Seller ====
+                    if (isSeller) ...[
+                      Text(
+                        'Nama Toko',
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
-                ),
-              ),
+                      ),
+                      const Gap(12),
+                      CustomInput(
+                        icon: 'assets/ic_profile.png',
+                        hint: 'Masukkan Nama Toko',
+                        customHintFontSize: 14,
+                        editingController: controller.storeNameController,
+                        onChanged: (_) {
+                          controller.isStoreNameTouched.value = true;
+                          controller.validateInputs();
+                        },
+                        errorText: controller.storeNameError.value,
+                        focusNode: controller.storeNameFocus,
+                        enable: connectivity.isOnline.value,
+                        isTextCapital: true,
+                      ),
+                      if (controller.storeNameSuggestion.value.isNotEmpty)
+                        Text(
+                          controller.storeNameSuggestion.value,
+                          style: const TextStyle(
+                            color: Colors.orange,
+                            fontSize: 12,
+                          ),
+                        ),
+                      const Gap(20),
+                    ],
+
+                    // ==== Full Name / Nama Penyedia ====
+                    Text(
+                      isSeller ? 'Nama Lengkap Penyedia' : 'Nama Lengkap',
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                    ),
+                    const Gap(12),
+                    CustomInput(
+                      icon: 'assets/ic_profile.png',
+                      hint: isSeller
+                          ? 'Masukkan Nama Penyedia'
+                          : 'Masukkan Nama Lengkap',
+                      customHintFontSize: 14,
+                      editingController: controller.fullNameController,
+                      onChanged: (_) {
+                        controller.isFullNameTouched.value = true;
+                        controller.validateInputs();
+                      },
+                      errorText: controller.fullNameError.value,
+                      focusNode: controller.fullNameFocus,
+                      enable: connectivity.isOnline.value,
+                      isTextCapital: true,
+                    ),
+                    const Gap(20),
+
+                    // ==== Email ====
+                    Text(
+                      isSeller ? 'Alamat Email Penyedia' : 'Alamat Email',
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                    ),
+                    const Gap(12),
+                    CustomInput(
+                      icon: 'assets/ic_email.png',
+                      hint: isSeller
+                          ? 'Masukkan Alamat Email Penyedia'
+                          : 'Masukkan Alamat Email',
+                      customHintFontSize: 14,
+                      editingController: controller.emailController,
+                      onChanged: (_) {
+                        controller.isEmailTouched.value = true;
+                        controller.validateInputs();
+                      },
+                      errorText: controller.emailError.value,
+                      focusNode: controller.emailFocus,
+                      enable: connectivity.isOnline.value,
+                    ),
+                    const Gap(20),
+
+                    // ==== Password ====
+                    Text(
+                      isSeller ? 'Kata Sandi Penyedia' : 'Kata Sandi',
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                    ),
+                    const Gap(12),
+                    CustomInput(
+                      icon: 'assets/ic_key.png',
+                      hint: isSeller
+                          ? 'Masukkan Kata Sandi Penyedia'
+                          : 'Masukkan Kata Sandi',
+                      customHintFontSize: 14,
+                      editingController: controller.passwordController,
+                      onChanged: (_) {
+                        controller.isPasswordTouched.value = true;
+                        controller.validateInputs();
+                      },
+                      errorText: controller.passwordError.value,
+                      obsecure: !controller.isPasswordVisible.value,
+                      focusNode: controller.passwordFocus,
+                      suffixIcon: IconButton(
+                        onPressed: controller.togglePasswordVisibility,
+                        icon: Icon(
+                          controller.isPasswordVisible.value
+                              ? Icons.visibility
+                              : Icons.visibility_off,
+                        ),
+                      ),
+                      enable: connectivity.isOnline.value,
+                    ),
+                    const Gap(30),
+
+                    // ==== Tombol ====
+                    ButtonPrimary(
+                      text: isSeller ? 'Daftar Toko' : 'Daftar',
+                      onTap:
+                          (!connectivity.isOnline.value ||
+                              controller.isLoading.value)
+                          ? null
+                          : () => controller.handleRegister(
+                              context,
+                              onRegisterSuccess: onSwitchToLogin,
+                            ),
+                    ),
+                  ],
+                );
+              }),
               const Gap(20),
               Row(
                 children: [

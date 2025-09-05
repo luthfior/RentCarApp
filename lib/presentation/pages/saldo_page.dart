@@ -29,7 +29,7 @@ class SaldoPage extends StatelessWidget {
               title: 'Saldo Dompet Ku',
               onBackTap: () {
                 if (connectivity.isOnline.value) {
-                  if (userRole == 'customer') {
+                  if (userRole == 'seller') {
                     Get.until((route) => route.settings.name == '/discover');
                     discoverVM.setFragmentIndex(3);
                   } else {

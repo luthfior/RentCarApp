@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:math' show Random;
 import 'package:crypto/crypto.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cloudinary_public/cloudinary_public.dart';
+import 'package:intl/intl.dart';
 import 'package:rent_car_app/data/models/account.dart';
 import 'package:rent_car_app/data/models/booked_car.dart';
 import 'package:rent_car_app/data/models/car.dart';
@@ -137,7 +139,7 @@ class UserSource {
     }
   }
 
-  Future<void> updateUserName(
+  Future<void> updateFullName(
     String userId,
     String userRole,
     String newName,
@@ -244,7 +246,14 @@ class UserSource {
 
   Future<void> createOrder(Account account, Car car) async {
     try {
+      final now = DateTime.now();
+      final formattedDate = DateFormat('d/M/yy').format(now);
+      final randomNumber = Random().nextInt(900) + 100;
+      final resi =
+          '$formattedDate-RCA-${account.uid.substring(0, 3)}-$randomNumber';
+
       final orderDocRef = await firestore.collection('Orders').add({
+        'resi': resi,
         'customerId': account.uid,
         'sellerId': car.ownerId,
         'productId': car.id,

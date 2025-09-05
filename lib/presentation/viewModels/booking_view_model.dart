@@ -12,7 +12,7 @@ class BookingViewModel extends GetxController {
 
   final name = ''.obs;
 
-  final TextEditingController nameController = TextEditingController();
+  final TextEditingController fullNameController = TextEditingController();
   final TextEditingController startDateController = TextEditingController();
   final TextEditingController endDateController = TextEditingController();
 
@@ -50,8 +50,8 @@ class BookingViewModel extends GetxController {
   void onInit() {
     super.onInit();
     if (authVM.account.value != null) {
-      name.value = authVM.account.value!.name;
-      nameController.text = name.value;
+      name.value = authVM.account.value!.fullName;
+      fullNameController.text = name.value;
     }
   }
 
@@ -87,7 +87,7 @@ class BookingViewModel extends GetxController {
   }
 
   void goToCheckout() {
-    if (nameController.text.isEmpty) {
+    if (fullNameController.text.isEmpty) {
       Message.error('Mohon lengkapi Nama Lengkap Anda.');
       return;
     }
@@ -109,7 +109,7 @@ class BookingViewModel extends GetxController {
       '/checkout',
       arguments: {
         'car': _car.value,
-        'nameOrder': nameController.text,
+        'nameOrder': fullNameController.text,
         'startDate': _selectedStartDate.value,
         'endDate': _selectedEndDate.value,
         'agency': agencyPicked,

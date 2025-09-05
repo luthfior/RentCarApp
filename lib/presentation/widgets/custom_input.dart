@@ -24,6 +24,7 @@ class CustomInput extends StatelessWidget {
     this.minLines,
     this.customBorderRadius = 50,
     this.suffixText,
+    this.isTextCapital = false,
   });
 
   final String? icon;
@@ -44,6 +45,7 @@ class CustomInput extends StatelessWidget {
   final int? minLines;
   final double? customBorderRadius;
   final String? suffixText;
+  final bool isTextCapital;
 
   @override
   Widget build(BuildContext context) {
@@ -124,6 +126,9 @@ class CustomInput extends StatelessWidget {
             ),
             maxLines: effectiveMaxLines,
             minLines: minLines,
+            textCapitalization: (isTextCapital == true)
+                ? TextCapitalization.words
+                : TextCapitalization.none,
           ),
         );
       },

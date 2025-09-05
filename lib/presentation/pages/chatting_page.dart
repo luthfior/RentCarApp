@@ -55,8 +55,17 @@ class ChattingPage extends GetView<ChatViewModel> {
                     if (from == 'detail') {
                       Get.back();
                     } else {
-                      Get.until((route) => route.settings.name == '/discover');
-                      discoverVM.setFragmentIndex(2);
+                      if (controller.authVM.account.value?.role == 'admin') {
+                        Get.until(
+                          (route) => route.settings.name == '/discover',
+                        );
+                        discoverVM.setFragmentIndex(3);
+                      } else {
+                        Get.until(
+                          (route) => route.settings.name == '/discover',
+                        );
+                        discoverVM.setFragmentIndex(2);
+                      }
                     }
                   },
                 ),
@@ -256,6 +265,48 @@ class ChattingPage extends GetView<ChatViewModel> {
     final isCurrentUser = chat.senderId == currentUser?.uid;
 
     final partner = isCurrentUser ? currentUser : controller.partner;
+    String displayName = "";
+
+    if (partner != null) {
+      if (currentUser?.role == 'seller' || currentUser?.role == 'admin') {
+        displayName = partner.username!;
+      } else {
+        displayName = partner.storeName?.isNotEmpty == true
+            ? partner.storeName!
+            : partner.fullName;
+      }
+    }
+
+    if (partner != null) {
+      if (currentUser?.role == 'seller' || currentUser?.role == 'admin') {
+        if (isCurrentUser) {
+          displayName = currentUser?.storeName ?? currentUser?.fullName ?? '';
+        } else {
+          if (partner.username != null && partner.username!.contains('#')) {
+            final parts = partner.username!.split('#');
+            final rawName = parts[0].replaceAll('_', ' ');
+            final suffix = parts[1];
+            final capitalized = rawName
+                .split(' ')
+                .map(
+                  (w) => w.isNotEmpty
+                      ? "${w[0].toUpperCase()}${w.substring(1)}"
+                      : w,
+                )
+                .join(' ');
+            displayName = "$capitalized #$suffix";
+          } else {
+            displayName = partner.fullName;
+          }
+        }
+      } else {
+        if (isCurrentUser) {
+          displayName = currentUser?.fullName ?? '';
+        } else {
+          displayName = partner.storeName ?? partner.fullName;
+        }
+      }
+    }
 
     return Column(
       crossAxisAlignment: isCurrentUser
@@ -315,7 +366,7 @@ class ChattingPage extends GetView<ChatViewModel> {
               const Gap(8),
             ],
             Text(
-              partner?.name ?? "Loading...",
+              displayName,
               style: GoogleFonts.poppins(
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
@@ -339,6 +390,30 @@ class ChattingPage extends GetView<ChatViewModel> {
   }
 
   Widget inputChat(String uid) {
+    final currentUser = controller.authVM.account.value;
+    final isCurrentUser = uid == currentUser?.uid;
+
+    final partner = isCurrentUser ? currentUser : controller.partner;
+    String? displayName = "";
+    if (currentUser?.role == 'customer') {
+      if (partner!.username != null && partner.username!.contains('#')) {
+        final parts = partner.username!.split('#');
+        final rawName = parts[0].replaceAll('_', ' ');
+        final suffix = parts[1];
+        final capitalized = rawName
+            .split(' ')
+            .map(
+              (w) =>
+                  w.isNotEmpty ? "${w[0].toUpperCase()}${w.substring(1)}" : w,
+            )
+            .join(' ');
+        displayName = "$capitalized #$suffix";
+      } else {
+        displayName = partner.fullName;
+      }
+    } else {
+      displayName = partner!.storeName;
+    }
     return Container(
       height: 52,
       margin: const EdgeInsets.fromLTRB(24, 24, 24, 30),
@@ -360,8 +435,7 @@ class ChattingPage extends GetView<ChatViewModel> {
                     await NotificationService.addNotification(
                       userId: partner.uid,
                       title: "Chat Baru",
-                      body:
-                          "Kamu mendapatkan Chat baru dari ${controller.authVM.account.value?.name ?? 'Pengguna'}",
+                      body: "Kamu mendapatkan Chat baru dari $displayName",
                       type: "chat",
                       referenceId: controller.roomId,
                     );
@@ -397,8 +471,7 @@ class ChattingPage extends GetView<ChatViewModel> {
                   await NotificationService.addNotification(
                     userId: partner.uid,
                     title: "Chat Baru",
-                    body:
-                        "Kamu mendapatkan Chat baru dari ${controller.authVM.account.value?.name ?? 'Pengguna'}",
+                    body: "Kamu mendapatkan Chat baru dari $displayName",
                     type: "chat",
                     referenceId: controller.roomId,
                   );

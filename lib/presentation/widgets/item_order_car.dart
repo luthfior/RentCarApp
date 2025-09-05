@@ -35,9 +35,9 @@ Widget itemOrderCar(BuildContext context, {required BookedCar bookedCar}) {
       : bookedCar.order.orderDate.toString();
 
   return Container(
-    height: 175,
+    height: 200,
     margin: const EdgeInsets.symmetric(vertical: 8),
-    padding: const EdgeInsets.fromLTRB(16, 6, 16, 8),
+    padding: const EdgeInsets.fromLTRB(8, 6, 8, 8),
     decoration: BoxDecoration(
       color: Theme.of(Get.context!).colorScheme.surface,
       borderRadius: BorderRadius.circular(16),
@@ -206,13 +206,37 @@ Widget itemOrderCar(BuildContext context, {required BookedCar bookedCar}) {
                 color: Theme.of(Get.context!).colorScheme.onSurface,
               ),
             ),
-            const Gap(10),
             Expanded(
               child: Text(
                 formattedDate,
+                overflow: TextOverflow.ellipsis,
                 style: GoogleFonts.poppins(
                   fontSize: 12,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w400,
+                  color: Theme.of(Get.context!).colorScheme.onSurface,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const Gap(4),
+        Row(
+          children: [
+            Text(
+              "Resi: ",
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: Theme.of(Get.context!).colorScheme.onSurface,
+              ),
+            ),
+            Expanded(
+              child: Text(
+                bookedCar.order.resi,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.poppins(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w400,
                   color: Theme.of(Get.context!).colorScheme.onSurface,
                 ),
               ),
@@ -231,10 +255,11 @@ Widget itemOrderCar(BuildContext context, {required BookedCar bookedCar}) {
                 shape: BoxShape.circle,
               ),
             ),
-            const Gap(10),
+            const Gap(4),
             Expanded(
               child: Text(
                 statusText,
+                overflow: TextOverflow.ellipsis,
                 style: GoogleFonts.poppins(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,

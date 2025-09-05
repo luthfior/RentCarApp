@@ -62,11 +62,13 @@ class ChatViewModel extends GetxController {
       if (args['partner'] != null) {
         final partnerInfo = args['partner'] as Map<String, dynamic>;
         partner = Account(
-          uid: partnerInfo['id'],
-          name: partnerInfo['name'],
-          email: partnerInfo['email'],
-          photoUrl: partnerInfo['photoUrl'],
-          role: partnerInfo['type'],
+          uid: partnerInfo['id'] ?? '',
+          fullName: partnerInfo['fullName'] ?? '',
+          username: partnerInfo['username'] ?? '',
+          storeName: partnerInfo['storeName'] ?? '',
+          email: partnerInfo['email'] ?? '',
+          photoUrl: partnerInfo['photoUrl'] ?? '',
+          role: partnerInfo['type'] ?? 'user',
         );
       } else {
         final currentUser = authVM.account.value;

@@ -10,18 +10,14 @@ class AuthSource {
   final fireStore = FirebaseFirestore.instance;
 
   Future<Result<Account>> register({
-    required String name,
+    required String fullName,
     required String email,
     required String password,
     required String role,
+    String? storeName,
   }) async {
     try {
-      final querySnapshot = await fireStore
-          .collection('Users')
-          .where('name', isEqualTo: name)
-          .get();
-
-      if (querySnapshot.docs.isNotEmpty) {
+      if (fullName.toLowerCase().contains('admin')) {
         return Result.failure('Nama pengguna telah digunakan');
       }
 
@@ -29,13 +25,53 @@ class AuthSource {
         email: email,
         password: password,
       );
+
       final uid = credential.user?.uid;
       if (uid == null) return Result.failure('UID tidak ditemukan');
-      final account = Account(uid: uid, name: name, email: email, role: role);
+
+      String? username;
+      String? finalStoreName;
+
+      if (role == 'customer') {
+        final cleanUsername = fullName.trim().toLowerCase().replaceAll(
+          ' ',
+          '_',
+        );
+        final suffix = uid.substring(0, 3);
+        username = "$cleanUsername#$suffix";
+        finalStoreName = '';
+      } else if (role == 'seller') {
+        final snapshot = await fireStore
+            .collection('Users')
+            .where('storeName', isEqualTo: storeName)
+            .get();
+
+        if (snapshot.docs.isNotEmpty) {
+          return Result.failure('Nama Toko sudah digunakan, coba nama lain');
+        }
+        final cleanUsername = fullName.trim().toLowerCase().replaceAll(
+          ' ',
+          '_',
+        );
+        final suffix = uid.substring(0, 3);
+        username = "$cleanUsername#$suffix";
+        finalStoreName = storeName;
+      }
+
+      final account = Account(
+        uid: uid,
+        fullName: fullName,
+        email: email,
+        role: role,
+        username: username,
+        storeName: finalStoreName,
+      );
+
       await fireStore
           .collection('Users')
           .doc(account.uid)
           .set(account.toJson());
+
       return Result.success(account);
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {
@@ -49,7 +85,7 @@ class AuthSource {
       log('Firebase Error: ${e.code} - ${e.message}');
       rethrow;
     } catch (e) {
-      log('Gagal daftar akun $e');
+      log('Gagal Daftar Akun $e');
       return Result.failure(e.toString());
     }
   }

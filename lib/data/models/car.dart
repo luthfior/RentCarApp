@@ -11,7 +11,9 @@ class Car {
   final String transmissionProduct;
   final String ownerId;
   final String ownerType;
-  final String ownerName;
+  final String ownerStoreName;
+  final String ownerFullName;
+  final String ownerUsername;
   final String ownerEmail;
   final String ownerPhotoUrl;
   final String? address;
@@ -32,7 +34,9 @@ class Car {
     required this.transmissionProduct,
     required this.ownerId,
     required this.ownerType,
-    required this.ownerName,
+    required this.ownerStoreName,
+    required this.ownerUsername,
+    required this.ownerFullName,
     required this.ownerEmail,
     required this.ownerPhotoUrl,
     this.address,
@@ -56,7 +60,9 @@ class Car {
       'transmissionProduct': transmissionProduct,
       'ownerId': ownerId,
       'ownerType': ownerType,
-      'ownerName': ownerName,
+      'ownerStoreName': ownerStoreName,
+      'ownerUsername': ownerUsername,
+      'ownerFullName': ownerFullName,
       'ownerEmail': ownerEmail,
       'ownerPhotoUrl': ownerPhotoUrl,
       'address': address,
@@ -81,7 +87,9 @@ class Car {
       transmissionProduct: json['transmissionProduct'] as String? ?? '',
       ownerId: json['ownerId'] as String? ?? '',
       ownerType: json['ownerType'] as String? ?? '',
-      ownerName: json['ownerName'] as String? ?? '',
+      ownerStoreName: json['ownerStoreName'] as String? ?? '',
+      ownerUsername: json['ownerUsername'] as String? ?? '',
+      ownerFullName: json['ownerFullName'] as String? ?? '',
       ownerEmail: json['ownerEmail'] as String? ?? '',
       ownerPhotoUrl: json['ownerPhotoUrl'] as String? ?? '',
       address: json['address'] as String? ?? '',
@@ -105,8 +113,10 @@ class Car {
     transmissionProduct: '',
     ownerId: '',
     ownerType: '',
-    ownerName: '',
+    ownerStoreName: '',
     ownerEmail: '',
+    ownerUsername: '',
+    ownerFullName: '',
     ownerPhotoUrl: '',
     address: '',
     province: '',

@@ -375,19 +375,27 @@ class DetailPage extends GetView<DetailViewModel> {
                       await ChatSource.openChat(
                         buyerId: uid,
                         ownerId: car.ownerId,
-                        buyerName: authVM.account.value!.name,
+                        buyerUsername: authVM.account.value!.username!,
+                        buyerFullName: authVM.account.value!.fullName,
                         buyerEmail: authVM.account.value!.email,
                         buyerPhotoUrl: authVM.account.value!.photoUrl!,
-                        ownerName: car.ownerName,
+                        ownerUsername: car.ownerUsername,
+                        ownerStoreName: car.ownerStoreName,
                         ownerEmail: car.ownerEmail,
                         ownerPhotoUrl: car.ownerPhotoUrl,
                         ownerType: car.ownerType,
                       );
-
                       await ChatSource.send(chat, uid, car.ownerId);
-
                       Get.back();
-
+                      final partnerInfo = {
+                        'id': car.ownerId,
+                        'type': car.ownerType,
+                        'fullName': car.ownerFullName,
+                        'username': car.ownerUsername,
+                        'storeName': car.ownerStoreName,
+                        'email': car.ownerEmail,
+                        'photoUrl': car.ownerPhotoUrl,
+                      };
                       Get.toNamed(
                         '/chatting',
                         arguments: {
@@ -395,8 +403,7 @@ class DetailPage extends GetView<DetailViewModel> {
                           'uid': uid,
                           'ownerId': car.ownerId,
                           'ownerType': car.ownerType,
-                          'ownerName': car.ownerName,
-                          'ownerPhotoUrl': car.ownerPhotoUrl,
+                          'partner': partnerInfo,
                           'from': 'detail',
                         },
                       );

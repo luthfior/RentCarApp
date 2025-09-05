@@ -13,9 +13,9 @@ class ProfileViewModel extends GetxController {
   final authVM = Get.find<AuthViewModel>();
   final discoverVM = Get.find<DiscoverViewModel>();
 
-  final name = ''.obs;
+  final fullName = ''.obs;
   final address = ''.obs;
-  final nameEdt = TextEditingController();
+  final fullNameEdt = TextEditingController();
   final addressEdt = TextEditingController();
   final isChanged = false.obs;
   final selectedPhotoFile = Rx<XFile?>(null);
@@ -26,7 +26,7 @@ class ProfileViewModel extends GetxController {
 
   void checkChanges() {
     isChanged.value =
-        (name.value != authVM.account.value?.name) ||
+        (fullName.value != authVM.account.value?.fullName) ||
         address.value != authVM.account.value?.address ||
         (selectedPhotoFile.value != null);
   }
@@ -35,8 +35,8 @@ class ProfileViewModel extends GetxController {
   void onInit() {
     super.onInit();
     if (authVM.account.value != null) {
-      name.value = authVM.account.value!.name;
-      nameEdt.text = authVM.account.value!.name;
+      fullName.value = authVM.account.value!.fullName;
+      fullNameEdt.text = authVM.account.value!.fullName;
       address.value = authVM.account.value!.address ?? '';
       addressEdt.text = authVM.account.value!.address ?? '';
     }
@@ -68,7 +68,7 @@ class ProfileViewModel extends GetxController {
       log('Error: User ID tidak ditemukan');
       return;
     }
-    if (name.value.trim().isEmpty) {
+    if (fullName.value.trim().isEmpty) {
       status = 'failed';
       Message.error('Nama Lengkap tidak boleh kosong');
       return;
@@ -86,8 +86,8 @@ class ProfileViewModel extends GetxController {
           selectedPhotoFile.value!,
         );
       }
-      if (name.value != authVM.account.value?.name) {
-        await userSource.updateUserName(uid, userRole!, name.value);
+      if (fullName.value != authVM.account.value?.fullName) {
+        await userSource.updateFullName(uid, userRole!, fullName.value);
       }
       if (address.value != authVM.account.value?.address) {
         await userSource.updateUserAddress(uid, userRole!, address.value);

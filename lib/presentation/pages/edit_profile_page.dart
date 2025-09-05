@@ -98,13 +98,13 @@ class EditProfilePage extends GetView<ProfileViewModel> {
                           CustomInput(
                             enable: connectivity.isOnline.value,
                             icon: 'assets/ic_profile.png',
-                            hint: controller.name.value.isNotEmpty
-                                ? controller.name.value
+                            hint: controller.fullName.value.isNotEmpty
+                                ? controller.fullName.value
                                 : 'Masukkan Nama Lengkap',
                             customHintFontSize: 14,
-                            editingController: controller.nameEdt,
+                            editingController: controller.fullNameEdt,
                             onChanged: (text) {
-                              controller.name.value = text;
+                              controller.fullName.value = text;
                               controller.checkChanges();
                             },
                           ),

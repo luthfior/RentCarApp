@@ -21,7 +21,7 @@ class DiscoverViewModel extends GetxController {
     super.onInit();
     if (authVM.account.value != null) {
       userId.value = authVM.account.value!.uid;
-      userName.value = authVM.account.value!.name;
+      userName.value = authVM.account.value!.fullName;
       userRole.value = authVM.account.value!.role;
       listenUnreadMessages();
     }

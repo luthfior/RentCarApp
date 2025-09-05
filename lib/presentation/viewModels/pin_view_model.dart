@@ -19,6 +19,9 @@ class PinViewModel extends GetxController {
 
   final authVM = Get.find<AuthViewModel>();
   final discoverVM = Get.find<DiscoverViewModel>();
+  CheckoutViewModel? get checkoutVm => Get.isRegistered<CheckoutViewModel>()
+      ? Get.find<CheckoutViewModel>()
+      : null;
   late Car? car;
   final pin1 = TextEditingController();
   final pin2 = TextEditingController();
@@ -97,14 +100,13 @@ class PinViewModel extends GetxController {
         discoverVM.setFragmentIndex(3);
       } else {
         await userSource.createPin(userId, pin);
-        if (Get.isRegistered<CheckoutViewModel>()) {
-          final checkoutVm = Get.find<CheckoutViewModel>();
-          checkoutVm.hasPin.value = true;
+        if (checkoutVm != null) {
+          checkoutVm!.hasPin.value = true;
           Get.back();
         } else {
           Message.success('PIN berhasil dibuat');
           Get.until((route) => route.settings.name == '/discover');
-          discoverVM.setFragmentIndex(3);
+          discoverVM.setFragmentIndex(4);
         }
       }
     } catch (e) {
@@ -163,8 +165,7 @@ class PinViewModel extends GetxController {
         throw Exception('PIN yang Anda masukkan salah');
       }
 
-      final checkoutVm = Get.find<CheckoutViewModel>();
-      await checkoutVm.processPayment(enteredPin);
+      await checkoutVm?.processPayment(enteredPin);
       Message.success('Pembayaran berhasil. Pesanan telah dibuat!');
       Get.offAllNamed(
         '/complete',
