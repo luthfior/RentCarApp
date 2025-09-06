@@ -124,7 +124,6 @@ class RegisterFragment extends GetView<RegisterViewModel> {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // ==== Nama Toko hanya untuk Seller ====
                     if (isSeller) ...[
                       Text(
                         'Nama Toko',
@@ -160,7 +159,6 @@ class RegisterFragment extends GetView<RegisterViewModel> {
                       const Gap(20),
                     ],
 
-                    // ==== Full Name / Nama Penyedia ====
                     Text(
                       isSeller ? 'Nama Lengkap Penyedia' : 'Nama Lengkap',
                       style: GoogleFonts.poppins(
@@ -188,7 +186,6 @@ class RegisterFragment extends GetView<RegisterViewModel> {
                     ),
                     const Gap(20),
 
-                    // ==== Email ====
                     Text(
                       isSeller ? 'Alamat Email Penyedia' : 'Alamat Email',
                       style: GoogleFonts.poppins(
@@ -215,7 +212,6 @@ class RegisterFragment extends GetView<RegisterViewModel> {
                     ),
                     const Gap(20),
 
-                    // ==== Password ====
                     Text(
                       isSeller ? 'Kata Sandi Penyedia' : 'Kata Sandi',
                       style: GoogleFonts.poppins(
@@ -251,7 +247,6 @@ class RegisterFragment extends GetView<RegisterViewModel> {
                     ),
                     const Gap(30),
 
-                    // ==== Tombol ====
                     ButtonPrimary(
                       text: isSeller ? 'Daftar Toko' : 'Daftar',
                       onTap:

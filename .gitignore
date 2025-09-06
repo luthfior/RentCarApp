@@ -45,7 +45,7 @@ app.*.map.json
 /android/app/release
 
 # Ignore environment configuration file
-.env
+backend/.env
 firebase.json
 android/app/google-services.json
 lib/core/firebase_options.dart

@@ -67,6 +67,8 @@ dependencies:
   google_places_flutter: ^2.1.1
   flutter_google_places_sdk: ^0.4.2+1
   flutter_google_places_hoc081098: ^2.0.0
+  firebase_messaging: ^15.2.10
+  flutter_local_notifications: ^19.4.1
 
 dev_dependencies:
   flutter_test:

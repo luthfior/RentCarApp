@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
@@ -7,8 +8,11 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:rent_car_app/core/constants/message.dart';
+import 'package:rent_car_app/data/models/account.dart';
 import 'package:rent_car_app/data/models/car.dart';
 import 'package:rent_car_app/data/services/connectivity_service.dart';
+import 'package:rent_car_app/data/services/notification_service.dart';
+import 'package:rent_car_app/data/services/push_notification_service.dart';
 import 'package:rent_car_app/data/sources/chat_source.dart';
 import 'package:rent_car_app/data/models/chat.dart';
 import 'package:rent_car_app/presentation/viewModels/auth_view_model.dart';
@@ -386,6 +390,56 @@ class DetailPage extends GetView<DetailViewModel> {
                         ownerType: car.ownerType,
                       );
                       await ChatSource.send(chat, uid, car.ownerId);
+
+                      String displayNameNotification = '';
+                      if (authVM.account.value!.username!.isNotEmpty) {
+                        final parts = authVM.account.value!.username!.split(
+                          '#',
+                        );
+                        final rawName = parts[0].replaceAll('_', ' ');
+                        final suffix = parts[1];
+                        final capitalized = rawName
+                            .split(' ')
+                            .map(
+                              (w) => w.isNotEmpty
+                                  ? "${w[0].toUpperCase()}${w.substring(1)}"
+                                  : w,
+                            )
+                            .join(' ');
+                        displayNameNotification = "$capitalized #$suffix";
+                      }
+
+                      final sellerId = car.ownerId;
+                      final collection = (car.ownerType == 'seller')
+                          ? "Users"
+                          : "Admin";
+
+                      final partnerDoc = await FirebaseFirestore.instance
+                          .collection(collection)
+                          .doc(sellerId)
+                          .get();
+                      final partner = Account.fromJson(partnerDoc.data()!);
+
+                      final tokens = partner.fcmTokens ?? [];
+                      if (tokens.isNotEmpty) {
+                        await PushNotificationService.sendToMany(
+                          tokens,
+                          "Chat Baru",
+                          "Kamu mendapat Chat baru dari $displayNameNotification",
+                        );
+                      } else {
+                        log('gagal kirim push notification');
+                      }
+
+                      await NotificationService.addNotification(
+                        userId: partner.uid,
+                        title: "Chat Baru",
+                        body:
+                            "Kamu mendapatkan Chat baru dari $displayNameNotification",
+                        type: "chat",
+                        referenceId: '${uid}_${car.ownerId}',
+                      );
+
                       Get.back();
                       final partnerInfo = {
                         'id': car.ownerId,

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dotted_line/dotted_line.dart';
 import 'package:extended_image/extended_image.dart';
@@ -9,6 +11,7 @@ import 'package:intl/intl.dart';
 import 'package:rent_car_app/data/models/chat.dart';
 import 'package:rent_car_app/data/services/connectivity_service.dart';
 import 'package:rent_car_app/data/services/notification_service.dart';
+import 'package:rent_car_app/data/services/push_notification_service.dart';
 import 'package:rent_car_app/presentation/viewModels/chat_view_model.dart';
 import 'package:rent_car_app/presentation/viewModels/discover_view_model.dart';
 import 'package:rent_car_app/presentation/widgets/custom_header.dart';
@@ -432,6 +435,16 @@ class ChattingPage extends GetView<ChatViewModel> {
                   controller.sendMessage();
                   final partner = controller.partner;
                   if (partner != null) {
+                    final tokens = partner.fcmTokens ?? [];
+                    if (tokens.isNotEmpty) {
+                      await PushNotificationService.sendToMany(
+                        tokens,
+                        "Chat Baru",
+                        "Kamu mendapat Chat baru dari $displayName",
+                      );
+                    } else {
+                      log('gagal kirim push notification');
+                    }
                     await NotificationService.addNotification(
                       userId: partner.uid,
                       title: "Chat Baru",
@@ -468,6 +481,16 @@ class ChattingPage extends GetView<ChatViewModel> {
                 controller.sendMessage();
                 final partner = controller.partner;
                 if (partner != null) {
+                  final tokens = partner.fcmTokens ?? [];
+                  if (tokens.isNotEmpty) {
+                    await PushNotificationService.sendToMany(
+                      tokens,
+                      "Chat Baru",
+                      "Kamu mendapat Chat baru dari $displayName",
+                    );
+                  } else {
+                    log('gagal kirim push notification');
+                  }
                   await NotificationService.addNotification(
                     userId: partner.uid,
                     title: "Chat Baru",

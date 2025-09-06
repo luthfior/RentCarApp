@@ -1,0 +1,14 @@
+{
+  "name": "rent-car-backend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "dotenv": "^16.3.1",
+    "firebase-admin": "^12.6.0"
+  }
+}

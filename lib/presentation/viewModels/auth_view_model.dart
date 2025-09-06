@@ -5,10 +5,12 @@ import 'package:get/get.dart';
 import 'package:rent_car_app/core/constants/message.dart';
 import 'package:rent_car_app/data/models/account.dart';
 import 'package:d_session/d_session.dart';
+import 'package:rent_car_app/data/sources/auth_source.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthViewModel extends GetxController {
   Rx<Account?> account = Rx<Account?>(null);
+  final authSource = AuthSource();
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
   Future<void> checkSession() async {
@@ -82,10 +84,19 @@ class AuthViewModel extends GetxController {
   }
 
   Future<void> logout() async {
-    await DSession.removeUser().then((removed) {
-      if (removed) {
-        Get.offAllNamed('/auth', arguments: 'login');
+    final user = await DSession.getUser();
+    if (user != null) {
+      final userRole = user['role'];
+      if (userRole != 'admin') {
+        authSource.removeFcmToken(user['uid'], isAdmin: false);
+      } else {
+        authSource.removeFcmToken(user['uid'], isAdmin: true);
       }
-    });
+      await DSession.removeUser().then((removed) {
+        if (removed) {
+          Get.offAllNamed('/auth', arguments: 'login');
+        }
+      });
+    }
   }
 }

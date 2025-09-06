@@ -12,6 +12,7 @@ class Account {
   final String? pin;
   final Map? favProducts;
   final Map? myOrders;
+  final List<String>? fcmTokens;
   Account({
     required this.uid,
     required this.fullName,
@@ -27,6 +28,7 @@ class Account {
     this.pin,
     this.favProducts,
     this.myOrders,
+    this.fcmTokens,
   });
 
   Map<String, dynamic> toJson() {
@@ -44,6 +46,7 @@ class Account {
       'pin': pin,
       'favProducts': favProducts,
       'myOrders': myOrders,
+      'fcmTokens': fcmTokens,
     };
   }
 
@@ -65,6 +68,9 @@ class Account {
           : null,
       myOrders: json['myOrders'] != null
           ? Map.from(json['myOrders'] as Map<String, dynamic>)
+          : null,
+      fcmTokens: json['fcmTokens'] != null
+          ? List<String>.from(json['fcmTokens'])
           : null,
     );
   }
