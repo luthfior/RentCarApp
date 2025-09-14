@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import admin from "firebase-admin";
 import { getFirestore } from "firebase-admin/firestore";
+import midtransClient from "midtrans-client";
 
 dotenv.config();
 
@@ -136,6 +137,41 @@ app.post("/send-all", async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: "Failed to send broadcast" });
+    }
+});
+
+app.post("/create-transaction", async (req, res) => {
+    try {
+        const { amount, customer } = req.body;
+
+        if (!amount || !customer) {
+            return res.status(400).json({ error: "Missing amount or customer" });
+        }
+
+        const snap = new midtransClient.Snap({
+            isProduction: false,
+            serverKey: process.env.MIDTRANS_SERVER_KEY,
+            clientKey: process.env.MIDTRANS_CLIENT_KEY,
+        });
+
+        const parameter = {
+            transaction_details: {
+                order_id: "ORDER-" + new Date().getTime(),
+                gross_amount: amount,
+            },
+            customer_details: {
+                first_name: customer.name,
+                email: customer.email,
+                phone: customer.phone,
+            },
+        };
+
+        const transaction = await snap.createTransaction(parameter);
+
+        res.json({ token: transaction.token, redirect_url: transaction.redirect_url });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Failed to create transaction" });
     }
 });
 
