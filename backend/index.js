@@ -151,7 +151,6 @@ app.post("/create-transaction", async (req, res) => {
         const snap = new midtransClient.Snap({
             isProduction: false,
             serverKey: process.env.MIDTRANS_SERVER_KEY,
-            clientKey: process.env.MIDTRANS_CLIENT_KEY,
         });
 
         const parameter = {
@@ -160,9 +159,9 @@ app.post("/create-transaction", async (req, res) => {
                 gross_amount: amount,
             },
             customer_details: {
-                first_name: customer.name,
-                email: customer.email,
-                phone: customer.phone,
+                first_name: customer?.name || "Guest",
+                email: customer?.email || "guest@gmail.com",
+                phone: customer?.phone || "08123456789",
             },
         };
 
@@ -176,4 +175,4 @@ app.post("/create-transaction", async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
