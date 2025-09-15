@@ -20,7 +20,7 @@ admin.initializeApp({
 
 const db = getFirestore();
 const app = express();
-app.use(express.json());
+app.use(express.json({ limit: '2mb' }));
 
 app.get("/", (req, res) => {
     res.send("Backend FCM aktif");
@@ -159,7 +159,7 @@ app.post("/create-transaction", async (req, res) => {
                 gross_amount: amount,
             },
             customer_details: {
-                first_name: customer?.name || "Guest",
+                first_name: customer?.first_name || customer?.last_name || "Guest",
                 email: customer?.email || "guest@gmail.com",
                 phone: customer?.phone || "08123456789",
             },
