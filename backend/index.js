@@ -159,9 +159,30 @@ app.post("/create-transaction", async (req, res) => {
                 gross_amount: amount,
             },
             customer_details: {
-                first_name: customer?.first_name || customer?.last_name || "Guest",
+                first_name: customer?.first_name || "Guest",
+                last_name: customer?.last_name || "User",
                 email: customer?.email || "guest@gmail.com",
                 phone: customer?.phone || "08123456789",
+                billing_address: {
+                    first_name: customer?.first_name || "Guest",
+                    last_name: customer?.last_name || "User",
+                    email: customer?.email || "guest@gmail.com",
+                    phone: customer?.phone || "08123456789",
+                    address: customer?.full_address || "Jl. Default No.1",
+                    city: customer?.city || "Jakarta",
+                    postal_code: "12345",
+                    country_code: "IDN",
+                },
+                shipping_address: {
+                    first_name: customer?.first_name || "Guest",
+                    last_name: customer?.last_name || "User",
+                    email: customer?.email || "guest@gmail.com",
+                    phone: customer?.phone || "08123456789",
+                    address: customer?.full_address || "Jl. Default No.1",
+                    city: customer?.city || "Jakarta",
+                    postal_code: "12345",
+                    country_code: "IDN",
+                },
             },
         };
 
