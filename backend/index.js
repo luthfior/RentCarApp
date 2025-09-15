@@ -20,7 +20,12 @@ admin.initializeApp({
 
 const db = getFirestore();
 const app = express();
-app.use(express.json({ limit: '2mb' }));
+app.use(express.json({ limit: '5mb' }));
+app.use((req, res, next) => {
+    req.setTimeout(15000);
+    next();
+});
+
 
 app.get("/", (req, res) => {
     res.send("Backend FCM aktif");
@@ -142,7 +147,12 @@ app.post("/send-all", async (req, res) => {
 
 app.post("/create-transaction", async (req, res) => {
     try {
+        console.log("Incoming body:", req.body);
+
         const { amount, customer } = req.body;
+        if (!amount || !customer) {
+            return res.status(400).json({ error: "Missing amount or customer" });
+        }
 
         if (!amount || !customer) {
             return res.status(400).json({ error: "Missing amount or customer" });
@@ -187,6 +197,7 @@ app.post("/create-transaction", async (req, res) => {
         };
 
         const transaction = await snap.createTransaction(parameter);
+        console.log("Snap response:", transaction);
 
         res.json({ token: transaction.token, redirect_url: transaction.redirect_url });
     } catch (err) {
