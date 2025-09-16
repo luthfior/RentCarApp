@@ -22,13 +22,16 @@ const db = getFirestore();
 const app = express();
 app.use(express.json({ limit: '5mb' }));
 app.use((req, res, next) => {
-    req.setTimeout(15000);
+    req.setTimeout(30000);
     next();
 });
 
-
 app.get("/", (req, res) => {
-    res.send("Backend FCM aktif");
+    res.send("Backend aktif");
+});
+
+app.get("/health", (req, res) => {
+    res.status(200).send("ok");
 });
 
 app.post("/send-notification", async (req, res) => {
@@ -48,7 +51,6 @@ app.post("/send-notification", async (req, res) => {
         res.status(500).json({ error: "Failed to send notification" });
     }
 });
-
 
 app.post("/send-multi", async (req, res) => {
     try {
@@ -71,7 +73,6 @@ app.post("/send-multi", async (req, res) => {
         res.status(500).json({ error: "Failed to send multicast" });
     }
 });
-
 
 app.post("/send-to-role", async (req, res) => {
     try {
@@ -193,6 +194,16 @@ app.post("/create-transaction", async (req, res) => {
                     postal_code: "12345",
                     country_code: "IDN",
                 },
+                item_details: [{
+                    id: product?.id || "Mobil1",
+                    price: product?.priceProduct || 10000,
+                    quantity: 1,
+                    name: product?.nameProduct || "Mobil",
+                    brand: product?.transmissionProduct || "Automatic",
+                    category: product?.categoryProduct || "SUV",
+                    merchant_name: "RentCarApp+",
+                    url: "https://rentcarapp.com/mobil"
+                }]
             },
         };
 
