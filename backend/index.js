@@ -148,10 +148,10 @@ app.post("/create-transaction", async (req, res) => {
     try {
         console.log("Incoming body:", req.body);
 
-        const { amount, customer, product, rentDurationInDays } = req.body;
+        const { amount, customer, product } = req.body;
 
-        if (!amount || !customer || !product || !rentDurationInDays) {
-            return res.status(400).json({ error: "Missing amount, customer, product, or rentDurationInDays" });
+        if (!amount || !customer || !product) {
+            return res.status(400).json({ error: "Missing amount, customer, or product" });
         }
 
         const snap = new midtransClient.Snap({
@@ -196,7 +196,7 @@ app.post("/create-transaction", async (req, res) => {
                 {
                     id: product?.id || "Mobil1",
                     price: product?.price || 10000,
-                    quantity: rentDurationInDays || 1,
+                    quantity: req.body.rentDurationInDays || 1,
                     name: product?.name || "Mobil",
                     brand: product?.brand || "Automatic",
                     category: product?.category || "SUV",
@@ -205,8 +205,8 @@ app.post("/create-transaction", async (req, res) => {
                 },
                 {
                     id: "driver",
-                    price: req.body.driverCost || 0,
-                    quantity: 1,
+                    price: req.body.driverCostPerDay || 10000,
+                    quantity: req.body.rentDurationInDays || 1,
                     name: "Biaya Supir"
                 },
                 {
