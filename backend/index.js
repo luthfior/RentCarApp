@@ -148,10 +148,10 @@ app.post("/create-transaction", async (req, res) => {
     try {
         console.log("Incoming body:", req.body);
 
-        const { amount, customer, product } = req.body;
+        const { amount, customer, product, rentDurationInDays } = req.body;
 
-        if (!amount || !customer || !product) {
-            return res.status(400).json({ error: "Missing amount, customer, or product" });
+        if (!amount || !customer || !product || !rentDurationInDays) {
+            return res.status(400).json({ error: "Missing amount, customer, product, or rentDurationInDays" });
         }
 
         const snap = new midtransClient.Snap({
@@ -192,16 +192,36 @@ app.post("/create-transaction", async (req, res) => {
                     country_code: "IDN",
                 },
             },
-            item_details: [{
-                id: product?.id || "Mobil1",
-                price: product?.price || 10000,
-                quantity: 1,
-                name: product?.name || "Mobil",
-                brand: product?.brand || "Automatic",
-                category: product?.category || "SUV",
-                merchant_name: "RentCarApp+",
-                url: "https://rentcarapp.com/mobil"
-            }]
+            item_details: [
+                {
+                    id: product?.id || "Mobil1",
+                    price: product?.price || 10000,
+                    quantity: rentDurationInDays || 1,
+                    name: product?.name || "Mobil",
+                    brand: product?.brand || "Automatic",
+                    category: product?.category || "SUV",
+                    merchant_name: "RentCarApp+",
+                    url: "https://rentcarapp.com/mobil"
+                },
+                {
+                    id: "driver",
+                    price: req.body.driverCost || 0,
+                    quantity: 1,
+                    name: "Biaya Supir"
+                },
+                {
+                    id: "insurance",
+                    price: req.body.insuranceCost || 0,
+                    quantity: 1,
+                    name: "Biaya Asuransi"
+                },
+                {
+                    id: "additional",
+                    price: req.body.additionalCost || 0,
+                    quantity: 1,
+                    name: "Biaya Tambahan"
+                }
+            ].filter(item => item.price > 0)
         };
 
         const transaction = await snap.createTransaction(parameter);
