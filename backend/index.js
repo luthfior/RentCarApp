@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import admin from "firebase-admin";
 import { getFirestore } from "firebase-admin/firestore";
 import midtransClient from "midtrans-client";
+import cors from "cors";
 
 dotenv.config();
 
@@ -21,10 +22,7 @@ admin.initializeApp({
 const db = getFirestore();
 const app = express();
 app.use(express.json({ limit: '5mb' }));
-app.use((req, res, next) => {
-    req.setTimeout(30000);
-    next();
-});
+app.use(cors());
 
 app.get("/", (req, res) => {
     res.send("Backend aktif");
@@ -150,13 +148,10 @@ app.post("/create-transaction", async (req, res) => {
     try {
         console.log("Incoming body:", req.body);
 
-        const { amount, customer } = req.body;
-        if (!amount || !customer) {
-            return res.status(400).json({ error: "Missing amount or customer" });
-        }
+        const { amount, customer, product } = req.body;
 
-        if (!amount || !customer) {
-            return res.status(400).json({ error: "Missing amount or customer" });
+        if (!amount || !customer || !product) {
+            return res.status(400).json({ error: "Missing amount, customer, or product" });
         }
 
         const snap = new midtransClient.Snap({
@@ -164,9 +159,11 @@ app.post("/create-transaction", async (req, res) => {
             serverKey: process.env.MIDTRANS_SERVER_KEY,
         });
 
+        const safeUid = (customer?.uid || "guest").substring(0, 10);
+
         const parameter = {
             transaction_details: {
-                order_id: "ORDER-" + new Date().getTime(),
+                order_id: "ORDER-" + safeUid + "-" + Date.now(),
                 gross_amount: amount,
             },
             customer_details: {
@@ -179,7 +176,7 @@ app.post("/create-transaction", async (req, res) => {
                     last_name: customer?.last_name || "User",
                     email: customer?.email || "guest@gmail.com",
                     phone: customer?.phone || "08123456789",
-                    address: customer?.full_address || "Jl. Default No.1",
+                    address: customer?.address || "Jl. Default No.1",
                     city: customer?.city || "Jakarta",
                     postal_code: "12345",
                     country_code: "IDN",
@@ -189,22 +186,22 @@ app.post("/create-transaction", async (req, res) => {
                     last_name: customer?.last_name || "User",
                     email: customer?.email || "guest@gmail.com",
                     phone: customer?.phone || "08123456789",
-                    address: customer?.full_address || "Jl. Default No.1",
+                    address: customer?.address || "Jl. Default No.1",
                     city: customer?.city || "Jakarta",
                     postal_code: "12345",
                     country_code: "IDN",
                 },
-                item_details: [{
-                    id: product?.id || "Mobil1",
-                    price: product?.priceProduct || 10000,
-                    quantity: 1,
-                    name: product?.nameProduct || "Mobil",
-                    brand: product?.transmissionProduct || "Automatic",
-                    category: product?.categoryProduct || "SUV",
-                    merchant_name: "RentCarApp+",
-                    url: "https://rentcarapp.com/mobil"
-                }]
             },
+            item_details: [{
+                id: product?.id || "Mobil1",
+                price: product?.price || 10000,
+                quantity: 1,
+                name: product?.name || "Mobil",
+                brand: product?.brand || "Automatic",
+                category: product?.category || "SUV",
+                merchant_name: "RentCarApp+",
+                url: "https://rentcarapp.com/mobil"
+            }]
         };
 
         const transaction = await snap.createTransaction(parameter);
@@ -212,8 +209,8 @@ app.post("/create-transaction", async (req, res) => {
 
         res.json({ token: transaction.token, redirect_url: transaction.redirect_url });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: "Failed to create transaction" });
+        console.error(err.ApiResponse || err.message);
+        res.status(500).json({ error: "Failed to create transaction", detail: err.message });
     }
 });
 
