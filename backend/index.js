@@ -159,11 +159,11 @@ app.post("/create-transaction", async (req, res) => {
             serverKey: process.env.MIDTRANS_SERVER_KEY,
         });
 
-        const safeUid = customer?.uid || "guest"
+        const safeUid = (customer?.uid || "guest").substring(0, 5);
 
         const parameter = {
             transaction_details: {
-                order_id: "ORDER-" + safeUid,
+                order_id: "ORDER-" + safeUid + Date.now(),
                 gross_amount: amount,
             },
             customer_details: {
