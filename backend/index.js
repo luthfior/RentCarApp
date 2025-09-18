@@ -159,11 +159,11 @@ app.post("/create-transaction", async (req, res) => {
             serverKey: process.env.MIDTRANS_SERVER_KEY,
         });
 
-        const safeUid = (customer?.uid || "guest").substring(0, 10);
+        const safeUid = customer?.uid || "guest"
 
         const parameter = {
             transaction_details: {
-                order_id: "ORDER-" + safeUid + "-" + Date.now(),
+                order_id: "ORDER-" + safeUid,
                 gross_amount: amount,
             },
             customer_details: {
@@ -177,7 +177,6 @@ app.post("/create-transaction", async (req, res) => {
                     email: customer?.email || "guest@gmail.com",
                     phone: customer?.phone || "08123456789",
                     address: customer?.address || "Jl. Default No.1",
-                    city: customer?.city || "Jakarta",
                     postal_code: "12345",
                     country_code: "IDN",
                 },
@@ -187,7 +186,6 @@ app.post("/create-transaction", async (req, res) => {
                     email: customer?.email || "guest@gmail.com",
                     phone: customer?.phone || "08123456789",
                     address: customer?.address || "Jl. Default No.1",
-                    city: customer?.city || "Jakarta",
                     postal_code: "12345",
                     country_code: "IDN",
                 },
