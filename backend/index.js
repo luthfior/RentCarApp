@@ -206,7 +206,7 @@ app.post("/create-transaction", async (req, res) => {
                     id: "driver",
                     price: req.body.driverCostPerDay || 10000,
                     quantity: req.body.rentDurationInDays || 1,
-                    name: "Biaya Supir"
+                    name: "Biaya Driver"
                 },
                 {
                     id: "insurance",
