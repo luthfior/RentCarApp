@@ -160,12 +160,10 @@ app.post("/create-transaction", async (req, res) => {
         });
 
         const safeUid = (customer?.uid || "guest").substring(0, 5);
-        const milidetikPerMenit = 60000;
-        const timestampSampaiMenit = Math.floor(Date.now() / milidetikPerMenit) * milidetikPerMenit;
 
         const parameter = {
             transaction_details: {
-                order_id: "ORDER-" + safeUid + "-" + timestampSampaiMenit,
+                order_id: "ORDER-" + safeUid + "-" + new Date().getTime(),
                 gross_amount: amount,
             },
             customer_details: {
@@ -271,8 +269,10 @@ app.post("/midtrans-notification", async (req, res) => {
             }
         } else if (transactionStatus == "pending") {
             appPaymentStatus = "Menunggu Pembayaran";
-        } else {
-            appPaymentStatus = "Gagal";
+        } else if (transactionStatus == 'cancel' ||
+            transactionStatus == 'deny' ||
+            transactionStatus == 'expire') {
+            appPaymentStatus = 'Gagal';
         }
 
         await orderDoc.ref.update({
@@ -281,7 +281,7 @@ app.post("/midtrans-notification", async (req, res) => {
 
         console.log(`Order ${orderId} berhasil diupdate menjadi: ${appPaymentStatus}`);
 
-        res.status(200).send("Notification processed.");
+        res.status(200).json({ status: "ok", message: "Notification processed" });
     } catch (error) {
         console.error("Error memproses webhook Midtrans:", error.message);
         res.status(500).json({ message: "Internal Server Error" });
