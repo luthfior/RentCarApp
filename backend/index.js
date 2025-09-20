@@ -225,7 +225,7 @@ app.post("/create-transaction", async (req, res) => {
         const transaction = await snap.createTransaction(parameter);
         console.log("Snap response:", transaction);
 
-        res.json({ token: transaction.token, redirect_url: transaction.redirect_url });
+        res.json({ token: transaction.token, redirect_url: transaction.redirect_url, order_id: orderId });
     } catch (err) {
         console.error(err.ApiResponse || err.message);
         res.status(500).json({ error: "Failed to create transaction", detail: err.message });
