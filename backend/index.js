@@ -245,9 +245,10 @@ app.post("/midtrans-notification", async (req, res) => {
         const orderId = statusResponse.order_id;
         const transactionStatus = statusResponse.transaction_status;
         const fraudStatus = statusResponse.fraud_status;
+        const paymentType = statusResponse.payment_type;
 
         console.log(
-            `Webhook diterima. Order ID: ${orderId}, Status: ${transactionStatus}`
+            `Webhook diterima. Order ID: ${orderId}, Status: ${transactionStatus}, Tipe Pembayaran: ${paymentType}`
         );
 
         const ordersRef = db.collection("Orders");
@@ -276,11 +277,18 @@ app.post("/midtrans-notification", async (req, res) => {
             appPaymentStatus = 'Gagal';
         }
 
+        const formatPaymentType = (type) => {
+            if (!type) return 'Lainnya';
+            return type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        };
+        const friendlyPaymentMethod = formatPaymentType(paymentType);
+
         await orderDoc.ref.update({
+            paymentMethod: friendlyPaymentMethod,
             paymentStatus: appPaymentStatus,
         });
 
-        console.log(`Order ${orderId} berhasil diupdate menjadi: ${appPaymentStatus}`);
+        console.log(`Order ${orderId} berhasil diupdate. Status: ${appPaymentStatus}, Metode: ${friendlyPaymentMethod}`);
 
         res.status(200).json({ status: "ok", message: "Notification processed" });
     } catch (error) {
