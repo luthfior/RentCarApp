@@ -34,13 +34,14 @@ app.get("/health", (req, res) => {
 
 app.post("/send-notification", async (req, res) => {
     try {
-        const { token, title, body } = req.body;
-        if (!token || !title || !body) {
-            return res.status(400).json({ error: "Missing fields" });
+        const { token, title, body, data } = req.body;
+        if (!token || !title || !body || !data) {
+            return res.status(400).json({ error: "Missing token, data, title or body" });
         }
         const message = {
             notification: { title, body },
             token,
+            data: data || {},
         };
         await admin.messaging().send(message);
         res.json({ success: true, message: "Notification sent!" });
@@ -52,13 +53,14 @@ app.post("/send-notification", async (req, res) => {
 
 app.post("/send-multi", async (req, res) => {
     try {
-        const { tokens, title, body } = req.body;
-        if (!tokens || tokens.length === 0) {
-            return res.status(400).json({ error: "No tokens provided" });
+        const { tokens, title, body, data } = req.body;
+        if (!tokens || !title || !body || !data) {
+            return res.status(400).json({ error: "Missing token, data, title or body" });
         }
         const message = {
             notification: { title, body },
             tokens,
+            data: data || {},
         };
         const response = await admin.messaging().sendEachForMulticast(message);
         res.json({
@@ -74,9 +76,9 @@ app.post("/send-multi", async (req, res) => {
 
 app.post("/send-to-roles", async (req, res) => {
     try {
-        const { roles, title, body } = req.body;
-        if (!roles || !Array.isArray(roles) || roles.length === 0) {
-            return res.status(400).json({ error: "Roles must be a non-empty array" });
+        const { roles, title, body, data } = req.body;
+        if (!roles || !title || !body || !Array.isArray(roles) || roles.length === 0 || !data) {
+            return res.status(400).json({ error: "Missing roles, data, title or body" });
         }
 
         const allTokens = new Set();
@@ -103,6 +105,7 @@ app.post("/send-to-roles", async (req, res) => {
         const message = {
             notification: { title, body },
             tokens: uniqueTokens,
+            data: data || {},
         };
 
         const response = await admin.messaging().sendEachForMulticast(message);
@@ -120,9 +123,9 @@ app.post("/send-to-roles", async (req, res) => {
 
 app.post("/send-all", async (req, res) => {
     try {
-        const { title, body } = req.body;
-        if (!title || !body) {
-            return res.status(400).json({ error: "Missing title or body" });
+        const { title, body, data } = req.body;
+        if (!title || !body, !data) {
+            return res.status(400).json({ error: "Missing data, title or body" });
         }
         const usersSnap = await db.collection("Users").get();
         const adminsSnap = await db.collection("Admin").get();
@@ -145,6 +148,7 @@ app.post("/send-all", async (req, res) => {
         const message = {
             notification: { title, body },
             tokens,
+            data: data || {},
         };
         const response = await admin.messaging().sendEachForMulticast(message);
         res.json({
