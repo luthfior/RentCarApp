@@ -219,7 +219,12 @@ app.post("/create-transaction", async (req, res) => {
                     quantity: 1,
                     name: "Biaya Tambahan"
                 }
-            ].filter(item => item.price > 0)
+            ].filter(item => item.price > 0),
+            callbacks: {
+                finish: "https://example.com/finish",
+                unfinish: "https://example.com/unfinish",
+                error: "https://example.com/error",
+            }
         };
 
         const transaction = await snap.createTransaction(parameter);
