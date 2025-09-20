@@ -72,34 +72,49 @@ app.post("/send-multi", async (req, res) => {
     }
 });
 
-app.post("/send-to-role", async (req, res) => {
+app.post("/send-to-roles", async (req, res) => {
     try {
-        const { role, title, body } = req.body;
-        const collectionName = role === "admin" ? "Admin" : "Users";
-        const snap = await db.collection(collectionName).where("role", "==", role).get();
-        const tokens = [];
-        snap.forEach((doc) => {
-            const data = doc.data();
-            if (data.fcmTokens && Array.isArray(data.fcmTokens)) {
-                tokens.push(...data.fcmTokens);
-            }
-        });
-        if (tokens.length === 0) {
-            return res.json({ success: false, message: `No tokens found for role ${role}` });
+        const { roles, title, body } = req.body;
+        if (!roles || !Array.isArray(roles) || roles.length === 0) {
+            return res.status(400).json({ error: "Roles must be a non-empty array" });
         }
+
+        const allTokens = new Set();
+
+        const promises = roles.map(async (role) => {
+            const collectionName = role === "admin" ? "Admin" : "Users";
+            const snap = await db.collection(collectionName).where("role", "==", role).get();
+            snap.forEach((doc) => {
+                const data = doc.data();
+                if (data.fcmTokens && Array.isArray(data.fcmTokens)) {
+                    data.fcmTokens.forEach(token => allTokens.add(token));
+                }
+            });
+        });
+
+        await Promise.all(promises);
+
+        const uniqueTokens = Array.from(allTokens);
+
+        if (uniqueTokens.length === 0) {
+            return res.json({ success: false, message: "No tokens found for the given roles" });
+        }
+
         const message = {
             notification: { title, body },
-            tokens,
+            tokens: uniqueTokens,
         };
+
         const response = await admin.messaging().sendEachForMulticast(message);
         res.json({
             success: true,
             successCount: response.successCount,
             failureCount: response.failureCount,
         });
+
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: "Failed to send role-based notif" });
+        console.error("Error in send-to-roles:", err);
+        res.status(500).json({ error: "Failed to send role-based notifications" });
     }
 });
 
