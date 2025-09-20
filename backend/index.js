@@ -160,10 +160,12 @@ app.post("/create-transaction", async (req, res) => {
         });
 
         const safeUid = (customer?.uid || "guest").substring(0, 5);
+        const milidetikPerMenit = 60000;
+        const timestampSampaiMenit = Math.floor(Date.now() / milidetikPerMenit) * milidetikPerMenit;
 
         const parameter = {
             transaction_details: {
-                order_id: "ORDER-" + safeUid + new Date().getTime(),
+                order_id: "ORDER-" + safeUid + "-" + timestampSampaiMenit,
                 gross_amount: amount,
             },
             customer_details: {
@@ -220,11 +222,6 @@ app.post("/create-transaction", async (req, res) => {
                     name: "Biaya Tambahan"
                 }
             ].filter(item => item.price > 0),
-            callbacks: {
-                finish: "https://example.com/finish",
-                unfinish: "https://example.com/unfinish",
-                error: "https://example.com/error",
-            }
         };
 
         const transaction = await snap.createTransaction(parameter);
@@ -234,6 +231,60 @@ app.post("/create-transaction", async (req, res) => {
     } catch (err) {
         console.error(err.ApiResponse || err.message);
         res.status(500).json({ error: "Failed to create transaction", detail: err.message });
+    }
+});
+
+app.post("/midtrans-notification", async (req, res) => {
+    try {
+        const snap = new midtransClient.Snap({
+            isProduction: false,
+            serverKey: process.env.MIDTRANS_SERVER_KEY,
+            clientKey: process.env.MIDTRANS_CLIENT_KEY,
+        });
+
+        const statusResponse = await snap.transaction.notification(req.body);
+        const orderId = statusResponse.order_id;
+        const transactionStatus = statusResponse.transaction_status;
+        const fraudStatus = statusResponse.fraud_status;
+
+        console.log(
+            `Webhook diterima. Order ID: ${orderId}, Status: ${transactionStatus}`
+        );
+
+        const ordersRef = db.collection("Orders");
+        const q = ordersRef.where("resi", "==", orderId).limit(1);
+        const snapshot = await q.get();
+
+        if (snapshot.empty) {
+            console.log(`Order dengan resi ${orderId} tidak ditemukan.`);
+            return res.status(404).json({ message: "Order not found" });
+        }
+
+        const orderDoc = snapshot.docs[0];
+        let appPaymentStatus;
+
+        if (transactionStatus == "capture" || transactionStatus == "settlement") {
+            if (fraudStatus == "accept") {
+                appPaymentStatus = "Sudah Dibayar";
+            } else {
+                appPaymentStatus = "Pembayaran Dicurigai";
+            }
+        } else if (transactionStatus == "pending") {
+            appPaymentStatus = "Menunggu Pembayaran";
+        } else {
+            appPaymentStatus = "Gagal";
+        }
+
+        await orderDoc.ref.update({
+            paymentStatus: appPaymentStatus,
+        });
+
+        console.log(`Order ${orderId} berhasil diupdate menjadi: ${appPaymentStatus}`);
+
+        res.status(200).send("Notification processed.");
+    } catch (error) {
+        console.error("Error memproses webhook Midtrans:", error.message);
+        res.status(500).json({ message: "Internal Server Error" });
     }
 });
 
