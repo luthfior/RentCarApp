@@ -160,10 +160,11 @@ app.post("/create-transaction", async (req, res) => {
         });
 
         const safeUid = (customer?.uid || "guest").substring(0, 5);
+        const orderId = "ORDER-" + safeUid + "-" + new Date().getTime();
 
         const parameter = {
             transaction_details: {
-                order_id: "ORDER-" + safeUid + "-" + new Date().getTime(),
+                order_id: orderId,
                 gross_amount: amount,
             },
             customer_details: {
