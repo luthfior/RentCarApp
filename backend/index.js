@@ -124,7 +124,7 @@ app.post("/send-to-roles", async (req, res) => {
 app.post("/send-all", async (req, res) => {
     try {
         const { title, body, data } = req.body;
-        if (!title || !body,) {
+        if (!title || !body) {
             return res.status(400).json({ error: "Missing data, title or body" });
         }
         const usersSnap = await db.collection("Users").get();
