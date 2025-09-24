@@ -268,8 +268,7 @@ class ChattingPage extends GetView<ChatViewModel> {
                 radius: 14,
                 backgroundImage: (partner?.photoUrl?.isNotEmpty ?? false)
                     ? NetworkImage(partner!.photoUrl!)
-                    : const AssetImage('assets/ic_profile.png')
-                          as ImageProvider,
+                    : const AssetImage('assets/profile.png') as ImageProvider,
               ),
             if (!isCurrentUser) const Gap(8),
             Text(
@@ -286,8 +285,7 @@ class ChattingPage extends GetView<ChatViewModel> {
                 radius: 14,
                 backgroundImage: (partner?.photoUrl?.isNotEmpty ?? false)
                     ? NetworkImage(partner!.photoUrl!)
-                    : const AssetImage('assets/ic_profile.png')
-                          as ImageProvider,
+                    : const AssetImage('assets/profile.png') as ImageProvider,
               ),
           ],
         ),
