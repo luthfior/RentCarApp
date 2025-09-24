@@ -350,35 +350,45 @@ class DetailOrderPage extends GetView<DetailOrderViewModel> {
             buildReceiptRow(
               'Resi',
               isBold: true,
-              controller.order.resi ?? 'Tidak Ada',
+              controller.order.resi.isNotEmpty
+                  ? controller.order.resi
+                  : 'Tidak Ada',
             ),
             buildReceiptRow(
               'Metode Pembayaran',
               isBold: true,
-              controller.order.paymentMethod ?? 'Tidak Ada',
+              controller.order.paymentMethod.isNotEmpty
+                  ? controller.order.paymentMethod
+                  : 'Tidak Ada',
             ),
             buildReceiptRow(
               'Status Pembayaran',
               isBold: true,
-              controller.order.paymentStatus ?? 'Tidak Ada',
+              controller.order.paymentStatus.isNotEmpty
+                  ? controller.order.paymentStatus
+                  : 'Tidak Ada',
             ),
             buildReceiptRow(
               'Tanggal Order',
               isBold: true,
-              controller.formatTimestamp(controller.order.orderDate) ??
-                  'Tidak Ada',
+              controller.order.orderDate.toString().isNotEmpty
+                  ? controller.formatTimestamp(controller.order.orderDate)
+                  : 'Tidak Ada',
             ),
             buildReceiptRow(
               'Status Pemesanan',
               isBold: true,
-              controller.formatOrderStatus(controller.order.orderStatus) ??
-                  'Tidak Ada',
+              controller.order.orderStatus.toString().isNotEmpty
+                  ? controller.formatOrderStatus(controller.order.orderStatus)
+                  : 'Tidak Ada',
             ),
             const Divider(color: Color(0xffEFEEF7), height: 24),
             buildReceiptRow(
               'Nama Order',
               isBold: true,
-              controller.order.customerFullname ?? 'Tidak Ada',
+              controller.order.customerFullname.isNotEmpty
+                  ? controller.order.customerFullname
+                  : 'Tidak Ada',
             ),
             buildReceiptRow(
               'Harga Sewa',
@@ -394,12 +404,16 @@ class DetailOrderPage extends GetView<DetailOrderViewModel> {
             buildReceiptRow(
               'Tanggal Mulai',
               isBold: true,
-              controller.order.orderDetail.startDate,
+              controller.order.orderDetail.startDate.isNotEmpty
+                  ? controller.order.orderDetail.startDate
+                  : 'Tidak Ada',
             ),
             buildReceiptRow(
               'Tanggal Berakhir',
               isBold: true,
-              controller.order.orderDetail.endDate,
+              controller.order.orderDetail.endDate.isNotEmpty
+                  ? controller.order.orderDetail.endDate
+                  : 'Tidak Ada',
             ),
             buildReceiptRow(
               'Durasi',
@@ -409,13 +423,17 @@ class DetailOrderPage extends GetView<DetailOrderViewModel> {
             buildReceiptRow(
               'Penyedia',
               isBold: true,
-              controller.order.orderDetail.agency ?? 'Tidak Ada',
+              controller.order.orderDetail.agency.isNotEmpty
+                  ? controller.order.orderDetail.agency
+                  : 'Tidak Ada',
             ),
             buildReceiptRow(
               'Asuransi',
               isBold: true,
               isInsurance: true,
-              controller.order.orderDetail.insurance ?? 'Tidak Ada',
+              controller.order.orderDetail.insurance.isNotEmpty
+                  ? controller.order.orderDetail.insurance
+                  : 'Tidak Ada',
             ),
             const Divider(color: Color(0xffEFEEF7), height: 24),
             buildReceiptRow(
