@@ -70,6 +70,12 @@ class DetailPage extends GetView<DetailViewModel> {
                             fit: isPortrait ? BoxFit.cover : BoxFit.contain,
                           );
                         }
+                        return Image.asset(
+                          'assets/splash_screen.png',
+                          width: MediaQuery.of(context).size.width,
+                          height: MediaQuery.of(context).size.height * 0.40,
+                          fit: BoxFit.cover,
+                        );
                       case LoadState.failed:
                         return Image.asset(
                           'assets/splash_screen.png',
