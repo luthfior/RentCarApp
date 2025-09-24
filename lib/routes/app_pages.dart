@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:rent_car_app/data/models/booked_car.dart';
 import 'package:rent_car_app/data/models/car.dart';
 import 'package:rent_car_app/presentation/bindings/auth_binding.dart';
 import 'package:rent_car_app/presentation/bindings/booking_binding.dart';
@@ -6,6 +7,7 @@ import 'package:rent_car_app/presentation/bindings/chat_binding.dart';
 import 'package:rent_car_app/presentation/bindings/checkout_binding.dart';
 import 'package:rent_car_app/presentation/bindings/discover_binding.dart';
 import 'package:rent_car_app/presentation/bindings/edit_profile_binding.dart';
+import 'package:rent_car_app/presentation/bindings/location_binding.dart';
 import 'package:rent_car_app/presentation/bindings/pin_binding.dart';
 import 'package:rent_car_app/presentation/bindings/pin_setup_binding.dart';
 import 'package:rent_car_app/presentation/bindings/add_product_binding.dart';
@@ -16,9 +18,12 @@ import 'package:rent_car_app/presentation/pages/booking_page.dart';
 import 'package:rent_car_app/presentation/pages/chatting_page.dart';
 import 'package:rent_car_app/presentation/pages/checkout_page.dart';
 import 'package:rent_car_app/presentation/pages/complete_booking_page.dart';
+import 'package:rent_car_app/presentation/pages/detail_order_page.dart';
 import 'package:rent_car_app/presentation/pages/detail_page.dart';
 import 'package:rent_car_app/presentation/pages/discover_page.dart';
 import 'package:rent_car_app/presentation/pages/edit_profile_page.dart';
+import 'package:rent_car_app/presentation/pages/location_page.dart';
+import 'package:rent_car_app/presentation/pages/midtrans_web_view.dart';
 import 'package:rent_car_app/presentation/pages/notification_page.dart';
 import 'package:rent_car_app/presentation/pages/onboarding_page.dart';
 import 'package:rent_car_app/presentation/pages/pin_page.dart';
@@ -26,7 +31,9 @@ import 'package:rent_car_app/presentation/pages/pin_setup_page.dart';
 import 'package:rent_car_app/presentation/pages/saldo_page.dart';
 import 'package:rent_car_app/presentation/pages/splash_screen.dart';
 import 'package:rent_car_app/presentation/pages/top_up_page.dart';
+import 'package:rent_car_app/presentation/viewModels/detail_order_view_model.dart';
 import 'package:rent_car_app/presentation/viewModels/detail_view_model.dart';
+import 'package:rent_car_app/presentation/viewModels/midtrans_web_view_model.dart';
 import 'package:rent_car_app/routes/app_routes.dart';
 
 class AppPages {
@@ -51,7 +58,7 @@ class AppPages {
       name: AppRoutes.detail,
       page: () => DetailPage(),
       binding: BindingsBuilder(() {
-        final String productId = Get.arguments;
+        final String productId = Get.arguments ?? "";
         Get.lazyPut<DetailViewModel>(() => DetailViewModel(productId));
       }),
     ),
@@ -104,5 +111,28 @@ class AppPages {
     ),
     GetPage(name: AppRoutes.notification, page: () => NotificationPage()),
     GetPage(name: AppRoutes.saldo, page: () => SaldoPage()),
+    GetPage(
+      name: AppRoutes.location,
+      page: () => LocationPage(),
+      binding: LocationBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.midtransWebView,
+      page: () => const MidtransWebView(),
+      binding: BindingsBuilder(() {
+        final String url = Get.arguments ?? "";
+        Get.lazyPut<MidtransWebViewModel>(() => MidtransWebViewModel(url));
+      }),
+    ),
+    GetPage(
+      name: AppRoutes.detailOrder,
+      page: () => DetailOrderPage(),
+      binding: BindingsBuilder(() {
+        final BookedCar? bookedCar = Get.arguments as BookedCar?;
+        Get.lazyPut<DetailOrderViewModel>(
+          () => DetailOrderViewModel(bookedCar),
+        );
+      }),
+    ),
   ];
 }

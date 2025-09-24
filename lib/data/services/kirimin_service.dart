@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:http/http.dart' as http;
 
 class KiriminService {
@@ -13,6 +14,7 @@ class KiriminService {
         throw Exception("Gagal load provinsi");
       }
     } catch (e) {
+      log('Gagal mengambil provinsi: ${e.toString()}');
       rethrow;
     }
   }
@@ -27,6 +29,7 @@ class KiriminService {
         throw Exception("Gagal load kota");
       }
     } catch (e) {
+      log('Gagal mengambil provinsi: ${e.toString()}');
       rethrow;
     }
   }
@@ -41,6 +44,7 @@ class KiriminService {
         throw Exception("Gagal load kecamatan");
       }
     } catch (e) {
+      log('Gagal mengambil provinsi: ${e.toString()}');
       rethrow;
     }
   }
@@ -55,6 +59,7 @@ class KiriminService {
         throw Exception("Gagal load kelurahan");
       }
     } catch (e) {
+      log('Gagal mengambil provinsi: ${e.toString()}');
       rethrow;
     }
   }

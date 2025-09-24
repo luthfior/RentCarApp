@@ -9,9 +9,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:rent_car_app/data/models/booked_car.dart';
 import 'package:rent_car_app/data/services/connectivity_service.dart';
-import 'package:rent_car_app/data/services/notification_service.dart';
 import 'package:rent_car_app/presentation/viewModels/order_view_model.dart';
-import 'package:rent_car_app/presentation/widgets/button_primary.dart';
+import 'package:rent_car_app/presentation/widgets/offline_banner.dart';
 
 Widget itemOrderSeller(
   BuildContext context, {
@@ -31,14 +30,11 @@ Widget itemOrderSeller(
     statusColor = const Color.fromARGB(255, 76, 175, 80);
   } else if (bookedCar.order.orderStatus.toLowerCase().contains('failed')) {
     statusText = 'Status: Orderan telah kamu Batalkan.';
-    statusColor = const Color.fromARGB(255, 244, 67, 54);
+    statusColor = const Color(0xffFF2056);
   } else {
     statusText = 'Status: Tidak diketahui.';
     statusColor = Colors.grey;
   }
-
-  final bool showButtons =
-      bookedCar.order.orderStatus.toLowerCase() == 'pending';
 
   // ignore: unnecessary_type_check
   final String formattedDate = bookedCar.order.orderDate is Timestamp
@@ -47,68 +43,76 @@ Widget itemOrderSeller(
         ).format(bookedCar.order.orderDate.toDate())
       : bookedCar.order.orderDate.toString();
 
-  return Container(
-    height: showButtons ? 225 : 180,
-    margin: const EdgeInsets.symmetric(vertical: 8),
-    padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
-    decoration: BoxDecoration(
-      color: Theme.of(Get.context!).colorScheme.surface,
-      borderRadius: BorderRadius.circular(16),
-    ),
-    child: Column(
-      children: [
-        Row(
-          children: [
-            SizedBox(
-              width: 90,
-              height: 70,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: ExtendedImage.network(
-                  bookedCar.car.imageProduct,
-                  fit: BoxFit.cover,
-                  loadStateChanged: (state) {
-                    switch (state.extendedImageLoadState) {
-                      case LoadState.loading:
-                        return const SizedBox(
-                          width: 90,
-                          height: 70,
-                          child: Center(
-                            child: CircularProgressIndicator(
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                Color(0xffFF5722),
+  return GestureDetector(
+    onTap: () {
+      if (connectivity.isOnline.value) {
+        Get.toNamed('/detail-order', arguments: bookedCar);
+      } else {
+        const OfflineBanner();
+        return;
+      }
+    },
+    child: Container(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.fromLTRB(8, 4, 8, 12),
+      decoration: BoxDecoration(
+        color: Theme.of(Get.context!).colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              SizedBox(
+                width: 90,
+                height: 70,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: ExtendedImage.network(
+                    bookedCar.car.imageProduct,
+                    fit: BoxFit.cover,
+                    loadStateChanged: (state) {
+                      switch (state.extendedImageLoadState) {
+                        case LoadState.loading:
+                          return const SizedBox(
+                            width: 90,
+                            height: 70,
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Color(0xffFF5722),
+                                ),
                               ),
                             ),
-                          ),
-                        );
-                      case LoadState.completed:
-                        return ExtendedImage(
-                          image: state.imageProvider,
-                          width: 90,
-                          height: 70,
-                          fit: BoxFit.cover,
-                        );
-                      case LoadState.failed:
-                        return Image.asset(
-                          'assets/splash_screen.png',
-                          width: 90,
-                          height: 70,
-                        );
-                    }
-                  },
+                          );
+                        case LoadState.completed:
+                          return ExtendedImage(
+                            image: state.imageProvider,
+                            width: 90,
+                            height: 70,
+                            fit: BoxFit.cover,
+                          );
+                        case LoadState.failed:
+                          return Image.asset(
+                            'assets/splash_screen.png',
+                            width: 90,
+                            height: 70,
+                          );
+                      }
+                    },
+                  ),
                 ),
               ),
-            ),
-            const Gap(10),
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
+              const Gap(10),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
                           bookedCar.car.nameProduct,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -118,204 +122,264 @@ Widget itemOrderSeller(
                             color: Theme.of(Get.context!).colorScheme.onSurface,
                           ),
                         ),
-                      ),
-                      Text(
-                        " (${bookedCar.car.releaseProduct})",
-                        style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: Theme.of(Get.context!).colorScheme.onSurface,
+                        Expanded(
+                          child: Text(
+                            " (${bookedCar.car.releaseProduct})",
+                            style: GoogleFonts.poppins(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: Theme.of(
+                                Get.context!,
+                              ).colorScheme.onSurface,
+                            ),
+                          ),
                         ),
+                      ],
+                    ),
+                    const Gap(4),
+                    Text(
+                      bookedCar.car.transmissionProduct,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.poppins(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w400,
+                        color: Theme.of(Get.context!).colorScheme.secondary,
                       ),
-                    ],
-                  ),
-                  const Gap(4),
+                    ),
+                    const Gap(4),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        RatingBar.builder(
+                          initialRating: bookedCar.car.ratingAverage.toDouble(),
+                          itemPadding: const EdgeInsets.all(0),
+                          itemSize: 12,
+                          unratedColor: Colors.grey[300],
+                          itemBuilder: (context, index) =>
+                              const Icon(Icons.star, color: Color(0xffFFBC1C)),
+                          ignoreGestures: true,
+                          allowHalfRating: true,
+                          onRatingUpdate: (value) {},
+                        ),
+                        Text(
+                          '(${bookedCar.car.purchasedProduct}x disewa)',
+                          style: GoogleFonts.poppins(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w400,
+                            color: Theme.of(Get.context!).colorScheme.onSurface,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const Gap(16),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
                   Text(
-                    bookedCar.car.transmissionProduct,
+                    NumberFormat.currency(
+                      decimalDigits: 0,
+                      locale: 'id_ID',
+                      symbol: 'Rp.',
+                    ).format(bookedCar.car.priceProduct),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xffFF5722),
+                    ),
+                  ),
+                  Text(
+                    '/hari',
                     style: GoogleFonts.poppins(
                       fontSize: 10,
                       fontWeight: FontWeight.w400,
                       color: Theme.of(Get.context!).colorScheme.secondary,
                     ),
                   ),
-                  const Gap(4),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      RatingBar.builder(
-                        initialRating: bookedCar.car.ratingProduct.toDouble(),
-                        itemPadding: const EdgeInsets.all(0),
-                        itemSize: 12,
-                        unratedColor: Colors.grey[300],
-                        itemBuilder: (context, index) =>
-                            const Icon(Icons.star, color: Color(0xffFFBC1C)),
-                        ignoreGestures: true,
-                        allowHalfRating: true,
-                        onRatingUpdate: (value) {},
-                      ),
-                      Text(
-                        '(${bookedCar.car.purchasedProduct}x disewa)',
-                        style: GoogleFonts.poppins(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w400,
-                          color: Theme.of(Get.context!).colorScheme.onSurface,
-                        ),
-                      ),
-                    ],
-                  ),
                 ],
               ),
-            ),
-            const Gap(16),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  NumberFormat.currency(
-                    decimalDigits: 0,
-                    locale: 'id_ID',
-                    symbol: 'Rp.',
-                  ).format(bookedCar.car.priceProduct),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.poppins(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xffFF5722),
-                  ),
-                ),
-                Text(
-                  '/hari',
-                  style: GoogleFonts.poppins(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w400,
-                    color: Theme.of(Get.context!).colorScheme.secondary,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-        const Gap(12),
-        const DottedLine(
-          lineThickness: 2,
-          dashLength: 6,
-          dashGapLength: 6,
-          dashColor: Color(0xffCECED5),
-        ),
-        const Gap(10),
-        Row(
-          children: [
-            Text(
-              "Tanggal Order: ",
-              style: GoogleFonts.poppins(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: Theme.of(Get.context!).colorScheme.onSurface,
-              ),
-            ),
-            const Gap(10),
-            Expanded(
-              child: Text(
-                formattedDate,
-                style: GoogleFonts.poppins(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: Theme.of(Get.context!).colorScheme.onSurface,
-                ),
-              ),
-            ),
-          ],
-        ),
-        const Gap(8),
-        Row(
-          children: [
-            Container(
-              width: 8,
-              height: 8,
-              margin: const EdgeInsets.only(left: 2),
-              decoration: BoxDecoration(
-                color: statusColor,
-                shape: BoxShape.circle,
-              ),
-            ),
-            const Gap(10),
-            Expanded(
-              child: Text(
-                statusText,
+            ],
+          ),
+          const Gap(8),
+          const DottedLine(
+            lineThickness: 2,
+            dashLength: 6,
+            dashGapLength: 6,
+            dashColor: Color(0xffCECED5),
+          ),
+          const Gap(8),
+          Row(
+            children: [
+              Text(
+                "Tanggal Order: ",
                 style: GoogleFonts.poppins(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                   color: Theme.of(Get.context!).colorScheme.onSurface,
                 ),
               ),
-            ),
-          ],
-        ),
-        const Gap(16),
-        if (showButtons)
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: ButtonPrimary(
-                  onTap: () async {
-                    if (connectivity.isOnline.value) {
-                      controller.cancelOrder(bookedCar.order.id);
-                      await NotificationService.addNotification(
-                        userId: bookedCar.order.customerId,
-                        title: "Info Status Order",
-                        body:
-                            "Ada pembaruan status pada produk yang Anda sedang Order",
-                        type: "order",
-                        referenceId:
-                            "${bookedCar.order.customerId}_${bookedCar.order.sellerId}",
-                      );
-                    } else {
-                      null;
-                    }
-                  },
-                  text: 'Batalkan',
-                  customHeight: 32,
-                  customTextSize: 14,
-                  customBackgroundColor: const Color.fromARGB(255, 244, 67, 54),
-                  customBorderRadius: BorderRadius.circular(10),
-                ),
-              ),
               const Gap(10),
               Expanded(
-                child: ButtonPrimary(
-                  onTap: () async {
-                    if (connectivity.isOnline.value) {
-                      controller.confirmOrder(
-                        bookedCar.order.id,
-                        bookedCar.order.productPrice,
-                      );
-                      await NotificationService.addNotification(
-                        userId: bookedCar.order.customerId,
-                        title: "Info Status Order",
-                        body:
-                            "Ada pembaruan status pada produk yang Anda sedang Order",
-                        type: "order",
-                        referenceId:
-                            "${bookedCar.order.customerId}_${bookedCar.order.sellerId}",
-                      );
-                    } else {
-                      null;
-                    }
-                  },
-                  text: 'Konfirmasi',
-                  customHeight: 32,
-                  customTextSize: 14,
-                  customBorderRadius: BorderRadius.circular(10),
+                child: Text(
+                  formattedDate,
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: Theme.of(Get.context!).colorScheme.onSurface,
+                  ),
                 ),
               ),
             ],
           ),
-      ],
+          const Gap(4),
+          Row(
+            children: [
+              Text(
+                "Resi: ",
+                style: GoogleFonts.poppins(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: Theme.of(Get.context!).colorScheme.onSurface,
+                ),
+              ),
+              Expanded(
+                child: Text(
+                  bookedCar.order.resi,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400,
+                    color: Theme.of(Get.context!).colorScheme.onSurface,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const Gap(4),
+          Row(
+            children: [
+              Container(
+                width: 8,
+                height: 8,
+                margin: const EdgeInsets.only(left: 2),
+                decoration: BoxDecoration(
+                  color: statusColor,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const Gap(10),
+              Expanded(
+                child: Text(
+                  statusText,
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(Get.context!).colorScheme.onSurface,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const Gap(8),
+          // if (bookedCar.order.orderStatus.toLowerCase() == 'pending')
+          //   buildActionButtons(context, controller, bookedCar),
+        ],
+      ),
     ),
   );
 }
+
+// Widget buildActionButtons(
+//   BuildContext context,
+//   OrderViewModel controller,
+//   BookedCar bookedCar,
+// ) {
+//   final connectivity = Get.find<ConnectivityService>();
+//   return Row(
+//     children: [
+//       Expanded(
+//         child: ElevatedButton(
+//           onPressed: () async {
+//             if (!connectivity.isOnline.value) return;
+//             bool? confirm = await controller.showConfirmationDialog(
+//               context: context,
+//               title: 'Batalkan Pesanan',
+//               content: 'Apakah Anda yakin ingin membatalkan pesanan ini?',
+//               confirmText: 'Ya, Batalkan',
+//             );
+//             if (confirm == true) {
+//               controller.cancelOrder(
+//                 bookedCar.order.id,
+//                 bookedCar.order.customerId,
+//                 bookedCar.order.sellerId,
+//               );
+//             }
+//           },
+//           style: ElevatedButton.styleFrom(
+//             backgroundColor: Get.isDarkMode
+//                 ? const Color(0xff292929)
+//                 : const Color(0xffEFEFF0),
+//             foregroundColor: const Color.fromARGB(255, 244, 67, 54),
+//             shape: RoundedRectangleBorder(
+//               borderRadius: BorderRadius.circular(10),
+//             ),
+//             elevation: 4,
+//             padding: const EdgeInsets.symmetric(vertical: 8),
+//           ),
+//           child: Text(
+//             'Batalkan',
+//             style: GoogleFonts.poppins(
+//               fontWeight: FontWeight.w600,
+//               fontSize: 14,
+//             ),
+//           ),
+//         ),
+//       ),
+//       const Gap(16),
+//       Expanded(
+//         child: ElevatedButton(
+//           onPressed: () async {
+//             if (!connectivity.isOnline.value) return;
+//             bool? confirm = await controller.showConfirmationDialog(
+//               context: context,
+//               title: 'Konfirmasi Pesanan',
+//               content: 'Apakah Anda yakin ingin mengonfirmasi pesanan ini?',
+//               confirmText: 'Ya, Konfirmasi',
+//             );
+//             if (confirm == true) {
+//               controller.confirmOrder(
+//                 bookedCar.order.id,
+//                 bookedCar.order.customerId,
+//                 bookedCar.order.sellerId,
+//                 bookedCar.car.id,
+//                 bookedCar.order.orderDetail.totalPrice.round(),
+//               );
+//             }
+//           },
+//           style: ElevatedButton.styleFrom(
+//             backgroundColor: const Color.fromARGB(255, 76, 175, 80),
+//             foregroundColor: Colors.white,
+//             shape: RoundedRectangleBorder(
+//               borderRadius: BorderRadius.circular(10),
+//             ),
+//             elevation: 4,
+//             padding: const EdgeInsets.symmetric(vertical: 8),
+//           ),
+//           child: Text(
+//             'Konfirmasi',
+//             style: GoogleFonts.poppins(
+//               fontWeight: FontWeight.w600,
+//               fontSize: 14,
+//             ),
+//           ),
+//         ),
+//       ),
+//     ],
+//   );
+// }

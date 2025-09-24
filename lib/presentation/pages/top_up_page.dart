@@ -42,47 +42,60 @@ class TopUpPage extends GetView<TopUpViewModel> {
                         discoverVM.setFragmentIndex(4);
                       }
                     } else {
-                      null;
+                      const OfflineBanner();
+                      return;
                     }
                   },
                 ),
                 const Gap(20),
                 Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Column(
-                      children: [
-                        const Gap(50),
-                        Text(
-                          'Saldo Anda Saat Ini:',
-                          style: GoogleFonts.poppins(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: Theme.of(context).colorScheme.onSurface,
-                          ),
-                        ),
-                        const Gap(8),
-                        Obx(
-                          () => Text(
-                            'Rp${NumberFormat.currency(locale: 'id', symbol: '', decimalDigits: 0).format(controller.currentBalance.value ?? 0).replaceAll(',', '.')}',
+                  child: RefreshIndicator(
+                    onRefresh: () async {
+                      if (connectivity.isOnline.value) {
+                        await controller.refreshBalance();
+                      } else {
+                        const OfflineBanner();
+                        return;
+                      }
+                    },
+                    color: const Color(0xffFF5722),
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Column(
+                        children: [
+                          const Gap(50),
+                          Text(
+                            'Saldo Anda Saat Ini:',
                             style: GoogleFonts.poppins(
-                              fontSize: 32,
+                              fontSize: 16,
                               fontWeight: FontWeight.w700,
-                              color: const Color(0xffFF5722),
+                              color: Theme.of(context).colorScheme.onSurface,
                             ),
                           ),
-                        ),
-                        const Gap(30),
-                        CustomInput(
-                          icon: '',
-                          hint: 'Masukkan jumlah top up',
-                          prefixText: 'Rp. ',
-                          keyboardType: TextInputType.number,
-                          inputFormatters: [NumberFormatter()],
-                          editingController: controller.amountEdt,
-                          onChanged: (value) => controller.checkChanges(),
-                        ),
-                      ],
+                          const Gap(8),
+                          Obx(
+                            () => Text(
+                              'Rp${NumberFormat.currency(locale: 'id', symbol: '', decimalDigits: 0).format(controller.currentBalance.value ?? 0).replaceAll(',', '.')}',
+                              style: GoogleFonts.poppins(
+                                fontSize: 32,
+                                fontWeight: FontWeight.w700,
+                                color: const Color(0xffFF5722),
+                              ),
+                            ),
+                          ),
+                          const Gap(30),
+                          CustomInput(
+                            icon: Icons.add_card_rounded,
+                            hint: 'Masukkan jumlah Top Up',
+                            prefixText: 'Rp. ',
+                            keyboardType: TextInputType.number,
+                            inputFormatters: [NumberFormatter()],
+                            editingController: controller.amountEdt,
+                            onChanged: (value) => controller.checkChanges(),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -98,12 +111,12 @@ class TopUpPage extends GetView<TopUpViewModel> {
                           : () {
                               if (connectivity.isOnline.value) {
                                 controller.topUpBalance();
+                              } else {
+                                const OfflineBanner();
+                                return;
                               }
                             },
-                      text: isLoading ? 'Menambah...' : 'Tambah Saldo',
-                      customBackgroundColor: (isLoading || !hasChanges)
-                          ? const Color(0xffFF5722).withAlpha(157)
-                          : const Color(0xffFF5722),
+                      text: 'Tambah Saldo',
                     ),
                   );
                 }),

@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:rent_car_app/data/services/connectivity_service.dart';
 import 'package:rent_car_app/presentation/viewModels/browse_view_model.dart';
+import 'package:rent_car_app/presentation/widgets/offline_banner.dart';
 
 Widget chipCategories(List categories) {
   final connectivity = Get.find<ConnectivityService>();
@@ -39,34 +40,29 @@ Widget chipCategories(List categories) {
                     if (connectivity.isOnline.value) {
                       browseVm.filterCars(category);
                     } else {
-                      null;
+                      const OfflineBanner();
+                      return;
                     }
                   },
                   child: Container(
                     height: 48,
                     margin: const EdgeInsets.only(right: 16),
-                    padding: const EdgeInsets.fromLTRB(16, 14, 30, 14),
+                    padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(16),
                       color: isSelected
                           ? Theme.of(Get.context!).colorScheme.onSurface
                           : Theme.of(Get.context!).colorScheme.surface,
                     ),
-                    child: Row(
-                      children: [
-                        getCategoryIcon(category),
-                        const Gap(10),
-                        Text(
-                          category,
-                          style: GoogleFonts.poppins(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: isSelected
-                                ? Theme.of(Get.context!).colorScheme.surface
-                                : Theme.of(Get.context!).colorScheme.onSurface,
-                          ),
-                        ),
-                      ],
+                    child: Text(
+                      category,
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: isSelected
+                            ? Theme.of(Get.context!).colorScheme.surface
+                            : Theme.of(Get.context!).colorScheme.onSurface,
+                      ),
                     ),
                   ),
                 );
@@ -77,42 +73,4 @@ Widget chipCategories(List categories) {
       ),
     ],
   );
-}
-
-Widget getCategoryIcon(String category) {
-  switch (category.toLowerCase()) {
-    case 'mpv | mobil keluarga':
-      return ColorFiltered(
-        colorFilter: const ColorFilter.mode(Color(0xffFF5722), BlendMode.srcIn),
-        child: Image.asset('assets/ic_car_mpv.png', width: 19, height: 19),
-      );
-    case 'suv | mobil tangguh':
-      return ColorFiltered(
-        colorFilter: const ColorFilter.mode(Color(0xffFF5722), BlendMode.srcIn),
-        child: Image.asset('assets/ic_car_suv.png', width: 24, height: 24),
-      );
-    case 'hatchback | mobil kota':
-      return ColorFiltered(
-        colorFilter: const ColorFilter.mode(Color(0xffFF5722), BlendMode.srcIn),
-        child: Image.asset(
-          'assets/ic_car_hatchback.png',
-          width: 24,
-          height: 24,
-        ),
-      );
-    case 'electric | mobil listrik':
-      return ColorFiltered(
-        colorFilter: const ColorFilter.mode(Color(0xffFF5722), BlendMode.srcIn),
-        child: Image.asset('assets/ic_car_electric.png', width: 19, height: 19),
-      );
-    default:
-      return ColorFiltered(
-        colorFilter: const ColorFilter.mode(Color(0xffFF5722), BlendMode.srcIn),
-        child: Image.asset(
-          'assets/ic_car_hatchback.png',
-          width: 24,
-          height: 24,
-        ),
-      );
-  }
 }

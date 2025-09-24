@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:rent_car_app/data/models/car.dart';
 import 'package:rent_car_app/data/services/connectivity_service.dart';
+import 'package:rent_car_app/presentation/widgets/offline_banner.dart';
 
 Widget itemFeaturedCar(Car car, EdgeInsetsGeometry margin, bool isTrending) {
   final connectivity = Get.find<ConnectivityService>();
@@ -19,7 +20,8 @@ Widget itemFeaturedCar(Car car, EdgeInsetsGeometry margin, bool isTrending) {
       if (connectivity.isOnline.value) {
         Get.toNamed('/detail', arguments: car.id);
       } else {
-        null;
+        const OfflineBanner();
+        return;
       }
     },
     child: Container(
@@ -160,7 +162,7 @@ Widget itemFeaturedCar(Car car, EdgeInsetsGeometry margin, bool isTrending) {
                   ),
                   const Gap(4),
                   RatingBar.builder(
-                    initialRating: car.ratingProduct.toDouble(),
+                    initialRating: car.ratingAverage.toDouble(),
                     itemPadding: const EdgeInsets.all(0),
                     itemSize: 16,
                     unratedColor: Colors.grey[300],

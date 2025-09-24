@@ -6,14 +6,14 @@ class Chat {
   final Map? productDetail;
   final String receiverId;
   final String senderId;
-  final Timestamp? timeStamp;
+  final Timestamp timeStamp;
   Chat({
     required this.chatId,
     required this.message,
     this.productDetail,
     required this.receiverId,
     required this.senderId,
-    this.timeStamp,
+    required this.timeStamp,
   });
 
   Map<String, dynamic> toJson() {
@@ -23,7 +23,7 @@ class Chat {
       'productDetail': productDetail,
       'receiverId': receiverId,
       'senderId': senderId,
-      'timeStamp': FieldValue.serverTimestamp(),
+      'timeStamp': timeStamp,
     };
   }
 
@@ -36,8 +36,7 @@ class Chat {
           : null,
       receiverId: json['receiverId'] as String,
       senderId: json['senderId'] as String,
-      timeStamp:
-          json['timeStamp'] != null ? json['timeStamp'] as Timestamp : null,
+      timeStamp: json['timeStamp'] as Timestamp? ?? Timestamp.now(),
     );
   }
 }

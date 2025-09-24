@@ -7,10 +7,11 @@ class ButtonPrimary extends StatelessWidget {
     required this.onTap,
     required this.text,
     this.customBackgroundColor = const Color(0xffFF5722),
-    this.customTextColor = Colors.white,
+    this.customTextColor = const Color(0xffEFEFF0),
     this.customTextSize = 16.0,
     this.customBorderRadius = const BorderRadius.all(Radius.circular(50)),
     this.customHeight = 52,
+    this.customBorderColor = const Color(0xffFF5722),
   });
   final VoidCallback? onTap;
   final String text;
@@ -19,6 +20,7 @@ class ButtonPrimary extends StatelessWidget {
   final Color? customTextColor;
   final BorderRadius customBorderRadius;
   final double? customHeight;
+  final Color customBorderColor;
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +31,12 @@ class ButtonPrimary extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(50),
-        child: SizedBox(
+        child: Container(
+          decoration: BoxDecoration(
+            color: customBackgroundColor,
+            borderRadius: customBorderRadius,
+            border: Border.all(color: customBorderColor),
+          ),
           width: double.infinity,
           height: customHeight,
           child: Center(

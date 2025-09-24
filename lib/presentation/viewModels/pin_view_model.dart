@@ -1,10 +1,13 @@
 import 'dart:developer';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rent_car_app/core/constants/message.dart';
+import 'package:rent_car_app/data/models/account.dart';
 import 'package:rent_car_app/data/models/car.dart';
 import 'package:rent_car_app/data/services/notification_service.dart';
+import 'package:rent_car_app/data/services/push_notification_service.dart';
 import 'package:rent_car_app/presentation/viewModels/auth_view_model.dart';
 import 'package:rent_car_app/presentation/viewModels/checkout_view_model.dart';
 import 'package:rent_car_app/data/sources/user_source.dart';
@@ -22,7 +25,7 @@ class PinViewModel extends GetxController {
   CheckoutViewModel? get checkoutVm => Get.isRegistered<CheckoutViewModel>()
       ? Get.find<CheckoutViewModel>()
       : null;
-  late Car? car;
+  Car? car;
   final pin1 = TextEditingController();
   final pin2 = TextEditingController();
   final pin3 = TextEditingController();
@@ -35,6 +38,32 @@ class PinViewModel extends GetxController {
   final UserSource userSource = UserSource();
   final bool isChangingPin;
   final RxString _newPin = ''.obs;
+
+  final Rx<Account?> _partner = Rx<Account?>(null);
+  Account? get partner => _partner.value;
+  set partner(Account? value) => _partner.value = value;
+
+  bool _disposed = false;
+
+  @override
+  void onInit() {
+    super.onInit();
+    if (car != null) {
+      fetchPartner(car!.ownerId, car!.ownerType);
+    }
+  }
+
+  @override
+  void onClose() {
+    _disposed = true;
+
+    pin1.dispose();
+    pin2.dispose();
+    pin3.dispose();
+    pin4.dispose();
+
+    super.onClose();
+  }
 
   void handlePinInput(dynamic input) {
     if (input is int) {
@@ -67,11 +96,13 @@ class PinViewModel extends GetxController {
   }
 
   void clearPin() {
-    pin1.clear();
-    pin2.clear();
-    pin3.clear();
-    pin4.clear();
-    isPinComplete.value = false;
+    if (_disposed) return;
+
+    for (final ctrl in [pin1, pin2, pin3, pin4]) {
+      if (ctrl.text.isNotEmpty) {
+        ctrl.clear();
+      }
+    }
   }
 
   Future<void> setPin(String pin) async {
@@ -166,17 +197,14 @@ class PinViewModel extends GetxController {
       }
 
       await checkoutVm?.processPayment(enteredPin);
+      if (partner == null) {
+        await fetchPartner(car!.ownerId, car!.ownerType);
+      }
+      await sendNotification();
       Message.success('Pembayaran berhasil. Pesanan telah dibuat!');
       Get.offAllNamed(
         '/complete',
         arguments: {'fragmentIndex': 0, 'bookedCar': car},
-      );
-      await NotificationService.addNotification(
-        userId: car!.ownerId,
-        title: "Info Order",
-        body: "Ada Orderan baru di Toko Anda",
-        type: "order",
-        referenceId: "${authVM.account.value!.uid}_${car?.ownerId}",
       );
     } catch (e) {
       log('Error dari PinViewModel: $e');
@@ -202,12 +230,46 @@ class PinViewModel extends GetxController {
     }
   }
 
-  @override
-  void onClose() {
-    pin1.dispose();
-    pin2.dispose();
-    pin3.dispose();
-    pin4.dispose();
-    super.onClose();
+  Future<void> sendNotification() async {
+    if (partner == null) {
+      log('Partner belum dimuat, tidak bisa kirim notifikasi');
+      return;
+    }
+    final tokens = partner!.fcmTokens ?? [];
+    String message =
+        "Pesanan baru untuk mobil ${car?.nameProduct ?? ''} ${car?.releaseProduct ?? ''}"
+            .trim();
+    if (message.isEmpty || message == "Pesanan baru untuk mobil") {
+      message = "Pesanan baru di toko Anda";
+    }
+    if (tokens.isNotEmpty) {
+      await PushNotificationService.sendToMany(
+        tokens,
+        "Info Order",
+        message,
+        data: {'type': 'order', 'referenceId': car?.id ?? ''},
+      );
+    } else {
+      log('Gagal kirim push notification: token kosong');
+    }
+    await NotificationService.addNotification(
+      userId: car!.ownerId,
+      title: "Info Order",
+      body: message,
+      type: "order",
+      referenceId: "${authVM.account.value!.uid}_${car?.ownerId}",
+    );
+  }
+
+  Future<void> fetchPartner(String id, String role) async {
+    final collection = (role == 'admin') ? 'Admin' : 'Users';
+    final doc = await FirebaseFirestore.instance
+        .collection(collection)
+        .doc(id)
+        .get();
+
+    if (doc.exists) {
+      partner = Account.fromJson(doc.data()!);
+    }
   }
 }

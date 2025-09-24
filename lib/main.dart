@@ -13,6 +13,8 @@ import 'package:rent_car_app/presentation/pages/auth_page.dart';
 import 'package:rent_car_app/presentation/pages/splash_screen.dart';
 import 'package:rent_car_app/presentation/viewModels/auth_view_model.dart';
 import 'package:rent_car_app/routes/app_pages.dart';
+import 'package:webview_flutter/webview_flutter.dart';
+import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'core/firebase_options.dart';
 
 @pragma('vm:entry-point')
@@ -22,6 +24,7 @@ Future<void> _background(RemoteMessage m) async {
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  WebViewPlatform.instance = AndroidWebViewPlatform();
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   FirebaseMessaging.onBackgroundMessage(_background);

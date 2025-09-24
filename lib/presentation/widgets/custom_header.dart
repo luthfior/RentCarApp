@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:rent_car_app/data/services/connectivity_service.dart';
+import 'package:rent_car_app/presentation/widgets/offline_banner.dart';
 
 class CustomHeader extends StatelessWidget {
   final String title;
@@ -22,7 +23,7 @@ class CustomHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 20, 24, 10),
+      padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -36,7 +37,8 @@ class CustomHeader extends StatelessWidget {
                     Get.back();
                   }
                 } else {
-                  null;
+                  const OfflineBanner();
+                  return;
                 }
               },
               child: Container(
@@ -47,10 +49,9 @@ class CustomHeader extends StatelessWidget {
                   color: Theme.of(Get.context!).colorScheme.surface,
                 ),
                 alignment: Alignment.center,
-                child: Image.asset(
-                  'assets/ic_arrow_back.png',
-                  height: 24,
-                  width: 24,
+                child: Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  size: 24,
                   color: Theme.of(Get.context!).colorScheme.onSurface,
                 ),
               ),

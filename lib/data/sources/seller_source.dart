@@ -22,10 +22,7 @@ class SellerSource {
           .doc(userId)
           .collection('myProducts')
           .doc(car.id)
-          .set({
-            'productId': car.id,
-            'createdAt': FieldValue.serverTimestamp(),
-          });
+          .set({'productId': car.id, 'createdAt': Timestamp.now()});
       log('Produk dengan ID ${car.id} berhasil dibuat oleh $userRole');
     } on FirebaseException catch (e) {
       log('Firebase Error: ${e.code} - ${e.message}');
@@ -103,6 +100,22 @@ class SellerSource {
           .collection('myProducts')
           .doc(productId)
           .delete();
+      if (userRole == 'admin') {
+        final usersSnapshot = await firestore.collection('Users').get();
+        for (var userDoc in usersSnapshot.docs) {
+          final myProductRef = firestore
+              .collection('Users')
+              .doc(userDoc.id)
+              .collection('myProducts')
+              .doc(productId);
+
+          final doc = await myProductRef.get();
+          if (doc.exists) {
+            await myProductRef.delete();
+          }
+        }
+      }
+
       log('Produk dengan ID $productId berhasil dihapus');
       Message.success('Produk Berhasil Dihapus');
     } on FirebaseException catch (e) {
@@ -135,13 +148,13 @@ class SellerSource {
     String orderId,
     String userId,
     String userRole,
-    num productPrice,
+    num totalPrice,
   ) async {
     final firestore = FirebaseFirestore.instance;
     final String userCollection = userRole == 'admin' ? 'Admin' : 'Users';
 
     await firestore.collection(userCollection).doc(userId).update({
-      'income': FieldValue.increment(productPrice),
+      'income': FieldValue.increment(totalPrice),
     });
   }
 }

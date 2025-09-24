@@ -1,5 +1,4 @@
 import 'package:get/get.dart';
-import 'package:rent_car_app/presentation/viewModels/address_view_model.dart';
 import 'package:rent_car_app/presentation/viewModels/browse_view_model.dart';
 import 'package:rent_car_app/presentation/viewModels/discover_view_model.dart';
 import 'package:rent_car_app/presentation/viewModels/favorite_view_model.dart';
@@ -16,7 +15,6 @@ class DiscoverBinding extends Bindings {
     Get.lazyPut<OrderViewModel>(() => OrderViewModel(), fenix: true);
     Get.lazyPut<FavoriteViewModel>(() => FavoriteViewModel(), fenix: true);
     Get.lazyPut<SellerViewModel>(() => SellerViewModel(), fenix: true);
-    Get.lazyPut<AddressViewModel>(() => AddressViewModel(), fenix: true);
     Get.lazyPut<NotificationViewModel>(
       () => NotificationViewModel(),
       fenix: true,

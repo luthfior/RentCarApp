@@ -56,7 +56,7 @@ class PinPage extends GetView<PinViewModel> {
         ],
       ),
       bottomNavigationBar: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
+        padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
         color: Colors.transparent,
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -72,7 +72,8 @@ class PinPage extends GetView<PinViewModel> {
                           await controller.finishedPayment();
                         }
                       } else {
-                        null;
+                        const OfflineBanner();
+                        return;
                       }
                     }
                   : null;

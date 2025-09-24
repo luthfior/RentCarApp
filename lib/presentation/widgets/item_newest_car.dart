@@ -7,12 +7,11 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:rent_car_app/data/models/car.dart';
 
-Widget itemNewestCar(Car car, EdgeInsetsGeometry margin, VoidCallback onTap) {
+Widget itemNewestCar(Car car, VoidCallback onTap) {
   return GestureDetector(
     onTap: onTap,
     child: Container(
       height: 100,
-      margin: margin,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
         color: Theme.of(Get.context!).colorScheme.surface,
@@ -106,7 +105,7 @@ Widget itemNewestCar(Car car, EdgeInsetsGeometry margin, VoidCallback onTap) {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     RatingBar.builder(
-                      initialRating: car.ratingProduct.toDouble(),
+                      initialRating: car.ratingAverage.toDouble(),
                       itemPadding: const EdgeInsets.all(0),
                       itemSize: 12,
                       unratedColor: Colors.grey[300],

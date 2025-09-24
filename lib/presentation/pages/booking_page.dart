@@ -51,7 +51,7 @@ class BookingPage extends GetView<BookingViewModel> {
         ],
       ),
       bottomNavigationBar: Container(
-        padding: const EdgeInsets.fromLTRB(24, 10, 24, 24),
+        padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
         color: Colors.transparent,
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -61,7 +61,8 @@ class BookingPage extends GetView<BookingViewModel> {
                 if (connectivity.isOnline.value) {
                   controller.goToCheckout();
                 } else {
-                  null;
+                  const OfflineBanner();
+                  return;
                 }
               },
               text: 'Lanjutkan ke Pembayaran',
@@ -177,13 +178,13 @@ class BookingPage extends GetView<BookingViewModel> {
           ),
           const Gap(10),
           CustomInput(
-            enable: connectivity.isOnline.value,
-            icon: 'assets/ic_profile.png',
-            hint: controller.name.value.isNotEmpty
-                ? controller.name.value
+            icon: Icons.perm_contact_calendar_outlined,
+            hint: (controller.name ?? '').isNotEmpty
+                ? controller.name!
                 : 'Nama Lengkap',
             customHintFontSize: 14,
             editingController: controller.fullNameController,
+            isTextCapital: true,
           ),
           const Gap(20),
           Row(
@@ -202,11 +203,10 @@ class BookingPage extends GetView<BookingViewModel> {
                     ),
                     const Gap(10),
                     CustomInput(
-                      icon: 'assets/ic_calendar.png',
+                      icon: Icons.calendar_month_rounded,
                       hint: 'Pilih Tanggal',
                       customHintFontSize: 14,
                       editingController: controller.startDateController,
-                      enable: false,
                       onTapBox: () => controller.pickDate(
                         context,
                         controller.startDateController,
@@ -230,11 +230,10 @@ class BookingPage extends GetView<BookingViewModel> {
                     ),
                     const Gap(10),
                     CustomInput(
-                      icon: 'assets/ic_calendar.png',
+                      icon: Icons.calendar_month_rounded,
                       hint: 'Pilih Tanggal',
                       customHintFontSize: 14,
                       editingController: controller.endDateController,
-                      enable: false,
                       onTapBox: () => controller.pickDate(
                         context,
                         controller.endDateController,
@@ -279,7 +278,8 @@ class BookingPage extends GetView<BookingViewModel> {
                     if (connectivity.isOnline.value) {
                       controller.agencyPicked = agency;
                     } else {
-                      null;
+                      const OfflineBanner();
+                      return;
                     }
                   },
                   child: Container(
@@ -302,16 +302,10 @@ class BookingPage extends GetView<BookingViewModel> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        ColorFiltered(
-                          colorFilter: const ColorFilter.mode(
-                            Color(0xffFF5722),
-                            BlendMode.srcIn,
-                          ),
-                          child: Image.asset(
-                            'assets/agency.png',
-                            width: 38,
-                            height: 38,
-                          ),
+                        const Icon(
+                          Icons.car_rental,
+                          size: 38,
+                          color: Color(0xffFF5722),
                         ),
                         const Gap(5),
                         Text(
@@ -382,19 +376,10 @@ class BookingPage extends GetView<BookingViewModel> {
                   filled: true,
                   fillColor: Theme.of(Get.context!).colorScheme.surface,
                   contentPadding: const EdgeInsets.fromLTRB(16, 18, 18, 10),
-                  prefixIcon: UnconstrainedBox(
-                    alignment: const Alignment(0.4, 0),
-                    child: ColorFiltered(
-                      colorFilter: const ColorFilter.mode(
-                        Color(0xffFF5722),
-                        BlendMode.srcIn,
-                      ),
-                      child: Image.asset(
-                        'assets/ic_insurance.png',
-                        width: 24,
-                        height: 24,
-                      ),
-                    ),
+                  prefixIcon: const Icon(
+                    Icons.health_and_safety_outlined,
+                    size: 24,
+                    color: Color(0xffFF5722),
                   ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(50),
@@ -412,10 +397,9 @@ class BookingPage extends GetView<BookingViewModel> {
                   controller.insurancePicked = value;
                   log('Asuransi yang dipilih: $controller.insurancePicked');
                 },
-                icon: Image.asset(
-                  'assets/ic_arrow_down.png',
-                  width: 18,
-                  height: 18,
+                icon: Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  size: 18,
                   color: Theme.of(Get.context!).colorScheme.onSurface,
                 ),
               ),
@@ -451,7 +435,8 @@ class BookingPage extends GetView<BookingViewModel> {
                       if (connectivity.isOnline.value) {
                         controller.withDriver = true;
                       } else {
-                        null;
+                        const OfflineBanner();
+                        return;
                       }
                     },
                     child: Container(
@@ -498,7 +483,8 @@ class BookingPage extends GetView<BookingViewModel> {
                       if (connectivity.isOnline.value) {
                         controller.withDriver = false;
                       } else {
-                        null;
+                        const OfflineBanner();
+                        return;
                       }
                     },
                     child: Container(

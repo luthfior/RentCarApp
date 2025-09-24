@@ -10,13 +10,13 @@ class CustomInput extends StatelessWidget {
     required this.hint,
     this.editingController,
     this.obsecure = false,
-    this.enable = true,
     this.onTapBox,
     this.onChanged,
     this.suffixIcon,
     this.errorText,
     this.focusNode,
     this.customHintFontSize = 16,
+    this.customFontSize = 14,
     this.keyboardType,
     this.inputFormatters,
     this.prefixText,
@@ -27,17 +27,17 @@ class CustomInput extends StatelessWidget {
     this.isTextCapital = false,
   });
 
-  final String? icon;
+  final IconData? icon;
   final String hint;
   final TextEditingController? editingController;
   final bool? obsecure;
-  final bool enable;
   final VoidCallback? onTapBox;
   final ValueChanged<String>? onChanged;
   final Widget? suffixIcon;
   final String? errorText;
   final FocusNode? focusNode;
   final double? customHintFontSize;
+  final double? customFontSize;
   final TextInputType? keyboardType;
   final List<TextInputFormatter>? inputFormatters;
   final String? prefixText;
@@ -67,13 +67,14 @@ class CustomInput extends StatelessWidget {
         final int? effectiveMaxLines = obsecure == true ? 1 : maxLines;
 
         return GestureDetector(
-          onTap: onTapBox,
           child: TextField(
             controller: editingController,
+            readOnly: onTapBox != null,
+            onTap: onTapBox,
             keyboardType: keyboardType,
             inputFormatters: inputFormatters,
             style: GoogleFonts.poppins(
-              fontSize: 14,
+              fontSize: customFontSize,
               fontWeight: FontWeight.w400,
               color: Theme.of(Get.context!).colorScheme.onSurface,
             ),
@@ -81,7 +82,6 @@ class CustomInput extends StatelessWidget {
             onChanged: onChanged,
             focusNode: focusNode,
             decoration: InputDecoration(
-              enabled: enable,
               hintText: hint,
               hintStyle: GoogleFonts.poppins(
                 fontSize: customHintFontSize,
@@ -108,7 +108,7 @@ class CustomInput extends StatelessWidget {
               ),
               prefixText: conditionalPrefixText,
               prefixStyle: conditionalPrefixStyle,
-              prefixIcon: (icon != null && icon!.isNotEmpty)
+              prefixIcon: (icon != null)
                   ? UnconstrainedBox(
                       alignment: const Alignment(0.5, 0),
                       child: ColorFiltered(
@@ -116,7 +116,7 @@ class CustomInput extends StatelessWidget {
                           Color(0xffFF5722),
                           BlendMode.srcIn,
                         ),
-                        child: Image.asset(icon!, height: 24, width: 24),
+                        child: Icon(icon),
                       ),
                     )
                   : null,

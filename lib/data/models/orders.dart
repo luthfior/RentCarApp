@@ -1,29 +1,36 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:rent_car_app/data/models/order_detail.dart';
 
 class Orders {
   final String id;
   final String resi;
   final String customerId;
   final String sellerId;
-  final String productId;
-  final String productName;
-  final num productPrice;
-  final String orderStatus;
-  final Timestamp orderDate;
+  final String customerFullname;
+  final String sellerStoreName;
   final String customerAddress;
   final String sellerAddress;
+  final OrderDetail orderDetail;
+  final String orderStatus;
+  final Timestamp orderDate;
+  final String paymentMethod;
+  final String paymentStatus;
+  final bool hasBeenReviewed;
   Orders({
     required this.id,
     required this.resi,
     required this.customerId,
     required this.sellerId,
-    required this.productId,
-    required this.productName,
-    required this.productPrice,
-    required this.orderStatus,
-    required this.orderDate,
+    required this.customerFullname,
+    required this.sellerStoreName,
     required this.customerAddress,
     required this.sellerAddress,
+    required this.orderDetail,
+    required this.orderStatus,
+    required this.orderDate,
+    required this.paymentMethod,
+    required this.paymentStatus,
+    this.hasBeenReviewed = false,
   });
 
   Map<String, dynamic> toJson() {
@@ -32,13 +39,16 @@ class Orders {
       'resi': resi,
       'customerId': customerId,
       'sellerId': sellerId,
-      'productId': productId,
-      'productName': productName,
-      'productPrice': productPrice,
-      'orderStatus': orderStatus,
-      'orderDate': orderDate,
+      'customerFullname': customerFullname,
+      'sellerStoreName': sellerStoreName,
       'customerAddress': customerAddress,
       'sellerAddress': sellerAddress,
+      'orderDetail': orderDetail,
+      'orderStatus': orderStatus,
+      'orderDate': orderDate,
+      'paymentMethod': paymentMethod,
+      'paymentStatus': paymentStatus,
+      'hasBeenReviewed': hasBeenReviewed,
     };
   }
 
@@ -48,13 +58,35 @@ class Orders {
       resi: json['resi'] as String? ?? '',
       customerId: json['customerId'] as String? ?? '',
       sellerId: json['sellerId'] as String? ?? '',
-      productId: json['productId'] as String? ?? '',
-      productName: json['productName'] as String? ?? '',
-      productPrice: json['productPrice'] as num? ?? 0,
-      orderStatus: json['orderStatus'] as String? ?? '',
-      orderDate: json['orderDate'] as Timestamp? ?? Timestamp.now(),
+      customerFullname: json['customerFullname'] as String? ?? '',
+      sellerStoreName: json['sellerStoreName'] as String? ?? '',
       customerAddress: json['customerAddress'] as String? ?? '',
       sellerAddress: json['sellerAddress'] as String? ?? '',
+      orderDetail: json['orderDetail'] != null
+          ? OrderDetail.fromJson(json['orderDetail'] as Map<String, dynamic>)
+          : OrderDetail.empty,
+      orderStatus: json['orderStatus'] as String? ?? '',
+      orderDate: json['orderDate'] as Timestamp? ?? Timestamp.now(),
+      paymentMethod: json['paymentMethod'] as String? ?? '',
+      paymentStatus: json['paymentStatus'] as String? ?? '',
+      hasBeenReviewed: json['hasBeenReviewed'] as bool? ?? false,
     );
   }
+
+  static Orders get empty => Orders(
+    id: '',
+    resi: '',
+    customerId: '',
+    sellerId: '',
+    customerFullname: '',
+    sellerStoreName: '',
+    customerAddress: '',
+    sellerAddress: '',
+    orderDetail: OrderDetail.empty,
+    orderStatus: '',
+    orderDate: Timestamp.now(),
+    paymentMethod: '',
+    paymentStatus: '',
+    hasBeenReviewed: false,
+  );
 }

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -7,6 +8,7 @@ import 'package:rent_car_app/presentation/viewModels/auth_view_model.dart';
 import 'package:rent_car_app/presentation/viewModels/discover_view_model.dart';
 
 class FCMService {
+  static final discoverVM = Get.find<DiscoverViewModel>();
   static final FirebaseMessaging _fcm = FirebaseMessaging.instance;
   static final FlutterLocalNotificationsPlugin
   _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
@@ -21,7 +23,8 @@ class FCMService {
       initSettings,
       onDidReceiveNotificationResponse: (response) {
         if (response.payload != null && response.payload!.isNotEmpty) {
-          _handleMessageClick({"route": response.payload!});
+          final Map<String, dynamic> data = jsonDecode(response.payload!);
+          _handleMessageClick(data);
         }
       },
     );
@@ -61,30 +64,33 @@ class FCMService {
       notif.title,
       notif.body,
       platformDetails,
-      payload: data['route'] ?? '',
+      payload: jsonEncode(data),
     );
   }
 
   static void _handleMessageClick(Map<String, dynamic> data) {
+    if (!Get.isRegistered<DiscoverViewModel>()) {
+      Get.put(DiscoverViewModel());
+    }
     log("User klik notifikasi dengan data: $data");
+    Get.until((route) => route.settings.name == '/discover');
     if (data['type'] == 'chat') {
-      final discoverVM = Get.find<DiscoverViewModel>();
       if (Get.find<AuthViewModel>().account.value?.role == 'admin') {
-        Get.until((route) => route.settings.name == '/discover');
         discoverVM.setFragmentIndex(3);
       } else {
-        Get.until((route) => route.settings.name == '/discover');
         discoverVM.setFragmentIndex(2);
       }
     } else if (data['type'] == 'order') {
-      final discoverVM = Get.find<DiscoverViewModel>();
-      if (Get.find<AuthViewModel>().account.value?.role == 'admin') {
-        Get.until((route) => route.settings.name == '/discover');
+      final role = Get.find<AuthViewModel>().account.value?.role;
+      if (role == 'admin') {
         discoverVM.setFragmentIndex(2);
       } else {
-        Get.until((route) => route.settings.name == '/discover');
         discoverVM.setFragmentIndex(1);
       }
+    } else if (data['type'] == 'product') {
+      discoverVM.setFragmentIndex(0);
+    } else {
+      discoverVM.setFragmentIndex(0);
     }
   }
 }

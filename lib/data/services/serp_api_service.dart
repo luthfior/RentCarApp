@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 
 class SerpApiService {
   static final String _apiKey = dotenv.env['SERP_API_KEY'] ?? '';
-  static const _baseUrl = 'https://serpapi.com/search.json';
+  static final _baseUrl = dotenv.env['SERP_URL'] ?? '';
 
   static Future<String?> fetchImageForCar(
     String nameProduct,
@@ -41,6 +41,7 @@ class SerpApiService {
       }
     } catch (e) {
       log('Exception during SerpAPI call: $e');
+      rethrow;
     }
 
     return null;

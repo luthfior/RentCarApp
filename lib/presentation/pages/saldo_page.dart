@@ -37,46 +37,77 @@ class SaldoPage extends StatelessWidget {
                     discoverVM.setFragmentIndex(4);
                   }
                 } else {
-                  null;
+                  const OfflineBanner();
+                  return;
                 }
               },
             ),
             const Gap(20),
             Expanded(
-              child: StreamBuilder<DocumentSnapshot>(
-                stream: FirebaseFirestore.instance
-                    .collection(userCollection)
-                    .doc(authVM.account.value?.uid)
-                    .snapshots(),
-                builder: (context, snapshot) {
-                  if (!snapshot.hasData) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  final data = snapshot.data!.data() as Map<String, dynamic>;
-                  final saldo = data['income'] ?? 0;
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return RefreshIndicator(
+                    onRefresh: () async {
+                      if (connectivity.isOnline.value) {
+                        await authVM.loadUser();
+                      } else {
+                        const OfflineBanner();
+                        return;
+                      }
+                    },
+                    color: const Color(0xffFF5722),
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      child: SizedBox(
+                        height: constraints.maxHeight,
+                        child: StreamBuilder<DocumentSnapshot>(
+                          stream: FirebaseFirestore.instance
+                              .collection(userCollection)
+                              .doc(authVM.account.value?.uid)
+                              .snapshots(),
+                          builder: (context, snapshot) {
+                            if (!snapshot.hasData) {
+                              return const Center(
+                                child: CircularProgressIndicator(
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Color(0xffFF5722),
+                                  ),
+                                ),
+                              );
+                            }
+                            final data =
+                                snapshot.data!.data() as Map<String, dynamic>;
+                            final saldo = data['income'] ?? 0;
 
-                  return Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          'Saldo Anda Saat Ini:',
-                          style: GoogleFonts.poppins(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: Theme.of(context).colorScheme.onSurface,
-                          ),
+                            return Center(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    'Saldo Anda Saat Ini:',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w700,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onSurface,
+                                    ),
+                                  ),
+                                  const Gap(8),
+                                  Text(
+                                    'Rp${NumberFormat.currency(locale: 'id', symbol: '', decimalDigits: 0).format(saldo).replaceAll(',', '.')}',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 32,
+                                      fontWeight: FontWeight.w700,
+                                      color: const Color(0xffFF5722),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
                         ),
-                        const Gap(8),
-                        Text(
-                          'Rp${NumberFormat.currency(locale: 'id', symbol: '', decimalDigits: 0).format(saldo).replaceAll(',', '.')}',
-                          style: GoogleFonts.poppins(
-                            fontSize: 32,
-                            fontWeight: FontWeight.w700,
-                            color: const Color(0xffFF5722),
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
                   );
                 },

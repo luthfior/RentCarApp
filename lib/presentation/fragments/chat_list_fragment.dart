@@ -8,6 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:rent_car_app/core/constants/message.dart';
 import 'package:rent_car_app/data/services/connectivity_service.dart';
+import 'package:rent_car_app/presentation/widgets/offline_banner.dart';
 
 class ChatListFragment extends StatelessWidget {
   final String uid;
@@ -31,6 +32,10 @@ class ChatListFragment extends StatelessWidget {
     } else {
       return DateFormat('dd/MM/yy').format(date);
     }
+  }
+
+  Future<void> handleRefresh() async {
+    await Future.delayed(const Duration(milliseconds: 500));
   }
 
   @override
@@ -93,239 +98,223 @@ class ChatListFragment extends StatelessWidget {
 
                   final containerHeight = constraints.maxHeight * 0.85;
 
-                  return Align(
-                    alignment: Alignment.topCenter,
-                    child: Container(
-                      height: containerHeight,
-                      margin: const EdgeInsets.symmetric(horizontal: 24),
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.surface,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: ListView.separated(
-                        padding: EdgeInsets.zero,
-                        itemCount: docs.length,
-                        separatorBuilder: (_, __) => Divider(
-                          height: 1,
-                          thickness: 0.8,
-                          color: Colors.grey.shade300,
-                          indent: 72,
+                  return RefreshIndicator(
+                    onRefresh: () async {
+                      if (connectivity.isOnline.value) {
+                        return handleRefresh();
+                      } else {
+                        const OfflineBanner();
+                        return;
+                      }
+                    },
+                    color: const Color(0xffFF5722),
+                    child: Align(
+                      alignment: Alignment.topCenter,
+                      child: Container(
+                        height: containerHeight,
+                        margin: const EdgeInsets.symmetric(horizontal: 24),
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.surface,
+                          borderRadius: BorderRadius.circular(20),
                         ),
-                        itemBuilder: (context, index) {
-                          final data = docs[index].data();
-                          final roomId = data['roomId'] as String;
-                          final lastMessage =
-                              data['lastMessage'] as String? ?? '';
-                          final ownerStoreName =
-                              data['ownerStoreName'] as String? ??
-                              'Tidak diketahui';
-                          final ownerEmail =
-                              data['ownerEmail'] as String? ??
-                              'Tidak diketahui';
-                          final ownerPhotoUrl =
-                              data['ownerPhotoUrl'] as String? ?? '';
-                          final ownerType = data['ownerType'] as String? ?? '';
+                        child: ListView.separated(
+                          padding: EdgeInsets.zero,
+                          itemCount: docs.length,
+                          separatorBuilder: (_, __) => Divider(
+                            height: 1,
+                            thickness: 0.8,
+                            color: Colors.grey.shade300,
+                            indent: 72,
+                          ),
+                          itemBuilder: (context, index) {
+                            final data = docs[index].data();
+                            final roomId = data['roomId'] as String;
+                            final lastMessage =
+                                data['lastMessage'] as String? ?? '';
+                            final ownerStoreName =
+                                data['ownerStoreName'] as String? ??
+                                'Tidak diketahui';
+                            final ownerPhotoUrl =
+                                data['ownerPhotoUrl'] as String? ?? '';
+                            final ownerType =
+                                data['ownerType'] as String? ?? '';
 
-                          String customerUsername;
-                          if (data['customerUsername'] != null &&
-                              (data['customerUsername'] as String).contains(
-                                '#',
-                              )) {
-                            final parts = (data['customerUsername'] as String)
-                                .split('#');
-                            final rawName = parts[0].replaceAll('_', ' ');
-                            final suffix = parts[1];
-                            final capitalized = rawName
-                                .split(' ')
-                                .map(
-                                  (w) => w.isNotEmpty
-                                      ? "${w[0].toUpperCase()}${w.substring(1)}"
-                                      : w,
-                                )
-                                .join(' ');
-                            customerUsername = "$capitalized #$suffix";
-                          } else {
-                            customerUsername =
-                                data['customerFullname'] ?? 'Tidak diketahui';
-                          }
+                            String customerUsername;
+                            if (data['customerUsername'] != null &&
+                                (data['customerUsername'] as String).contains(
+                                  '#',
+                                )) {
+                              final parts = (data['customerUsername'] as String)
+                                  .split('#');
+                              final rawName = parts[0].replaceAll('_', ' ');
+                              final suffix = parts[1];
+                              final capitalized = rawName
+                                  .split(' ')
+                                  .map(
+                                    (w) => w.isNotEmpty
+                                        ? "${w[0].toUpperCase()}${w.substring(1)}"
+                                        : w,
+                                  )
+                                  .join(' ');
+                              customerUsername = "$capitalized #$suffix";
+                            } else {
+                              customerUsername =
+                                  data['customerFullname'] ?? 'Tidak diketahui';
+                            }
+                            final customerPhotoUrl =
+                                data['customerPhotoUrl'] as String? ?? '';
+                            final lastTimestamp =
+                                data['lastMessageTime'] as Timestamp?;
+                            final formattedTime = formatChatTime(lastTimestamp);
 
-                          final customerEmail =
-                              data['customerEmail'] as String? ??
-                              'Tidak diketahui';
-                          final customerPhotoUrl =
-                              data['customerPhotoUrl'] as String? ?? '';
+                            final parts = roomId.split('_');
+                            final buyerId = parts[0];
+                            final ownerId = parts.length > 1 ? parts[1] : '';
 
-                          final lastTimestamp =
-                              data['lastMessageTime'] as Timestamp?;
-                          final formattedTime = formatChatTime(lastTimestamp);
+                            final chatName = (role == 'customer')
+                                ? ownerStoreName
+                                : customerUsername;
+                            final chatPhotoUrl = (role == 'customer')
+                                ? ownerPhotoUrl
+                                : customerPhotoUrl;
 
-                          final parts = roomId.split('_');
-                          final buyerId = parts[0];
-                          final ownerId = parts.length > 1 ? parts[1] : '';
+                            final unreadCount = (role == 'customer')
+                                ? (data['unreadCountCustomer'] as int? ?? 0)
+                                : (data['unreadCountOwner'] as int? ?? 0);
 
-                          final chatName = (role == 'customer')
-                              ? ownerStoreName
-                              : customerUsername;
-                          final chatEmail = (role == 'customer')
-                              ? ownerEmail
-                              : customerEmail;
-                          final chatPhotoUrl = (role == 'customer')
-                              ? ownerPhotoUrl
-                              : customerPhotoUrl;
-
-                          final unreadCount = (role == 'customer')
-                              ? (data['unreadCountCustomer'] as int? ?? 0)
-                              : (data['unreadCountOwner'] as int? ?? 0);
-
-                          return ListTile(
-                            dense: true,
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 8,
-                            ),
-                            leading: CircleAvatar(
-                              radius: 22,
-                              backgroundImage:
-                                  (chatPhotoUrl.isNotEmpty
-                                          ? NetworkImage(chatPhotoUrl)
-                                          : const AssetImage(
-                                              'assets/profile.png',
-                                            ))
-                                      as ImageProvider,
-                            ),
-                            title: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    chatName,
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.onSurface,
+                            return ListTile(
+                              dense: true,
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 8,
+                              ),
+                              leading: CircleAvatar(
+                                radius: 22,
+                                backgroundImage:
+                                    (chatPhotoUrl.isNotEmpty
+                                            ? NetworkImage(chatPhotoUrl)
+                                            : const AssetImage(
+                                                'assets/profile.png',
+                                              ))
+                                        as ImageProvider,
+                              ),
+                              title: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      chatName,
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.onSurface,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
                                     ),
-                                    overflow: TextOverflow.ellipsis,
                                   ),
-                                ),
-                                Text(
-                                  formattedTime,
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w400,
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.secondary,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            subtitle: Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    lastMessage,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
+                                  Text(
+                                    formattedTime,
                                     style: GoogleFonts.poppins(
-                                      fontSize: 14,
+                                      fontSize: 12,
                                       fontWeight: FontWeight.w400,
                                       color: Theme.of(
                                         context,
                                       ).colorScheme.secondary,
                                     ),
                                   ),
-                                ),
-                                if (unreadCount > 0) ...[
-                                  const SizedBox(height: 4),
-                                  Container(
-                                    padding: const EdgeInsets.all(6),
-                                    decoration: const BoxDecoration(
-                                      color: Color(0xffFF5722),
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: Text(
-                                      unreadCount.toString(),
-                                      style: const TextStyle(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ),
                                 ],
-                              ],
-                            ),
-                            onTap: () async {
-                              if (connectivity.isOnline.value) {
-                                Get.dialog(
-                                  const Center(
-                                    child: CircularProgressIndicator(
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                        Color(0xffFF5722),
+                              ),
+                              subtitle: Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      lastMessage,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w400,
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.secondary,
                                       ),
                                     ),
                                   ),
-                                  barrierDismissible: false,
-                                );
-                                try {
-                                  final partnerInfo = {
-                                    'id': (role == 'customer')
-                                        ? ownerId
-                                        : buyerId,
-                                    'type': (role == 'customer')
-                                        ? ownerType
-                                        : 'user',
-                                    'fullName': chatName,
-                                    'username': (role == 'customer')
-                                        ? ownerStoreName
-                                        : customerUsername,
-                                    'storeName': (role == 'customer')
-                                        ? ownerStoreName
-                                        : '',
-                                    'email': chatEmail,
-                                    'photoUrl': chatPhotoUrl,
-                                  };
-
-                                  final roomRef = FirebaseFirestore.instance
-                                      .collection('Services')
-                                      .doc(roomId);
-
-                                  await roomRef.update({
-                                    if (role == 'customer')
-                                      'unreadCountCustomer': 0,
-                                    if (role != 'customer')
-                                      'unreadCountOwner': 0,
-                                  });
-
-                                  Get.back();
-
-                                  Get.toNamed(
-                                    '/chatting',
-                                    arguments: {
-                                      'roomId': roomId,
-                                      'uid': buyerId,
-                                      'ownerId': ownerId,
-                                      'ownerType': ownerType,
-                                      'partner': partnerInfo,
-                                      'from': 'listchat',
-                                    },
+                                  if (unreadCount > 0) ...[
+                                    const SizedBox(height: 4),
+                                    Container(
+                                      padding: const EdgeInsets.all(6),
+                                      decoration: const BoxDecoration(
+                                        color: Color(0xffFF5722),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Text(
+                                        unreadCount.toString(),
+                                        style: const TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                              onTap: () async {
+                                if (connectivity.isOnline.value) {
+                                  Get.dialog(
+                                    const Center(
+                                      child: CircularProgressIndicator(
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                              Color(0xffFF5722),
+                                            ),
+                                      ),
+                                    ),
+                                    barrierDismissible: false,
                                   );
-                                } catch (e) {
-                                  Get.back();
-                                  log('Gagal membuka chat: $e');
-                                  Message.error(
-                                    'Gagal membuka chat. Coba lagi.',
-                                  );
+                                  try {
+                                    final roomRef = FirebaseFirestore.instance
+                                        .collection('Services')
+                                        .doc(roomId);
+
+                                    await roomRef.update({
+                                      if (role == 'customer')
+                                        'unreadCountCustomer': 0,
+                                      if (role != 'customer')
+                                        'unreadCountOwner': 0,
+                                    });
+
+                                    Get.back();
+
+                                    Get.toNamed(
+                                      '/chatting',
+                                      arguments: {
+                                        'roomId': roomId,
+                                        'customerId': buyerId,
+                                        'ownerId': ownerId,
+                                        'ownerType': ownerType,
+                                        'from': 'listchat',
+                                      },
+                                    );
+                                  } catch (e) {
+                                    Get.back();
+                                    log('Gagal membuka chat: $e');
+                                    Message.error(
+                                      'Gagal membuka chat. Coba lagi.',
+                                    );
+                                  }
+                                } else {
+                                  null;
                                 }
-                              } else {
-                                null;
-                              }
-                            },
-                          );
-                        },
+                              },
+                            );
+                          },
+                        ),
                       ),
                     ),
                   );
@@ -335,6 +324,7 @@ class ChatListFragment extends StatelessWidget {
           ),
         ),
         const Gap(20),
+        const OfflineBanner(),
       ],
     );
   }

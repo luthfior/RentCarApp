@@ -68,7 +68,12 @@ dependencies:
   flutter_google_places_sdk: ^0.4.2+1
   flutter_google_places_hoc081098: ^2.0.0
   firebase_messaging: ^15.2.10
-  flutter_local_notifications: ^19.4.1
+  flutter_local_notifications: ^16.3.3
+  flutter_map: ^8.2.1
+  latlong2: ^0.9.1
+  permission_handler: ^12.0.1
+  webview_flutter: ^4.13.0
+  webview_flutter_android: ^4.10.1
 
 dev_dependencies:
   flutter_test:

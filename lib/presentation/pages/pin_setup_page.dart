@@ -54,7 +54,7 @@ class PinSetupPage extends GetView<PinViewModel> {
         ],
       ),
       bottomNavigationBar: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
+        padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
         color: Colors.transparent,
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -67,7 +67,8 @@ class PinSetupPage extends GetView<PinViewModel> {
                         final newPin = controller.getPin;
                         await controller.setPin(newPin);
                       } else {
-                        null;
+                        const OfflineBanner();
+                        return;
                       }
                     }
                   : null;

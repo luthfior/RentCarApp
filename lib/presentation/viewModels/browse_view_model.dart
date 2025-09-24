@@ -2,13 +2,16 @@ import 'dart:async';
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:rent_car_app/data/sources/car_source.dart';
 import 'package:rent_car_app/data/models/car.dart';
+import 'package:rent_car_app/data/sources/seller_source.dart';
 import 'package:rent_car_app/presentation/viewModels/auth_view_model.dart';
 
 class BrowseViewModel extends GetxController {
   final Rx<Car?> car = Rx<Car?>(null);
   final authVM = Get.find<AuthViewModel>();
+  final sellerSource = SellerSource();
 
   final _featuredList = <Car>[].obs;
   List<Car> get featuredList => _featuredList;
@@ -89,7 +92,7 @@ class BrowseViewModel extends GetxController {
           if (comparedPurchased != 0) {
             return comparedPurchased;
           }
-          int compareRating = b.ratingProduct.compareTo(a.ratingProduct);
+          int compareRating = b.ratingAverage.compareTo(a.ratingAverage);
           if (compareRating != 0) {
             return compareRating;
           }
@@ -123,8 +126,6 @@ class BrowseViewModel extends GetxController {
       log('Gagal fetch mobil terbaru secara real-time.');
       status = 'error';
     }
-
-    await Future.microtask(() => null);
   }
 
   void filterCars(String category) {
@@ -176,5 +177,73 @@ class BrowseViewModel extends GetxController {
       _currentView.value = 'home';
       _searchResults.clear();
     }
+  }
+
+  Future<bool> showConfirmationDialog({
+    required BuildContext context,
+    required String title,
+    required String content,
+    required String confirmText,
+  }) async {
+    return await Get.dialog<bool>(
+          AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            title: Text(
+              title,
+              style: GoogleFonts.poppins(
+                fontSize: 22,
+                fontWeight: FontWeight.w600,
+                color: Theme.of(Get.context!).colorScheme.onSurface,
+              ),
+            ),
+            content: Text(
+              content,
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: Theme.of(Get.context!).colorScheme.onSurface,
+              ),
+            ),
+            actions: <Widget>[
+              TextButton(
+                child: Text(
+                  'Batal',
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(Get.context!).colorScheme.onSurface,
+                  ),
+                ),
+                onPressed: () {
+                  Get.back(result: false);
+                },
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: title.contains('Konfirmasi')
+                      ? const Color(0xff75A47F)
+                      : const Color(0xffFF2056),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Text(
+                  confirmText,
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+                onPressed: () {
+                  Get.back(result: true);
+                },
+              ),
+            ],
+          ),
+        ) ??
+        false;
   }
 }

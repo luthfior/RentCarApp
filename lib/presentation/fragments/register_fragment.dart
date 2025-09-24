@@ -75,7 +75,7 @@ class RegisterFragment extends GetView<RegisterViewModel> {
                             textAlign: TextAlign.center,
                             style: GoogleFonts.poppins(
                               color: controller.selectedRole.value == 'customer'
-                                  ? Colors.white
+                                  ? const Color(0xffEFEFF0)
                                   : Theme.of(context).colorScheme.onSurface,
                               fontWeight: FontWeight.w600,
                             ),
@@ -105,7 +105,7 @@ class RegisterFragment extends GetView<RegisterViewModel> {
                             textAlign: TextAlign.center,
                             style: GoogleFonts.poppins(
                               color: controller.selectedRole.value == 'seller'
-                                  ? Colors.white
+                                  ? const Color(0xffEFEFF0)
                                   : Theme.of(context).colorScheme.onSurface,
                               fontWeight: FontWeight.w600,
                             ),
@@ -135,7 +135,7 @@ class RegisterFragment extends GetView<RegisterViewModel> {
                       ),
                       const Gap(12),
                       CustomInput(
-                        icon: 'assets/ic_profile.png',
+                        icon: Icons.store,
                         hint: 'Masukkan Nama Toko',
                         customHintFontSize: 14,
                         editingController: controller.storeNameController,
@@ -145,7 +145,6 @@ class RegisterFragment extends GetView<RegisterViewModel> {
                         },
                         errorText: controller.storeNameError.value,
                         focusNode: controller.storeNameFocus,
-                        enable: connectivity.isOnline.value,
                         isTextCapital: true,
                       ),
                       if (controller.storeNameSuggestion.value.isNotEmpty)
@@ -169,7 +168,7 @@ class RegisterFragment extends GetView<RegisterViewModel> {
                     ),
                     const Gap(12),
                     CustomInput(
-                      icon: 'assets/ic_profile.png',
+                      icon: Icons.person,
                       hint: isSeller
                           ? 'Masukkan Nama Penyedia'
                           : 'Masukkan Nama Lengkap',
@@ -181,7 +180,6 @@ class RegisterFragment extends GetView<RegisterViewModel> {
                       },
                       errorText: controller.fullNameError.value,
                       focusNode: controller.fullNameFocus,
-                      enable: connectivity.isOnline.value,
                       isTextCapital: true,
                     ),
                     const Gap(20),
@@ -196,7 +194,7 @@ class RegisterFragment extends GetView<RegisterViewModel> {
                     ),
                     const Gap(12),
                     CustomInput(
-                      icon: 'assets/ic_email.png',
+                      icon: Icons.email_rounded,
                       hint: isSeller
                           ? 'Masukkan Alamat Email Penyedia'
                           : 'Masukkan Alamat Email',
@@ -208,7 +206,6 @@ class RegisterFragment extends GetView<RegisterViewModel> {
                       },
                       errorText: controller.emailError.value,
                       focusNode: controller.emailFocus,
-                      enable: connectivity.isOnline.value,
                     ),
                     const Gap(20),
 
@@ -222,7 +219,7 @@ class RegisterFragment extends GetView<RegisterViewModel> {
                     ),
                     const Gap(12),
                     CustomInput(
-                      icon: 'assets/ic_key.png',
+                      icon: Icons.key_rounded,
                       hint: isSeller
                           ? 'Masukkan Kata Sandi Penyedia'
                           : 'Masukkan Kata Sandi',
@@ -243,7 +240,6 @@ class RegisterFragment extends GetView<RegisterViewModel> {
                               : Icons.visibility_off,
                         ),
                       ),
-                      enable: connectivity.isOnline.value,
                     ),
                     const Gap(30),
 
@@ -299,6 +295,9 @@ class RegisterFragment extends GetView<RegisterViewModel> {
                 text: 'Masuk',
                 customTextColor: const Color(0xff070623),
                 customBackgroundColor: Colors.white,
+                customBorderColor: Get.isDarkMode
+                    ? const Color(0xffEFEFF0)
+                    : const Color(0xff070623),
               ),
               const Gap(50),
             ],
@@ -307,12 +306,9 @@ class RegisterFragment extends GetView<RegisterViewModel> {
         const OfflineBanner(),
         Obx(() {
           if (!controller.isLoading.value) return const SizedBox.shrink();
-          return Container(
-            color: const Color(0xff000000).withAlpha(175),
-            child: const Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xffFF5722)),
-              ),
+          return const Center(
+            child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Color(0xffFF5722)),
             ),
           );
         }),

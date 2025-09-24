@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dotted_line/dotted_line.dart';
 import 'package:extended_image/extended_image.dart';
@@ -10,8 +8,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:rent_car_app/data/models/chat.dart';
 import 'package:rent_car_app/data/services/connectivity_service.dart';
-import 'package:rent_car_app/data/services/notification_service.dart';
-import 'package:rent_car_app/data/services/push_notification_service.dart';
 import 'package:rent_car_app/presentation/viewModels/chat_view_model.dart';
 import 'package:rent_car_app/presentation/viewModels/discover_view_model.dart';
 import 'package:rent_car_app/presentation/widgets/custom_header.dart';
@@ -24,17 +20,13 @@ class ChattingPage extends GetView<ChatViewModel> {
   final discoverVM = Get.find<DiscoverViewModel>();
 
   String formatTime(Timestamp? timestamp) {
-    if (timestamp == null) {
-      return '';
-    }
+    if (timestamp == null) return '';
     final dateTime = timestamp.toDate();
     return DateFormat('HH:mm').format(dateTime);
   }
 
   @override
   Widget build(BuildContext context) {
-    final args = Get.arguments as Map<String, dynamic>;
-    final from = args['from'] as String? ?? 'listchat';
     final currentUser = controller.authVM.account.value;
     if (currentUser == null) {
       return const Scaffold(
@@ -55,20 +47,11 @@ class ChattingPage extends GetView<ChatViewModel> {
                 CustomHeader(
                   title: 'Chat',
                   onBackTap: () {
-                    if (from == 'detail') {
-                      Get.back();
+                    if (connectivity.isOnline.value) {
+                      controller.handleBackNavigation();
                     } else {
-                      if (controller.authVM.account.value?.role == 'admin') {
-                        Get.until(
-                          (route) => route.settings.name == '/discover',
-                        );
-                        discoverVM.setFragmentIndex(3);
-                      } else {
-                        Get.until(
-                          (route) => route.settings.name == '/discover',
-                        );
-                        discoverVM.setFragmentIndex(2);
-                      }
+                      const OfflineBanner();
+                      return;
                     }
                   },
                 ),
@@ -83,6 +66,295 @@ class ChattingPage extends GetView<ChatViewModel> {
     );
   }
 
+  Widget buildChat() {
+    return Obx(() {
+      if (controller.partnerStatus.value == 'loading') {
+        return const Center(
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(Color(0xffFF5722)),
+          ),
+        );
+      }
+      if (controller.partnerStatus.value == 'error') {
+        return const Center(child: Text('Terjadi kesalahan'));
+      }
+      if (controller.streamChat == null) {
+        return const Center(child: Text('Memuat Chat...'));
+      }
+      return StreamBuilder(
+        stream: controller.streamChat,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xffFF5722)),
+              ),
+            );
+          }
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            if (controller.from == 'order' ||
+                controller.from == 'favorite' ||
+                controller.from == 'detail-order') {
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  children: [
+                    snippetCar(controller.productDetail!),
+                    const Gap(24),
+                    DottedLine(
+                      lineThickness: 2,
+                      dashLength: 6,
+                      dashGapLength: 6,
+                      dashColor: Theme.of(Get.context!).colorScheme.secondary,
+                    ),
+                    const Expanded(
+                      child: Center(
+                        child: Text('Mulai percakapan pertama Anda'),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }
+            return const Center(child: Text('Terjadi kesalahan'));
+          }
+
+          final list = controller.filterChats(snapshot.data!.docs.toList());
+
+          return RefreshIndicator(
+            onRefresh: () async {
+              if (connectivity.isOnline.value) {
+                await controller.refreshChat();
+              } else {
+                const OfflineBanner();
+                return;
+              }
+            },
+            color: const Color(0xffFF5722),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Column(
+                children: [
+                  if (controller.productDetail != null) ...[
+                    snippetCar(controller.productDetail!),
+                    const Gap(24),
+                    DottedLine(
+                      lineThickness: 2,
+                      dashLength: 6,
+                      dashGapLength: 6,
+                      dashColor: Theme.of(Get.context!).colorScheme.secondary,
+                    ),
+                  ] else ...[
+                    const Center(child: Text('Terjadi kesalahan.')),
+                  ],
+                  Expanded(
+                    child: Align(
+                      alignment: Alignment.topCenter,
+                      child: ListView.builder(
+                        padding: const EdgeInsets.only(top: 12, bottom: 8),
+                        reverse: true,
+                        shrinkWrap: true,
+                        itemCount: list.length,
+                        itemBuilder: (context, index) {
+                          final chat = list[index];
+                          if (chat.productDetail != null) {
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                productSnippetInChat(chat.productDetail!),
+                                if (chat.message.isNotEmpty)
+                                  chatBubble(chat, index == list.length - 1),
+                              ],
+                            );
+                          }
+                          return chatBubble(chat, index == list.length - 1);
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    });
+  }
+
+  Widget chatBubble(Chat chat, bool isFirstMessage) {
+    final currentUser = controller.authVM.account.value;
+    final isCurrentUser = chat.senderId == currentUser?.uid;
+    final partner = isCurrentUser ? currentUser : controller.partner;
+    String displayName = "";
+    if (partner != null) {
+      if (currentUser?.role == 'seller' || currentUser?.role == 'admin') {
+        if (isCurrentUser) {
+          displayName = currentUser?.storeName ?? currentUser?.fullName ?? '';
+        } else {
+          if (partner.username.contains('#')) {
+            final parts = partner.username.split('#');
+            final rawName = parts[0].replaceAll('_', ' ');
+            final suffix = parts[1];
+            final capitalized = rawName
+                .split(' ')
+                .map(
+                  (w) => w.isNotEmpty
+                      ? "${w[0].toUpperCase()}${w.substring(1)}"
+                      : w,
+                )
+                .join(' ');
+            displayName = "$capitalized #$suffix";
+          } else {
+            displayName = partner.fullName;
+          }
+        }
+      } else {
+        if (isCurrentUser) {
+          displayName = (currentUser?.fullName ?? currentUser?.username)!;
+        } else {
+          displayName = partner.storeName;
+        }
+      }
+    }
+    return Column(
+      crossAxisAlignment: isCurrentUser
+          ? CrossAxisAlignment.end
+          : CrossAxisAlignment.start,
+      children: [
+        Container(
+          margin: EdgeInsets.only(top: isFirstMessage ? 24 : 24),
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: isCurrentUser
+                ? const Color(0xffFF5722).withAlpha(50)
+                : Theme.of(Get.context!).colorScheme.surface,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Flexible(
+                child: Text(
+                  chat.message,
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(Get.context!).colorScheme.onSurface,
+                  ),
+                ),
+              ),
+              const Gap(8),
+              Text(
+                formatTime(chat.timeStamp),
+                style: GoogleFonts.poppins(
+                  fontSize: 10,
+                  color: Theme.of(
+                    Get.context!,
+                  ).colorScheme.onSurface.withAlpha(128),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const Gap(6),
+        Row(
+          mainAxisAlignment: isCurrentUser
+              ? MainAxisAlignment.end
+              : MainAxisAlignment.start,
+          children: [
+            if (!isCurrentUser)
+              CircleAvatar(
+                radius: 14,
+                backgroundImage: (partner?.photoUrl?.isNotEmpty ?? false)
+                    ? NetworkImage(partner!.photoUrl!)
+                    : const AssetImage('assets/ic_profile.png')
+                          as ImageProvider,
+              ),
+            if (!isCurrentUser) const Gap(8),
+            Text(
+              displayName,
+              style: GoogleFonts.poppins(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: Theme.of(Get.context!).colorScheme.onSurface,
+              ),
+            ),
+            if (isCurrentUser) const Gap(8),
+            if (isCurrentUser)
+              CircleAvatar(
+                radius: 14,
+                backgroundImage: (partner?.photoUrl?.isNotEmpty ?? false)
+                    ? NetworkImage(partner!.photoUrl!)
+                    : const AssetImage('assets/ic_profile.png')
+                          as ImageProvider,
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget inputChat(String uid) {
+    return Container(
+      height: 52,
+      margin: const EdgeInsets.fromLTRB(24, 24, 24, 30),
+      padding: const EdgeInsets.only(left: 16),
+      decoration: BoxDecoration(
+        color: Theme.of(Get.context!).colorScheme.surface,
+        borderRadius: BorderRadius.circular(50),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: TextField(
+              controller: controller.edtInput,
+              onSubmitted: (_) async {
+                if (connectivity.isOnline.value) {
+                  await controller.sendMessageWithNotification();
+                } else {
+                  const OfflineBanner();
+                  return;
+                }
+              },
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 16,
+                color: Theme.of(Get.context!).colorScheme.onSurface,
+              ),
+              decoration: InputDecoration(
+                contentPadding: const EdgeInsets.all(0),
+                isDense: true,
+                border: InputBorder.none,
+                hintText: 'Kirim pesan Anda...',
+                hintStyle: TextStyle(
+                  fontWeight: FontWeight.w400,
+                  fontSize: 16,
+                  color: Theme.of(Get.context!).colorScheme.onSurface,
+                ),
+              ),
+            ),
+          ),
+          IconButton(
+            onPressed: () async {
+              if (connectivity.isOnline.value) {
+                await controller.sendMessageWithNotification();
+              } else {
+                const OfflineBanner();
+                return;
+              }
+            },
+            icon: const Icon(
+              Icons.send_rounded,
+              size: 24,
+              color: Color(0xffFF5722),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget snippetCar(Map car) {
     final String productName = car['nameProduct'].length > 16
         ? '${car['nameProduct'].substring(0, 14)}...'
@@ -91,7 +363,7 @@ class ChattingPage extends GetView<ChatViewModel> {
     return Container(
       height: 80,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      margin: const EdgeInsets.only(top: 8),
+      margin: const EdgeInsets.only(top: 24),
       decoration: BoxDecoration(
         color: Theme.of(Get.context!).colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
@@ -143,372 +415,15 @@ class ChattingPage extends GetView<ChatViewModel> {
           ),
           GestureDetector(
             onTap: () {
-              Get.toNamed('/booking', arguments: car);
+              Get.toNamed('/detail', arguments: car["id"]);
             },
             child: Text(
-              'Booking',
+              'Detail',
               style: GoogleFonts.poppins(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
+                fontSize: 16,
+                fontWeight: FontWeight.w800,
                 color: const Color(0xffFF5722),
               ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget buildChat() {
-    return Obx(() {
-      if (controller.streamChat == null) {
-        return const Center(child: Text('Memuat Chat...'));
-      }
-      return StreamBuilder(
-        stream: controller.streamChat,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xffFF5722)),
-              ),
-            );
-          }
-          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(child: Text('Chat kosong'));
-          }
-
-          final list = snapshot.data!.docs.toList();
-          final Set<String> skippedIds = {};
-
-          Chat? firstChatWithProduct;
-          for (var doc in list) {
-            final chat = Chat.fromJson(doc.data());
-            if (chat.productDetail != null) {
-              firstChatWithProduct = chat;
-              break;
-            }
-          }
-
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Column(
-              children: [
-                if (firstChatWithProduct != null) ...[
-                  snippetCar(firstChatWithProduct.productDetail!),
-                  const Gap(16),
-                  const DottedLine(
-                    lineThickness: 2,
-                    dashLength: 6,
-                    dashGapLength: 6,
-                    dashColor: Color(0xff393e52),
-                  ),
-                ],
-                Expanded(
-                  child: Align(
-                    alignment: Alignment.topCenter,
-                    child: ListView.builder(
-                      padding: EdgeInsets.only(
-                        top: (firstChatWithProduct != null) ? 12 : 0,
-                        bottom: 8,
-                      ),
-                      reverse: true,
-                      shrinkWrap: true,
-                      itemCount: list.length,
-                      itemBuilder: (context, index) {
-                        Chat chat = Chat.fromJson(list[index].data());
-
-                        if (skippedIds.contains(chat.chatId)) {
-                          return const SizedBox.shrink();
-                        }
-
-                        if (chat.productDetail != null) {
-                          Chat? nextChat;
-                          if (index + 1 < list.length) {
-                            nextChat = Chat.fromJson(list[index + 1].data());
-                          }
-
-                          if (nextChat != null &&
-                              nextChat.senderId == controller.ownerId &&
-                              nextChat.message.isNotEmpty) {
-                            skippedIds.add(nextChat.chatId);
-                          }
-
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              productSnippetInChat(chat.productDetail!),
-                              const SizedBox(height: 8),
-
-                              if (chat.message.isNotEmpty)
-                                chatBubble(chat, index == list.length - 1),
-
-                              if (nextChat != null &&
-                                  nextChat.message.isNotEmpty)
-                                chatBubble(nextChat, false),
-                            ],
-                          );
-                        }
-
-                        return chatBubble(chat, index == list.length - 1);
-                      },
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
-      );
-    });
-  }
-
-  Widget chatBubble(Chat chat, bool isFirstMessage) {
-    final currentUser = controller.authVM.account.value;
-    final isCurrentUser = chat.senderId == currentUser?.uid;
-
-    final partner = isCurrentUser ? currentUser : controller.partner;
-    String displayName = "";
-
-    if (partner != null) {
-      if (currentUser?.role == 'seller' || currentUser?.role == 'admin') {
-        displayName = partner.username!;
-      } else {
-        displayName = partner.storeName?.isNotEmpty == true
-            ? partner.storeName!
-            : partner.fullName;
-      }
-    }
-
-    if (partner != null) {
-      if (currentUser?.role == 'seller' || currentUser?.role == 'admin') {
-        if (isCurrentUser) {
-          displayName = currentUser?.storeName ?? currentUser?.fullName ?? '';
-        } else {
-          if (partner.username != null && partner.username!.contains('#')) {
-            final parts = partner.username!.split('#');
-            final rawName = parts[0].replaceAll('_', ' ');
-            final suffix = parts[1];
-            final capitalized = rawName
-                .split(' ')
-                .map(
-                  (w) => w.isNotEmpty
-                      ? "${w[0].toUpperCase()}${w.substring(1)}"
-                      : w,
-                )
-                .join(' ');
-            displayName = "$capitalized #$suffix";
-          } else {
-            displayName = partner.fullName;
-          }
-        }
-      } else {
-        if (isCurrentUser) {
-          displayName = currentUser?.fullName ?? '';
-        } else {
-          displayName = partner.storeName ?? partner.fullName;
-        }
-      }
-    }
-
-    return Column(
-      crossAxisAlignment: isCurrentUser
-          ? CrossAxisAlignment.end
-          : CrossAxisAlignment.start,
-      children: [
-        Container(
-          margin: EdgeInsets.only(top: isFirstMessage ? 0 : 24),
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: isCurrentUser
-                ? const Color(0xffFF5722).withAlpha(50)
-                : Theme.of(Get.context!).colorScheme.surface,
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Flexible(
-                child: Text(
-                  chat.message,
-                  style: GoogleFonts.poppins(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Theme.of(Get.context!).colorScheme.onSurface,
-                  ),
-                ),
-              ),
-              const Gap(8),
-              Text(
-                formatTime(chat.timeStamp),
-                style: GoogleFonts.poppins(
-                  fontSize: 10,
-                  color: Theme.of(
-                    Get.context!,
-                  ).colorScheme.onSurface.withAlpha(128),
-                ),
-              ),
-            ],
-          ),
-        ),
-        const Gap(6),
-        Row(
-          mainAxisAlignment: isCurrentUser
-              ? MainAxisAlignment.end
-              : MainAxisAlignment.start,
-          children: [
-            if (!isCurrentUser) ...[
-              CircleAvatar(
-                radius: 14,
-                backgroundImage: (partner?.photoUrl?.isNotEmpty ?? false)
-                    ? NetworkImage(partner!.photoUrl!)
-                    : const AssetImage('assets/ic_profile.png')
-                          as ImageProvider,
-              ),
-              const Gap(8),
-            ],
-            Text(
-              displayName,
-              style: GoogleFonts.poppins(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: Theme.of(Get.context!).colorScheme.onSurface,
-              ),
-            ),
-            if (isCurrentUser) ...[
-              const Gap(8),
-              CircleAvatar(
-                radius: 14,
-                backgroundImage: (partner?.photoUrl?.isNotEmpty ?? false)
-                    ? NetworkImage(partner!.photoUrl!)
-                    : const AssetImage('assets/ic_profile.png')
-                          as ImageProvider,
-              ),
-            ],
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget inputChat(String uid) {
-    final currentUser = controller.authVM.account.value;
-    final isCurrentUser = uid == currentUser?.uid;
-
-    final partner = isCurrentUser ? currentUser : controller.partner;
-    String? displayName = "";
-    if (currentUser?.role == 'customer') {
-      if (partner!.username != null && partner.username!.contains('#')) {
-        final parts = partner.username!.split('#');
-        final rawName = parts[0].replaceAll('_', ' ');
-        final suffix = parts[1];
-        final capitalized = rawName
-            .split(' ')
-            .map(
-              (w) =>
-                  w.isNotEmpty ? "${w[0].toUpperCase()}${w.substring(1)}" : w,
-            )
-            .join(' ');
-        displayName = "$capitalized #$suffix";
-      } else {
-        displayName = partner.fullName;
-      }
-    } else {
-      displayName = partner!.storeName;
-    }
-    return Container(
-      height: 52,
-      margin: const EdgeInsets.fromLTRB(24, 24, 24, 30),
-      padding: const EdgeInsets.only(left: 16),
-      decoration: BoxDecoration(
-        color: Theme.of(Get.context!).colorScheme.surface,
-        borderRadius: BorderRadius.circular(50),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: TextField(
-              controller: controller.edtInput,
-              onSubmitted: (_) async {
-                if (connectivity.isOnline.value) {
-                  controller.sendMessage();
-                  final partner = controller.partner;
-                  if (partner != null) {
-                    final tokens = partner.fcmTokens ?? [];
-                    if (tokens.isNotEmpty) {
-                      await PushNotificationService.sendToMany(
-                        tokens,
-                        "Chat Baru",
-                        "Kamu mendapat Chat baru dari $displayName",
-                      );
-                    } else {
-                      log('gagal kirim push notification');
-                    }
-                    await NotificationService.addNotification(
-                      userId: partner.uid,
-                      title: "Chat Baru",
-                      body: "Kamu mendapatkan Chat baru dari $displayName",
-                      type: "chat",
-                      referenceId: controller.roomId,
-                    );
-                  }
-                } else {
-                  null;
-                }
-              },
-              style: const TextStyle(
-                fontWeight: FontWeight.w600,
-                fontSize: 16,
-                color: Color(0xff070623),
-              ),
-              decoration: InputDecoration(
-                contentPadding: const EdgeInsets.all(0),
-                isDense: true,
-                border: InputBorder.none,
-                hintText: 'Kirim pesan Anda...',
-                hintStyle: TextStyle(
-                  fontWeight: FontWeight.w400,
-                  fontSize: 16,
-                  color: Theme.of(Get.context!).colorScheme.onSurface,
-                ),
-              ),
-            ),
-          ),
-          IconButton(
-            onPressed: () async {
-              if (connectivity.isOnline.value) {
-                controller.sendMessage();
-                final partner = controller.partner;
-                if (partner != null) {
-                  final tokens = partner.fcmTokens ?? [];
-                  if (tokens.isNotEmpty) {
-                    await PushNotificationService.sendToMany(
-                      tokens,
-                      "Chat Baru",
-                      "Kamu mendapat Chat baru dari $displayName",
-                    );
-                  } else {
-                    log('gagal kirim push notification');
-                  }
-                  await NotificationService.addNotification(
-                    userId: partner.uid,
-                    title: "Chat Baru",
-                    body: "Kamu mendapatkan Chat baru dari $displayName",
-                    type: "chat",
-                    referenceId: controller.roomId,
-                  );
-                }
-              } else {
-                null;
-              }
-            },
-            icon: ColorFiltered(
-              colorFilter: const ColorFilter.mode(
-                Color(0xffFF5722),
-                BlendMode.srcIn,
-              ),
-              child: Image.asset('assets/ic_send.png', height: 24, width: 24),
             ),
           ),
         ],
@@ -521,10 +436,10 @@ class ChattingPage extends GetView<ChatViewModel> {
         ? '${car['nameProduct'].substring(0, 14)}...'
         : car['nameProduct'];
 
-    final currentUser = controller.authVM.account.value;
+    final currentUser = controller.authVM.account.value!;
 
     return Container(
-      margin: const EdgeInsets.fromLTRB(0, 12, 80, 0),
+      margin: const EdgeInsets.fromLTRB(0, 12, 75, 0),
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: Theme.of(Get.context!).colorScheme.surface,
@@ -534,9 +449,7 @@ class ChattingPage extends GetView<ChatViewModel> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            (currentUser?.role == 'customer')
-                ? "Kamu bertanya tentang produk ini"
-                : "Customer bertanya tentang produk ini",
+            "Kamu bertanya tentang produk ini",
             style: GoogleFonts.poppins(
               fontSize: 12,
               fontWeight: FontWeight.w500,
@@ -580,23 +493,26 @@ class ChattingPage extends GetView<ChatViewModel> {
                         fontSize: 12,
                         color: Theme.of(Get.context!).colorScheme.secondary,
                       ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
               ),
-              GestureDetector(
-                onTap: () {
-                  Get.toNamed('/detail', arguments: car['id'].toString());
-                },
-                child: Text(
-                  'Lihat',
-                  style: GoogleFonts.poppins(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xffFF5722),
+              if (currentUser.role == 'customer') ...[
+                GestureDetector(
+                  onTap: () {
+                    Get.toNamed('/booking', arguments: car);
+                  },
+                  child: Text(
+                    'Booking',
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xffFF5722),
+                    ),
                   ),
                 ),
-              ),
+              ],
             ],
           ),
         ],

@@ -4,12 +4,15 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:rent_car_app/core/constants/message.dart';
 import 'package:rent_car_app/data/models/car.dart';
 import 'package:rent_car_app/data/services/connectivity_service.dart';
 import 'package:rent_car_app/presentation/viewModels/auth_view_model.dart';
 import 'package:rent_car_app/presentation/viewModels/notification_view_model.dart';
 import 'package:rent_car_app/presentation/viewModels/seller_view_model.dart';
 import 'package:rent_car_app/presentation/widgets/item_grid_car.dart';
+import 'package:rent_car_app/presentation/widgets/offline_banner.dart';
+import 'package:rent_car_app/presentation/widgets/tutorial_overlay.dart';
 
 class SellerProductFragment extends GetView<SellerViewModel> {
   SellerProductFragment({super.key});
@@ -20,146 +23,57 @@ class SellerProductFragment extends GetView<SellerViewModel> {
 
   @override
   Widget build(BuildContext context) {
-    final userRole = (authVM.account.value!.role == 'seller')
-        ? 'Seller'
-        : 'Admin';
     return Stack(
       children: [
         SafeArea(
           child: Column(
             children: [
-              buildHeader(context, userRole),
+              Obx(() {
+                final userRole = (authVM.account.value!.role == 'seller')
+                    ? 'Seller'
+                    : 'Admin';
+                return buildHeader(context, userRole);
+              }),
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: RefreshIndicator(
                     onRefresh: () async {
-                      await controller.fetchMyProducts();
+                      if (connectivity.isOnline.value) {
+                        await controller.fetchMyProducts();
+                      } else {
+                        const OfflineBanner();
+                        return;
+                      }
                     },
-                    child: ListView(
-                      children: [
-                        Obx(() {
-                          if (controller.currentView.value == 'search') {
-                            return buildSearchProducts();
-                          } else {
-                            return Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Gap(10),
-                                Text(
-                                  'Halo, Selamat Datang $userRole!',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w600,
-                                    color: Theme.of(
-                                      Get.context!,
-                                    ).colorScheme.onSurface,
-                                  ),
-                                ),
-                                const Gap(20),
-                                const DottedLine(
-                                  lineThickness: 2,
-                                  dashLength: 6,
-                                  dashGapLength: 6,
-                                  dashColor: Color(0xffCECED5),
-                                ),
-                                const Gap(20),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Katalog',
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w700,
-                                        color: Theme.of(
-                                          Get.context!,
-                                        ).colorScheme.onSurface,
-                                      ),
-                                    ),
-                                    const Gap(16),
-                                    if (controller.myProducts.isEmpty)
-                                      Center(
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                            vertical: 150,
-                                            horizontal: 8,
-                                          ),
-                                          child: Text(
-                                            'Katalog kamu masih kosong nih. Yuk, posting Produk pertama mu dengan menekan tombol Tambah di pojok kanan bawah',
-                                            textAlign: TextAlign.center,
-                                            style: GoogleFonts.poppins(
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.w600,
-                                              color: Theme.of(
-                                                Get.context!,
-                                              ).colorScheme.secondary,
-                                            ),
-                                          ),
-                                        ),
-                                      )
-                                    else
-                                      GridView.builder(
-                                        physics:
-                                            const NeverScrollableScrollPhysics(),
-                                        shrinkWrap: true,
-                                        itemCount: controller.myProducts.length,
-                                        gridDelegate:
-                                            const SliverGridDelegateWithFixedCrossAxisCount(
-                                              crossAxisCount: 2,
-                                              crossAxisSpacing: 10,
-                                              mainAxisSpacing: 10,
-                                              childAspectRatio: 0.7,
-                                            ),
-                                        itemBuilder: (context, index) {
-                                          final car =
-                                              controller.myProducts[index];
-                                          return buildSlidableSellerItem(
-                                            context,
-                                            car: car,
-                                            onEdit: () {
-                                              if (connectivity.isOnline.value) {
-                                                Get.toNamed(
-                                                  '/add-product',
-                                                  arguments: {
-                                                    'car': car,
-                                                    'isEdit': true,
-                                                  },
-                                                );
-                                              } else {
-                                                null;
-                                              }
-                                            },
-                                            onDelete: () async {
-                                              if (connectivity.isOnline.value) {
-                                                controller.myProducts.removeAt(
-                                                  index,
-                                                );
-                                                await controller.sellerSource
-                                                    .deleteProduct(
-                                                      car.id,
-                                                      authVM.account.value!.uid,
-                                                      authVM
-                                                          .account
-                                                          .value!
-                                                          .role,
-                                                    );
-                                              } else {
-                                                null;
-                                              }
-                                            },
-                                          );
-                                        },
-                                      ),
-                                  ],
-                                ),
-                              ],
-                            );
-                          }
-                        }),
-                        const Gap(50),
-                      ],
-                    ),
+                    color: const Color(0xffFF5722),
+                    child: Obx(() {
+                      if (controller.status.value == 'loading') {
+                        return const Center(
+                          child: CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Color(0xffFF5722),
+                            ),
+                          ),
+                        );
+                      }
+                      final userRole = (authVM.account.value!.role == 'seller')
+                          ? 'Seller'
+                          : 'Admin';
+                      return ListView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        children: [
+                          Obx(() {
+                            if (controller.currentView.value == 'search') {
+                              return buildSearchProducts();
+                            } else {
+                              return buildHomeView(userRole);
+                            }
+                          }),
+                          const Gap(50),
+                        ],
+                      );
+                    }),
                   ),
                 ),
               ),
@@ -177,9 +91,10 @@ class SellerProductFragment extends GetView<SellerViewModel> {
               shape: const CircleBorder(),
               onPressed: () {
                 if (connectivity.isOnline.value) {
-                  Get.toNamed('/add-product');
+                  Get.toNamed('/add-product', arguments: {'isEdit': false});
                 } else {
-                  null;
+                  const OfflineBanner();
+                  return;
                 }
               },
               child: Icon(
@@ -190,6 +105,18 @@ class SellerProductFragment extends GetView<SellerViewModel> {
             ),
           ),
         ),
+        Obx(() {
+          if (controller.hasShownTutorial.value &&
+              controller.status.value == 'success') {
+            return TutorialOverlay(
+              onDismiss: () => controller.dismissTutorial(),
+              message: "Geser kiri pada item untuk menampilkan Opsi",
+              icon: Icons.swipe_left,
+            );
+          }
+          return const SizedBox.shrink();
+        }),
+        const OfflineBanner(),
       ],
     );
   }
@@ -250,6 +177,7 @@ class SellerProductFragment extends GetView<SellerViewModel> {
                   return const SizedBox.shrink();
                 }),
               ),
+              textCapitalization: TextCapitalization.words,
             ),
           ),
           const Gap(16),
@@ -262,7 +190,8 @@ class SellerProductFragment extends GetView<SellerViewModel> {
                     if (connectivity.isOnline.value) {
                       Get.toNamed('/notification');
                     } else {
-                      null;
+                      const OfflineBanner();
+                      return;
                     }
                   },
                   child: Container(
@@ -300,22 +229,123 @@ class SellerProductFragment extends GetView<SellerViewModel> {
     );
   }
 
+  Widget buildHomeView(String userRole) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Gap(10),
+        Text(
+          'Halo, Selamat Datang $userRole!',
+          style: GoogleFonts.poppins(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: Theme.of(Get.context!).colorScheme.onSurface,
+          ),
+        ),
+        const Gap(20),
+        const DottedLine(
+          lineThickness: 2,
+          dashLength: 6,
+          dashGapLength: 6,
+          dashColor: Color(0xffCECED5),
+        ),
+        const Gap(20),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Katalog',
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: Theme.of(Get.context!).colorScheme.onSurface,
+              ),
+            ),
+            const Gap(16),
+            if (controller.myProducts.isEmpty) ...[
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 150,
+                    horizontal: 8,
+                  ),
+                  child: Text(
+                    'Katalog kamu masih kosong nih. Yuk, posting Produk pertama mu dengan menekan tombol Tambah di pojok kanan bawah',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Theme.of(Get.context!).colorScheme.secondary,
+                    ),
+                  ),
+                ),
+              ),
+            ] else ...[
+              GridView.builder(
+                physics: const NeverScrollableScrollPhysics(),
+                shrinkWrap: true,
+                itemCount: controller.myProducts.length,
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 10,
+                  mainAxisSpacing: 10,
+                  childAspectRatio: 0.7,
+                ),
+                itemBuilder: (context, index) {
+                  final car = controller.myProducts[index];
+                  return buildSlidableSellerItem(
+                    context,
+                    car: car,
+                    onEdit: () {
+                      if (connectivity.isOnline.value) {
+                        Get.toNamed('/detail', arguments: car.id);
+                      } else {
+                        const OfflineBanner();
+                        return;
+                      }
+                    },
+                    onDelete: () async {
+                      if (connectivity.isOnline.value) {
+                        controller.myProducts.removeAt(index);
+                        await controller.sellerSource.deleteProduct(
+                          car.id,
+                          authVM.account.value!.uid,
+                          authVM.account.value!.role,
+                        );
+                      } else {
+                        const OfflineBanner();
+                        return;
+                      }
+                    },
+                  );
+                },
+              ),
+            ],
+          ],
+        ),
+      ],
+    );
+  }
+
   Widget buildSearchProducts() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Pencarian untuk "${controller.searchQuery}"',
-          style: GoogleFonts.poppins(
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-            color: Theme.of(Get.context!).colorScheme.onSurface,
+        Padding(
+          padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+          child: Text(
+            'Pencarian untuk "${controller.searchQuery}"',
+            style: GoogleFonts.poppins(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: Theme.of(Get.context!).colorScheme.onSurface,
+            ),
           ),
         ),
         if (controller.searchResults.isEmpty)
           Center(
             child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 32),
+              padding: const EdgeInsets.fromLTRB(0, 125, 0, 0),
               child: Text(
                 'Produk tidak ditemukan.',
                 style: GoogleFonts.poppins(
@@ -327,9 +357,10 @@ class SellerProductFragment extends GetView<SellerViewModel> {
           )
         else
           GridView.builder(
+            padding: const EdgeInsets.fromLTRB(0, 30, 0, 0),
             physics: const NeverScrollableScrollPhysics(),
             shrinkWrap: true,
-            itemCount: controller.myProducts.length,
+            itemCount: controller.searchResults.length,
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
               crossAxisSpacing: 10,
@@ -337,7 +368,7 @@ class SellerProductFragment extends GetView<SellerViewModel> {
               childAspectRatio: 0.7,
             ),
             itemBuilder: (context, index) {
-              final car = controller.myProducts[index];
+              final car = controller.searchResults[index];
               return buildSlidableSellerItem(
                 context,
                 car: car,
@@ -348,7 +379,8 @@ class SellerProductFragment extends GetView<SellerViewModel> {
                       arguments: {'car': car, 'isEdit': true},
                     );
                   } else {
-                    null;
+                    const OfflineBanner();
+                    return;
                   }
                 },
                 onDelete: () async {
@@ -360,7 +392,8 @@ class SellerProductFragment extends GetView<SellerViewModel> {
                       authVM.account.value!.role,
                     );
                   } else {
-                    null;
+                    const OfflineBanner();
+                    return;
                   }
                 },
               );
@@ -386,39 +419,82 @@ class SellerProductFragment extends GetView<SellerViewModel> {
             backgroundColor: const Color(0xffFF5722),
             foregroundColor: Colors.white,
             icon: Icons.edit,
-            label: 'Sunting',
           ),
         ],
       ),
       endActionPane: ActionPane(
         motion: const ScrollMotion(),
-        dismissible: DismissiblePane(
-          onDismissed: () => onDelete(),
-          closeOnCancel: true,
-        ),
         children: [
           SlidableAction(
-            onPressed: (context) => onDelete(),
+            onPressed: (context) async {
+              bool confirm = await showDialog(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                  title: Text(
+                    'Konfirmasi Hapus',
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Theme.of(Get.context!).colorScheme.onSurface,
+                    ),
+                  ),
+                  content: Text(
+                    'Apakah Anda yakin ingin menghapus ${car.nameProduct}?',
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      color: Theme.of(Get.context!).colorScheme.onSurface,
+                    ),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(ctx).pop(false),
+                      child: Text(
+                        'Batal',
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Theme.of(Get.context!).colorScheme.onSurface,
+                        ),
+                      ),
+                    ),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xffFF2056),
+                      ),
+                      onPressed: () => Navigator.of(ctx).pop(true),
+                      child: Text(
+                        'Hapus',
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xffEFEFF0),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+
+              if (confirm) {
+                onDelete();
+                Message.success('Produk berhasil dihapus');
+              }
+            },
             backgroundColor: const Color(0xffFF2056),
             foregroundColor: Colors.white,
             icon: Icons.delete_outline_rounded,
-            label: 'Hapus',
           ),
         ],
       ),
-      child: GestureDetector(
-        onTap: () => onEdit(),
-        child: itemGridCar(car, () {
-          if (connectivity.isOnline.value) {
-            Get.toNamed(
-              '/add-product',
-              arguments: {'car': car, 'isEdit': true},
-            );
-          } else {
-            null;
-          }
-        }),
-      ),
+      child: itemGridCar(car, () {
+        if (connectivity.isOnline.value) {
+          Get.toNamed('/detail', arguments: car.id);
+        } else {
+          const OfflineBanner();
+          return;
+        }
+      }),
     );
   }
 }

@@ -10,9 +10,9 @@ class ButtonChat extends StatelessWidget {
     required this.text,
     this.textColor,
     this.customTextSize = 16,
-    this.customHeight = 52,
+    this.customHeight = 56,
     required this.customIconSize,
-    this.customBorderRadius = const BorderRadius.all(Radius.circular(50)),
+    this.customBorderRadius = const BorderRadius.all(Radius.circular(20)),
   });
   final VoidCallback? onTap;
   final String text;
@@ -25,14 +25,16 @@ class ButtonChat extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      borderRadius: BorderRadius.circular(50),
-      color: Theme.of(Get.context!).colorScheme.surface,
+      borderRadius: customBorderRadius,
+      color: Get.isDarkMode ? const Color(0xff070623) : const Color(0xffEFEFF0),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(50),
+        borderRadius: customBorderRadius,
         child: Container(
           decoration: BoxDecoration(
-            color: Theme.of(Get.context!).colorScheme.surface,
+            color: Get.isDarkMode
+                ? const Color(0xff070623)
+                : const Color(0xffEFEFF0),
             borderRadius: customBorderRadius,
             border: Border.all(
               color: Theme.of(Get.context!).colorScheme.onSurface,
@@ -43,16 +45,10 @@ class ButtonChat extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              ColorFiltered(
-                colorFilter: const ColorFilter.mode(
-                  Color(0xffFF5722),
-                  BlendMode.srcIn,
-                ),
-                child: Image.asset(
-                  'assets/ic_message.png',
-                  width: customIconSize,
-                  height: customIconSize,
-                ),
+              Icon(
+                Icons.message_rounded,
+                size: customIconSize,
+                color: const Color(0xffFF5722),
               ),
               const Gap(8),
               Text(

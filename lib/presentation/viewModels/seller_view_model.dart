@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:rent_car_app/data/models/car.dart';
 import 'package:rent_car_app/data/sources/seller_source.dart';
 import 'package:rent_car_app/presentation/viewModels/auth_view_model.dart';
@@ -22,12 +24,18 @@ class SellerViewModel extends GetxController {
   List<Car> get searchResults => _searchResults;
 
   StreamSubscription<List<Car>>? _productsSubscription;
+  final hasShownTutorial = false.obs;
+  final box = GetStorage();
+  final status = 'loading'.obs;
 
   @override
   void onInit() {
     super.onInit();
+    hasShownTutorial.value = box.read('hasShownSwipeTutorial') ?? false;
     if (authVM.account.value != null) {
       fetchMyProducts();
+    } else {
+      status.value = 'empty';
     }
     searchController.addListener(() {
       _searchQuery.value = searchController.text;
@@ -74,16 +82,42 @@ class SellerViewModel extends GetxController {
   Future<void> fetchMyProducts() async {
     final userAccount = authVM.account.value;
     if (userAccount == null) {
+      status.value = 'empty';
       return;
     }
+
+    status.value = 'loading';
 
     _productsSubscription?.cancel();
     _productsSubscription = sellerSource
         .fetchMyProductsStream(userAccount.uid, userAccount.role)
-        .listen((updatedProducts) {
-          _myProducts.value = updatedProducts;
-        });
+        .listen(
+          (updatedProducts) {
+            _myProducts.value = updatedProducts;
+            if (updatedProducts.isEmpty) {
+              status.value = 'empty';
+            } else {
+              status.value = 'success';
+            }
+            _checkAndShowTutorial();
+          },
+          onError: (e) {
+            log('Error fetching products: $e');
+            status.value = 'error';
+          },
+        );
+  }
 
-    await Future.microtask(() => null);
+  void _checkAndShowTutorial() {
+    final bool shouldShow =
+        status.value == 'success' &&
+        _myProducts.isNotEmpty &&
+        !(box.read('hasShownSwipeTutorial') ?? false);
+    hasShownTutorial.value = shouldShow;
+  }
+
+  void dismissTutorial() {
+    box.write('hasShownSwipeTutorial', true);
+    hasShownTutorial.value = false;
   }
 }

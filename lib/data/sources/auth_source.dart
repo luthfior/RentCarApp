@@ -46,8 +46,8 @@ class AuthSource {
       final uid = credential.user?.uid;
       if (uid == null) return Result.failure('UID tidak ditemukan');
 
-      String? username;
-      String? finalStoreName;
+      String username = '';
+      String finalStoreName = '';
 
       if (role == 'customer') {
         final cleanUsername = fullName.trim().toLowerCase().replaceAll(
@@ -58,6 +58,10 @@ class AuthSource {
         username = "$cleanUsername#$suffix";
         finalStoreName = '';
       } else if (role == 'seller') {
+        if (storeName == null || storeName.trim().isEmpty) {
+          return Result.failure('Nama toko wajib diisi');
+        }
+
         final snapshot = await fireStore
             .collection('Users')
             .where('storeName', isEqualTo: storeName)

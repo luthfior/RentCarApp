@@ -5,10 +5,10 @@ import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:rent_car_app/core/constants/message.dart';
 import 'package:rent_car_app/core/utils/number_formatter.dart';
 import 'package:rent_car_app/data/services/connectivity_service.dart';
 import 'package:rent_car_app/presentation/viewModels/add_product_view_model.dart';
-import 'package:rent_car_app/presentation/viewModels/address_view_model.dart';
 import 'package:rent_car_app/presentation/widgets/button_primary.dart';
 import 'package:rent_car_app/presentation/widgets/custom_header.dart';
 import 'package:rent_car_app/presentation/widgets/custom_input.dart';
@@ -17,267 +17,289 @@ import 'package:rent_car_app/presentation/widgets/offline_banner.dart';
 class AddProductPage extends GetView<AddProductViewModel> {
   AddProductPage({super.key});
   final connectivity = Get.find<ConnectivityService>();
-  final addressVM = Get.find<AddressViewModel>();
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Stack(
-        children: [
-          SafeArea(
-            child: Column(
-              children: [
-                CustomHeader(title: 'Tambah Produk Baru'),
-                Expanded(
-                  child: SingleChildScrollView(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Gap(20),
-                          Text(
-                            'Informasi Produk',
-                            style: GoogleFonts.poppins(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: Theme.of(context).colorScheme.onSurface,
-                            ),
-                          ),
-                          const Gap(12),
-                          _buildInputForm(
-                            context,
-                            controller.nameController,
-                            'Masukkan Nama Produk',
-                            controller.nameError.value,
-                            controller.nameFocus,
-                            customBorderRadius: 20,
-                          ),
-                          const Gap(16),
-                          _buildInputForm(
-                            context,
-                            controller.priceController,
-                            'Masukkan Harga Produk /hari',
-                            controller.priceError.value,
-                            controller.priceFocus,
-                            isNumeric: true,
-                            isNumberFormatter: true,
-                            prefixText: 'Rp. ',
-                            isSuffixText: '/hari',
-                            customBorderRadius: 20,
-                          ),
-                          const Gap(16),
-                          _buildDropdown(
-                            context,
-                            'Masukkan Tahun Rilis Produk',
-                            controller.releaseYearError.value,
-                            controller.releaseYearFocus,
-                            controller.releaseYears,
-                            controller.selectedReleaseYear,
-                          ),
-                          const Gap(16),
-                          _buildDropdown(
-                            context,
-                            'Kategori Produk',
-                            controller.categoryError.value,
-                            controller.categoryFocus,
-                            controller.categories,
-                            controller.selectedCategory,
-                          ),
-                          const Gap(16),
-                          _buildDropdown(
-                            context,
-                            'Transmisi Produk',
-                            controller.transmissionError.value,
-                            controller.transmissionFocus,
-                            controller.transmissions,
-                            controller.selectedTransmission,
-                          ),
-                          const Gap(16),
-                          Obx(
-                            () => _buildInputForm(
-                              context,
-                              controller.descriptionController,
-                              'Masukkan Deskripsi Produk',
-                              controller.descriptionError.value,
-                              controller.descriptionFocus,
-                              maxLines: null,
-                              minLines: 1,
-                              customBorderRadius: 20,
-                            ),
-                          ),
-                          const Gap(16),
-                          _buildInputForm(
-                            context,
-                            controller.streetController,
-                            'Masukkan Nama Jalan / Detail Alamat',
-                            controller.streetError.value,
-                            controller.streetFocus,
-                            customBorderRadius: 20,
-                          ),
-                          const Gap(16),
-                          Obx(
-                            () => _buildDropdownDynamic(
-                              context,
-                              'Provinsi',
-                              controller.provinceError.value,
-                              controller.provinceFocus,
-                              addressVM.provinces
-                                  .where((e) => e['value'] != null)
-                                  .map((e) => e['value'] as String)
-                                  .toList(),
-                              addressVM.selectedProvinceName,
-                              (val) {
-                                if (val == null) return;
-                                final prov = addressVM.provinces.firstWhere(
-                                  (e) => e['value'] == val,
+    return Obx(() {
+      return PopScope(
+        canPop: !controller.isLoading.value,
+        onPopInvokedWithResult: (didPop, result) {
+          if (!didPop && controller.isLoading.value) {
+            Message.neutral('Tunggu, Proses sedang berlangsung...');
+          }
+        },
+        child: Scaffold(
+          body: Stack(
+            children: [
+              SafeArea(
+                child: Column(
+                  children: [
+                    Obx(
+                      () => CustomHeader(
+                        title: (controller.arguments['isEdit'])
+                            ? 'Sunting Produk'
+                            : 'Tambah Produk',
+                        onBackTap: controller.isLoading.value
+                            ? () {
+                                Message.neutral(
+                                  'Tunggu, Proses sedang berlangsung...',
                                 );
-                                addressVM.selectedProvince.value = prov;
-                                addressVM.selectedProvinceName.value = val;
-
-                                addressVM.selectedCity.value = null;
-                                addressVM.selectedSubDistrict.value = null;
-                                addressVM.selectedVillage.value = null;
-                                addressVM.selectedCityName.value = null;
-                                addressVM.selectedSubDistrictName.value = null;
-                                addressVM.selectedVillageName.value = null;
-                                addressVM.cities.clear();
-                                addressVM.subDistricts.clear();
-                                addressVM.villages.clear();
-
-                                addressVM.loadCities(prov['id']);
+                                return;
+                              }
+                            : () {
+                                Get.back();
                               },
-                            ),
-                          ),
-                          const Gap(16),
-                          Obx(
-                            () => _buildDropdownDynamic(
-                              context,
-                              'Kota/Kabupaten',
-                              controller.cityError.value,
-                              controller.cityFocus,
-                              addressVM.cities
-                                  .where((e) => e['value'] != null)
-                                  .map((e) => e['value'] as String)
-                                  .toList(),
-                              addressVM.selectedCityName,
-                              (val) {
-                                if (val == null) return;
-                                final city = addressVM.cities.firstWhere(
-                                  (e) => e['value'] == val,
-                                );
-                                addressVM.selectedCity.value = city;
-                                addressVM.selectedCityName.value = val;
-
-                                addressVM.selectedSubDistrict.value = null;
-                                addressVM.selectedVillage.value = null;
-                                addressVM.selectedSubDistrictName.value = null;
-                                addressVM.selectedVillageName.value = null;
-                                addressVM.subDistricts.clear();
-                                addressVM.villages.clear();
-
-                                addressVM.loadSubDistricts(city['id']);
-                              },
-                            ),
-                          ),
-                          const Gap(16),
-                          Obx(
-                            () => _buildDropdownDynamic(
-                              context,
-                              'Kecamatan',
-                              controller.districtError.value,
-                              controller.districtFocus,
-                              addressVM.subDistricts
-                                  .where((e) => e['value'] != null)
-                                  .map((e) => e['value'] as String)
-                                  .toList(),
-                              addressVM.selectedSubDistrictName,
-                              (val) {
-                                if (val == null) return;
-                                final sub = addressVM.subDistricts.firstWhere(
-                                  (e) => e['value'] == val,
-                                );
-                                addressVM.selectedSubDistrict.value = sub;
-                                addressVM.selectedSubDistrictName.value = val;
-
-                                addressVM.selectedVillage.value = null;
-                                addressVM.selectedVillageName.value = null;
-                                addressVM.villages.clear();
-                                addressVM.loadVillages(sub['id']);
-                              },
-                            ),
-                          ),
-                          const Gap(16),
-                          Obx(
-                            () => _buildDropdownDynamic(
-                              context,
-                              'Kelurahan/Desa',
-                              controller.villageError.value,
-                              controller.villageFocus,
-                              addressVM.villages
-                                  .where((e) => e['value'] != null)
-                                  .map((e) => e['value'] as String)
-                                  .toList(),
-                              addressVM.selectedVillageName,
-                              (val) {
-                                if (val == null) return;
-                                final vil = addressVM.villages.firstWhere(
-                                  (e) => e['value'] == val,
-                                );
-                                addressVM.selectedVillage.value = vil;
-                                addressVM.selectedVillageName.value = val;
-                              },
-                            ),
-                          ),
-                          const Gap(20),
-                          Text(
-                            'Upload Gambar Produk',
-                            style: GoogleFonts.poppins(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: Theme.of(context).colorScheme.onSurface,
-                            ),
-                          ),
-                          const Gap(10),
-                          _buildImagePicker(
-                            context,
-                            controller.pickedImage,
-                            controller.imageUrl,
-                            controller.pickImage,
-                          ),
-                          const Gap(50),
-                        ],
                       ),
                     ),
-                  ),
+                    Expanded(
+                      child: Obx(() {
+                        if (controller.isLoading.value) {
+                          return const Center(
+                            child: CircularProgressIndicator(
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Color(0xffFF5722),
+                              ),
+                            ),
+                          );
+                        }
+                        return SingleChildScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 24),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Gap(30),
+                                Text(
+                                  'Informasi Produk',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurface,
+                                  ),
+                                ),
+                                const Gap(12),
+                                _buildInputForm(
+                                  context,
+                                  controller.nameProductController,
+                                  'Nama Produk',
+                                  controller.nameError.value,
+                                  controller.nameFocus,
+                                  customBorderRadius: 20,
+                                  isTextCapital: true,
+                                  maxLines: null,
+                                  minLines: 1,
+                                ),
+                                const Gap(16),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: _buildInputForm(
+                                        context,
+                                        controller.priceController,
+                                        'Harga /hari',
+                                        controller.priceError.value,
+                                        controller.priceFocus,
+                                        isNumeric: true,
+                                        isNumberFormatter: true,
+                                        prefixText: 'Rp. ',
+                                        isSuffixText: '/hari',
+                                        customBorderRadius: 20,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: _buildDropdown(
+                                        context,
+                                        'Tahun Rilis',
+                                        controller.releaseYearError.value,
+                                        controller.releaseYearFocus,
+                                        controller.releaseYears,
+                                        controller.selectedReleaseYear,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const Gap(16),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: _buildDropdown(
+                                        context,
+                                        'Kategori',
+                                        controller.categoryError.value,
+                                        controller.categoryFocus,
+                                        controller.categories,
+                                        controller.selectedCategory,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: _buildDropdown(
+                                        context,
+                                        'Transmisi',
+                                        controller.transmissionError.value,
+                                        controller.transmissionFocus,
+                                        controller.transmissions,
+                                        controller.selectedTransmission,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const Gap(16),
+                                Obx(
+                                  () => _buildInputForm(
+                                    context,
+                                    controller.descriptionController,
+                                    'Deskripsi Produk',
+                                    controller.descriptionError.value,
+                                    controller.descriptionFocus,
+                                    maxLines: null,
+                                    minLines: 1,
+                                    customBorderRadius: 20,
+                                  ),
+                                ),
+                                const Gap(16),
+                                _buildInputForm(
+                                  context,
+                                  controller.locationController,
+                                  'Pilih Alamat Toko',
+                                  controller.locationError.value,
+                                  controller.locationFocus,
+                                  maxLines: null,
+                                  minLines: 1,
+                                  customBorderRadius: 20,
+                                  onTapBox: () async {
+                                    if (connectivity.isOnline.value) {
+                                      final result = await Get.toNamed(
+                                        '/location',
+                                        arguments: {
+                                          "street":
+                                              controller.selectedStreet.value,
+                                          "province": controller
+                                              .selectedProvinceName
+                                              .value,
+                                          "city":
+                                              controller.selectedCityName.value,
+                                          "district": controller
+                                              .selectedSubDistrictName
+                                              .value,
+                                          "village": controller
+                                              .selectedVillageName
+                                              .value,
+                                          "latLocation": controller
+                                              .selectedLatLocation
+                                              .value,
+                                          "longLocation": controller
+                                              .selectedLongLocation
+                                              .value,
+                                        },
+                                      );
+                                      if (result != null && result is Map) {
+                                        controller.locationController.text =
+                                            result["fullAddress"];
+                                        controller.selectedStreet.value =
+                                            result["street"];
+                                        controller.selectedProvinceName.value =
+                                            result["province"];
+                                        controller.selectedCityName.value =
+                                            result["city"];
+                                        controller
+                                                .selectedSubDistrictName
+                                                .value =
+                                            result["district"];
+                                        controller.selectedVillageName.value =
+                                            result["village"];
+                                        controller.selectedLatLocation.value =
+                                            result["latLocation"];
+                                        controller.selectedLongLocation.value =
+                                            result["longLocation"];
+                                        Message.success(
+                                          'Alamat Akun berhasil disimpan',
+                                        );
+                                      }
+                                    } else {
+                                      const OfflineBanner();
+                                      return;
+                                    }
+                                  },
+                                ),
+                                const Gap(16),
+                                _buildInputForm(
+                                  context,
+                                  controller.phoneNumberController,
+                                  'Masukkan No.Telp/WhatsApp',
+                                  controller.phoneNumberError.value,
+                                  controller.phoneNumberFocus,
+                                  isNumeric: true,
+                                  customBorderRadius: 20,
+                                ),
+                                const Gap(16),
+                                Text(
+                                  'Upload Gambar Produk',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurface,
+                                  ),
+                                ),
+                                const Gap(10),
+                                _buildImagePicker(
+                                  context,
+                                  controller.pickedImage,
+                                  controller.imageUrl,
+                                  controller.pickImage,
+                                ),
+                                const Gap(50),
+                              ],
+                            ),
+                          ),
+                        );
+                      }),
+                    ),
+                  ],
                 ),
-              ],
+              ),
+              const OfflineBanner(),
+            ],
+          ),
+          bottomNavigationBar: Obx(
+            () => Container(
+              padding: controller.isLoading.value
+                  ? EdgeInsets.zero
+                  : const EdgeInsets.fromLTRB(24, 0, 24, 24),
+              color: Colors.transparent,
+              child: controller.isLoading.value
+                  ? const SizedBox.shrink()
+                  : Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        ButtonPrimary(
+                          onTap: controller.isLoading.value
+                              ? null
+                              : () async {
+                                  if (connectivity.isOnline.value) {
+                                    await controller.handleAddProduct();
+                                  } else {
+                                    const OfflineBanner();
+                                    return;
+                                  }
+                                },
+                          text: (controller.arguments?['isEdit'] ?? false)
+                              ? 'Sunting Produk'
+                              : 'Tambah Produk',
+                        ),
+                      ],
+                    ),
             ),
           ),
-          const OfflineBanner(),
-        ],
-      ),
-      bottomNavigationBar: Container(
-        padding: const EdgeInsets.fromLTRB(24, 10, 24, 30),
-        color: Colors.transparent,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ButtonPrimary(
-              onTap: () async {
-                if (connectivity.isOnline.value) {
-                  await controller.handleAddProduct();
-                  Get.back(result: true);
-                } else {
-                  null;
-                }
-              },
-              text: 'Tambah Produk',
-            ),
-          ],
         ),
-      ),
-    );
+      );
+    });
   }
 
   Widget _buildInputForm(
@@ -293,6 +315,8 @@ class AddProductPage extends GetView<AddProductViewModel> {
     bool isNumberFormatter = false,
     String? isSuffixText,
     String? prefixText,
+    VoidCallback? onTapBox,
+    bool isTextCapital = false,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -310,6 +334,8 @@ class AddProductPage extends GetView<AddProductViewModel> {
           prefixText: prefixText,
           errorText: errorText,
           focusNode: focusNode,
+          onTapBox: onTapBox,
+          isTextCapital: isTextCapital,
         ),
       ],
     );
@@ -331,12 +357,15 @@ class AddProductPage extends GetView<AddProductViewModel> {
             height: 50,
             child: DropdownButtonFormField<String>(
               menuMaxHeight: 250,
+              isDense: true,
+              isExpanded: true,
               value: selectedValue.value,
               items: items.map((e) {
                 return DropdownMenuItem(
                   value: e,
                   child: Text(
                     e,
+                    overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
@@ -347,7 +376,8 @@ class AddProductPage extends GetView<AddProductViewModel> {
               }).toList(),
               decoration: InputDecoration(
                 hint: Text(
-                  'Pilih $label',
+                  label,
+                  overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.poppins(
                     fontSize: 14,
                     fontWeight: FontWeight.w400,
@@ -374,10 +404,9 @@ class AddProductPage extends GetView<AddProductViewModel> {
                 selectedValue.value = value;
                 log('Pilihan $label: $value');
               },
-              icon: Image.asset(
-                'assets/ic_arrow_down.png',
-                width: 18,
-                height: 18,
+              icon: Icon(
+                Icons.keyboard_arrow_down_rounded,
+                size: 18,
                 color: Theme.of(context).colorScheme.onSurface,
               ),
               focusNode: focusNode,
@@ -385,63 +414,6 @@ class AddProductPage extends GetView<AddProductViewModel> {
           );
         }),
       ],
-    );
-  }
-
-  Widget _buildDropdownDynamic(
-    BuildContext context,
-    String label,
-    String? errorText,
-    FocusNode focusNode,
-    List<String> items,
-    Rx<String?> selectedValue,
-    Function(String?) onChanged,
-  ) {
-    return SizedBox(
-      height: 50,
-      child: DropdownButtonFormField<String>(
-        menuMaxHeight: 250,
-        value: selectedValue.value,
-        items: items.map((e) {
-          return DropdownMenuItem(
-            value: e,
-            child: Text(e, style: GoogleFonts.poppins(fontSize: 14)),
-          );
-        }).toList(),
-        decoration: InputDecoration(
-          hint: Text(
-            'Pilih $label',
-            style: GoogleFonts.poppins(
-              fontSize: 14,
-              fontWeight: FontWeight.w400,
-              color: const Color(0xff838384),
-            ),
-          ),
-          filled: true,
-          fillColor: Theme.of(context).colorScheme.surface,
-          contentPadding: const EdgeInsets.fromLTRB(16, 24, 18, 10),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(20),
-            borderSide: BorderSide.none,
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(20),
-            borderSide: const BorderSide(width: 2, color: Color(0xffFF5722)),
-          ),
-          errorText: errorText,
-        ),
-        onChanged: (val) {
-          selectedValue.value = val;
-          onChanged(val);
-        },
-        icon: Image.asset(
-          'assets/ic_arrow_down.png',
-          width: 18,
-          height: 18,
-          color: Theme.of(context).colorScheme.onSurface,
-        ),
-        focusNode: focusNode,
-      ),
     );
   }
 
@@ -461,7 +433,7 @@ class AddProductPage extends GetView<AddProductViewModel> {
       return GestureDetector(
         onTap: onTap,
         child: Container(
-          height: 200,
+          height: 250,
           width: double.infinity,
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surface,
@@ -477,7 +449,11 @@ class AddProductPage extends GetView<AddProductViewModel> {
                       Positioned.fill(
                         child: Container(color: Colors.black.withAlpha(128)),
                       ),
-                      const Icon(Icons.edit, size: 32, color: Colors.white),
+                      const Icon(
+                        Icons.edit,
+                        size: 32,
+                        color: Color(0xffEFEFF0),
+                      ),
                     ],
                   ),
                 )

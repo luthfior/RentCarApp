@@ -54,13 +54,12 @@ class LoginFragment extends GetView<LoginViewModel> {
               const Gap(12),
               Obx(
                 () => CustomInput(
-                  icon: 'assets/ic_profile.png',
+                  icon: Icons.person,
                   hint: 'Masukkan Alamat Email Anda',
                   customHintFontSize: 14,
                   editingController: controller.emailController,
                   errorText: controller.emailError.value,
                   focusNode: controller.emailFocus,
-                  enable: connectivity.isOnline.value,
                   onChanged: (_) {
                     controller.isEmailTouched.value = true;
                     controller.validateInputs();
@@ -79,7 +78,7 @@ class LoginFragment extends GetView<LoginViewModel> {
               const Gap(12),
               Obx(
                 () => CustomInput(
-                  icon: 'assets/ic_key.png',
+                  icon: Icons.key_rounded,
                   hint: 'Masukkan Kata Sandi Anda',
                   customHintFontSize: 14,
                   editingController: controller.passwordController,
@@ -94,7 +93,6 @@ class LoginFragment extends GetView<LoginViewModel> {
                           : Icons.visibility_off,
                     ),
                   ),
-                  enable: connectivity.isOnline.value,
                   onChanged: (_) {
                     controller.isPasswordTouched.value = true;
                     controller.validateInputs();
@@ -152,6 +150,9 @@ class LoginFragment extends GetView<LoginViewModel> {
                 text: 'Daftar Akun',
                 customTextColor: const Color(0xff070623),
                 customBackgroundColor: Colors.white,
+                customBorderColor: Get.isDarkMode
+                    ? const Color(0xffEFEFF0)
+                    : const Color(0xff070623),
               ),
               const Gap(50),
             ],
@@ -160,12 +161,9 @@ class LoginFragment extends GetView<LoginViewModel> {
         const OfflineBanner(),
         Obx(() {
           if (!controller.isLoading.value) return const SizedBox.shrink();
-          return Container(
-            color: const Color(0xff000000).withAlpha(175),
-            child: const Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xffFF5722)),
-              ),
+          return const Center(
+            child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Color(0xffFF5722)),
             ),
           );
         }),

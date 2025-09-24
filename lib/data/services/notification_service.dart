@@ -12,7 +12,7 @@ class NotificationService {
     required String title,
     required String body,
     required String type,
-    String? referenceId,
+    required String? referenceId,
   }) async {
     try {
       final notifId = const Uuid().v4();
@@ -24,6 +24,7 @@ class NotificationService {
         type: type,
         referenceId: referenceId,
         isRead: false,
+        createdAt: Timestamp.now(),
       );
 
       await _firestore
@@ -36,6 +37,43 @@ class NotificationService {
     } catch (e) {
       log('Gagal menambahkan notifikasi: ${e.toString()}');
       rethrow;
+    }
+  }
+
+  static Future<void> addNotificationForRole({
+    required String role,
+    required String title,
+    required String body,
+    required String type,
+    String? referenceId,
+  }) async {
+    final collectionName = role == "admin" ? "Admin" : "Users";
+    final snap = await _firestore
+        .collection(collectionName)
+        .where("role", isEqualTo: role)
+        .get();
+
+    for (var doc in snap.docs) {
+      final notifId = const Uuid().v4();
+      final notif = AppNotification(
+        id: notifId,
+        userId: doc.id,
+        title: title,
+        body: body,
+        type: type,
+        referenceId: referenceId,
+        isRead: false,
+        createdAt: Timestamp.now(),
+      );
+      try {
+        await _firestore
+            .collection('Notifications')
+            .doc(notifId)
+            .set(notif.toJson());
+      } catch (e) {
+        log('Gagal menambahkan notifikasi: ${e.toString()}');
+        rethrow;
+      }
     }
   }
 

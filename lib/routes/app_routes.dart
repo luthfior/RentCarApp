@@ -16,4 +16,7 @@ abstract class AppRoutes {
   static const addProduct = '/add-product';
   static const notification = '/notification';
   static const saldo = '/saldo';
+  static const location = '/location';
+  static const midtransWebView = '/midtrans-web-view';
+  static const detailOrder = '/detail-order';
 }

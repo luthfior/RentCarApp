@@ -4,13 +4,16 @@ import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:rent_car_app/data/services/connectivity_service.dart';
 import 'package:rent_car_app/presentation/viewModels/discover_view_model.dart';
 import 'package:rent_car_app/presentation/viewModels/notification_view_model.dart';
 import 'package:rent_car_app/presentation/widgets/custom_header.dart';
+import 'package:rent_car_app/presentation/widgets/offline_banner.dart';
 
 class NotificationPage extends GetView<NotificationViewModel> {
   NotificationPage({super.key});
   final discoverVM = Get.find<DiscoverViewModel>();
+  final connectivity = Get.find<ConnectivityService>();
 
   String formatNotifTime(Timestamp? timestamp) {
     if (timestamp == null) return '';
@@ -74,122 +77,154 @@ class NotificationPage extends GetView<NotificationViewModel> {
                               color: Theme.of(context).colorScheme.surface,
                               borderRadius: BorderRadius.circular(20),
                             ),
-                            child: ListView.separated(
-                              padding: EdgeInsets.zero,
-                              itemCount: controller.notifications.length,
-                              separatorBuilder: (_, __) => Divider(
-                                height: 1,
-                                thickness: 0.8,
-                                color: Colors.grey.shade300,
-                                indent: 72,
-                              ),
-                              itemBuilder: (context, index) {
-                                final notif = controller.notifications[index];
-                                final formattedTime = formatNotifTime(
-                                  notif.createdAt,
-                                );
-                                return ListTile(
-                                  leading: Icon(
-                                    notif.type == 'chat'
-                                        ? Icons.chat
-                                        : notif.type == 'order'
-                                        ? Icons.shopping_bag
-                                        : Icons.info,
-                                    color: const Color(0xffFF5722),
-                                  ),
-                                  title: Text(
-                                    notif.title,
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w600,
-                                      color: Theme.of(
-                                        Get.context!,
-                                      ).colorScheme.onSurface,
-                                    ),
-                                  ),
-                                  subtitle: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        notif.body,
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w400,
-                                          color: Theme.of(
-                                            context,
-                                          ).colorScheme.onSurface,
-                                        ),
-                                      ),
-                                      const Gap(4),
-                                      Text(
-                                        formattedTime,
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w400,
-                                          color: Theme.of(
-                                            context,
-                                          ).colorScheme.secondary,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  trailing: notif.isRead
-                                      ? null
-                                      : const Icon(
-                                          Icons.circle,
-                                          color: Color(0xffFF2056),
-                                          size: 10,
-                                        ),
-                                  onTap: () {
-                                    controller.markAsRead(notif.id);
-
-                                    if (notif.type == 'chat') {
-                                      if (controller
-                                              .authVM
-                                              .account
-                                              .value
-                                              ?.role ==
-                                          'admin') {
-                                        Get.until(
-                                          (route) =>
-                                              route.settings.name ==
-                                              '/discover',
-                                        );
-                                        discoverVM.setFragmentIndex(3);
-                                      } else {
-                                        Get.until(
-                                          (route) =>
-                                              route.settings.name ==
-                                              '/discover',
-                                        );
-                                        discoverVM.setFragmentIndex(2);
-                                      }
-                                    } else {
-                                      if (controller
-                                              .authVM
-                                              .account
-                                              .value
-                                              ?.role ==
-                                          'admin') {
-                                        Get.until(
-                                          (route) =>
-                                              route.settings.name ==
-                                              '/discover',
-                                        );
-                                        discoverVM.setFragmentIndex(2);
-                                      } else {
-                                        Get.until(
-                                          (route) =>
-                                              route.settings.name ==
-                                              '/discover',
-                                        );
-                                        discoverVM.setFragmentIndex(1);
-                                      }
-                                    }
-                                  },
-                                );
+                            child: RefreshIndicator(
+                              onRefresh: () async {
+                                if (connectivity.isOnline.value) {
+                                  await controller.refreshNotifications();
+                                } else {
+                                  const OfflineBanner();
+                                  return;
+                                }
                               },
+                              color: const Color(0xffFF5722),
+                              child: ListView.separated(
+                                padding: EdgeInsets.zero,
+                                itemCount: controller.notifications.length,
+                                separatorBuilder: (_, __) => Divider(
+                                  height: 1,
+                                  thickness: 0.8,
+                                  color: Colors.grey.shade300,
+                                  indent: 72,
+                                ),
+                                itemBuilder: (context, index) {
+                                  final notif = controller.notifications[index];
+                                  final formattedTime = formatNotifTime(
+                                    notif.createdAt,
+                                  );
+                                  return ListTile(
+                                    leading: Icon(
+                                      notif.type == 'chat'
+                                          ? Icons.chat
+                                          : notif.type == 'order'
+                                          ? Icons.shopping_bag
+                                          : Icons.info,
+                                      color: const Color(0xffFF5722),
+                                    ),
+                                    title: Text(
+                                      notif.title,
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                        color: Theme.of(
+                                          Get.context!,
+                                        ).colorScheme.onSurface,
+                                      ),
+                                    ),
+                                    subtitle: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          notif.body,
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w400,
+                                            color: Theme.of(
+                                              context,
+                                            ).colorScheme.onSurface,
+                                          ),
+                                        ),
+                                        const Gap(4),
+                                        Text(
+                                          formattedTime,
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w400,
+                                            color: Theme.of(
+                                              context,
+                                            ).colorScheme.secondary,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    trailing: notif.isRead
+                                        ? null
+                                        : const Icon(
+                                            Icons.circle,
+                                            color: Color(0xffFF2056),
+                                            size: 10,
+                                          ),
+                                    onTap: () {
+                                      controller.markAsRead(notif.id);
+
+                                      if (notif.type == 'chat') {
+                                        if (controller
+                                                .authVM
+                                                .account
+                                                .value
+                                                ?.role ==
+                                            'admin') {
+                                          Get.until(
+                                            (route) =>
+                                                route.settings.name ==
+                                                '/discover',
+                                          );
+                                          discoverVM.setFragmentIndex(3);
+                                        } else {
+                                          Get.until(
+                                            (route) =>
+                                                route.settings.name ==
+                                                '/discover',
+                                          );
+                                          discoverVM.setFragmentIndex(2);
+                                        }
+                                      } else if (notif.type == 'order') {
+                                        if (controller
+                                                .authVM
+                                                .account
+                                                .value
+                                                ?.role ==
+                                            'admin') {
+                                          Get.until(
+                                            (route) =>
+                                                route.settings.name ==
+                                                '/discover',
+                                          );
+                                          discoverVM.setFragmentIndex(2);
+                                        } else {
+                                          Get.until(
+                                            (route) =>
+                                                route.settings.name ==
+                                                '/discover',
+                                          );
+                                          discoverVM.setFragmentIndex(1);
+                                        }
+                                      } else {
+                                        if (controller
+                                                .authVM
+                                                .account
+                                                .value
+                                                ?.role ==
+                                            'admin') {
+                                          Get.until(
+                                            (route) =>
+                                                route.settings.name ==
+                                                '/discover',
+                                          );
+                                          discoverVM.setFragmentIndex(0);
+                                        } else {
+                                          Get.until(
+                                            (route) =>
+                                                route.settings.name ==
+                                                '/discover',
+                                          );
+                                          discoverVM.setFragmentIndex(0);
+                                        }
+                                      }
+                                    },
+                                  );
+                                },
+                              ),
                             ),
                           ),
                         );
@@ -200,6 +235,7 @@ class NotificationPage extends GetView<NotificationViewModel> {
               ],
             ),
           ),
+          const OfflineBanner(),
         ],
       ),
     );

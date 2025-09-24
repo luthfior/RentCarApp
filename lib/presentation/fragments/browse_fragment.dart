@@ -1,5 +1,6 @@
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -12,6 +13,7 @@ import 'package:rent_car_app/presentation/widgets/failed_ui.dart';
 import 'package:rent_car_app/presentation/widgets/item_featured_car.dart';
 import 'package:rent_car_app/presentation/widgets/item_grid_car.dart';
 import 'package:rent_car_app/presentation/widgets/item_newest_car.dart';
+import 'package:rent_car_app/presentation/widgets/offline_banner.dart';
 
 class BrowseFragment extends GetView<BrowseViewModel> {
   BrowseFragment({super.key});
@@ -43,15 +45,21 @@ class BrowseFragment extends GetView<BrowseViewModel> {
                 Expanded(
                   child: RefreshIndicator(
                     onRefresh: () async {
-                      await controller.startCarListeners();
+                      if (connectivity.isOnline.value) {
+                        await controller.startCarListeners();
+                      } else {
+                        const OfflineBanner();
+                        return;
+                      }
                     },
+                    color: const Color(0xffFF5722),
                     child: ListView(
                       padding: const EdgeInsets.all(0),
                       children: [
                         Obx(() => buildBookingStatus()),
                         Obx(() {
                           if (controller.currentView.value == 'search') {
-                            return buildSearchProducts(controller.car.value!);
+                            return buildSearchProducts();
                           } else {
                             return Column(
                               children: [
@@ -65,7 +73,7 @@ class BrowseFragment extends GetView<BrowseViewModel> {
                             );
                           }
                         }),
-                        const Gap(100),
+                        const Gap(30),
                       ],
                     ),
                   ),
@@ -74,6 +82,7 @@ class BrowseFragment extends GetView<BrowseViewModel> {
             ),
           );
         }),
+        const OfflineBanner(),
       ],
     );
   }
@@ -134,6 +143,7 @@ class BrowseFragment extends GetView<BrowseViewModel> {
                   return const SizedBox.shrink();
                 }),
               ),
+              textCapitalization: TextCapitalization.words,
             ),
           ),
           const Gap(16),
@@ -146,7 +156,8 @@ class BrowseFragment extends GetView<BrowseViewModel> {
                     if (connectivity.isOnline.value) {
                       Get.toNamed('/notification');
                     } else {
-                      null;
+                      const OfflineBanner();
+                      return;
                     }
                   },
                   child: Container(
@@ -171,7 +182,7 @@ class BrowseFragment extends GetView<BrowseViewModel> {
                       width: 10,
                       height: 10,
                       decoration: const BoxDecoration(
-                        color: Colors.red,
+                        color: Color(0xffFF2056),
                         shape: BoxShape.circle,
                       ),
                     ),
@@ -190,7 +201,7 @@ class BrowseFragment extends GetView<BrowseViewModel> {
 
     return Container(
       height: 65,
-      margin: const EdgeInsets.fromLTRB(24, 14, 24, 0),
+      margin: const EdgeInsets.fromLTRB(24, 12, 24, 12),
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
       decoration: BoxDecoration(
         color: const Color(0xffFF5722),
@@ -223,25 +234,25 @@ class BrowseFragment extends GetView<BrowseViewModel> {
               text: TextSpan(
                 text: 'Produk ',
                 style: GoogleFonts.poppins(
-                  fontSize: 14,
+                  fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: Colors.white,
+                  color: const Color(0xffEFEFF0),
                 ),
                 children: [
                   TextSpan(
                     text: car.nameProduct,
                     style: GoogleFonts.poppins(
-                      fontSize: 14,
+                      fontSize: 12,
                       fontWeight: FontWeight.w800,
                       color: const Color(0xff070623),
                     ),
                   ),
                   TextSpan(
-                    text: ' yang Anda Booking sedang menunggu untuk diproses.',
+                    text: ' menunggu untuk diproses oleh penyedia.',
                     style: GoogleFonts.poppins(
-                      fontSize: 14,
+                      fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                      color: const Color(0xffEFEFF0),
                     ),
                   ),
                 ],
@@ -293,7 +304,7 @@ class BrowseFragment extends GetView<BrowseViewModel> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+          padding: const EdgeInsets.fromLTRB(24, 0, 24, 10),
           child: Text(
             'Terbaru',
             style: GoogleFonts.poppins(
@@ -303,48 +314,42 @@ class BrowseFragment extends GetView<BrowseViewModel> {
             ),
           ),
         ),
-        ListView.builder(
+        ListView.separated(
           physics: const NeverScrollableScrollPhysics(),
           shrinkWrap: true,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 0),
           itemCount: controller.newestList.length,
+          separatorBuilder: (context, index) => const Gap(16),
           itemBuilder: (context, index) {
             Car car = controller.newestList[index];
-            final margin = EdgeInsets.only(
-              top: index == 0 ? 10 : 9,
-              bottom: index == controller.newestList.length - 1 ? 16 : 9,
-            );
-            return itemNewestCar(car, margin, () {
-              if (connectivity.isOnline.value) {
-                Get.toNamed('/detail', arguments: car.id);
-              } else {
-                null;
-              }
-            });
+            return buildNewestItem(context, car);
           },
         ),
       ],
     );
   }
 
-  Widget buildSearchProducts(Car car) {
+  Widget buildSearchProducts() {
     return Padding(
-      padding: const EdgeInsetsGeometry.symmetric(horizontal: 24),
+      padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Pencarian untuk "${controller.searchQuery}"',
-            style: GoogleFonts.poppins(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: Theme.of(Get.context!).colorScheme.onSurface,
+          Padding(
+            padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+            child: Text(
+              'Pencarian untuk "${controller.searchQuery}"',
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: Theme.of(Get.context!).colorScheme.onSurface,
+              ),
             ),
           ),
           if (controller.searchResults.isEmpty)
             Center(
               child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 32.0),
+                padding: const EdgeInsets.fromLTRB(0, 125, 0, 0),
                 child: Text(
                   'Produk tidak ditemukan.',
                   style: GoogleFonts.poppins(
@@ -356,21 +361,22 @@ class BrowseFragment extends GetView<BrowseViewModel> {
             )
           else if (controller.searchResults.length == 1)
             Padding(
-              padding: const EdgeInsets.only(top: 10),
-              child: itemNewestCar(
-                controller.searchResults.first,
-                EdgeInsets.zero,
-                () {
-                  if (connectivity.isOnline.value) {
-                    Get.toNamed('/detail', arguments: car.id);
-                  } else {
-                    null;
-                  }
-                },
-              ),
+              padding: const EdgeInsets.only(top: 30),
+              child: itemNewestCar(controller.searchResults.first, () {
+                if (connectivity.isOnline.value) {
+                  Get.toNamed(
+                    '/detail',
+                    arguments: controller.searchResults.first.id,
+                  );
+                } else {
+                  const OfflineBanner();
+                  return;
+                }
+              }),
             )
           else
             GridView.builder(
+              padding: const EdgeInsets.only(top: 30),
               physics: const NeverScrollableScrollPhysics(),
               shrinkWrap: true,
               itemCount: controller.searchResults.length,
@@ -386,13 +392,105 @@ class BrowseFragment extends GetView<BrowseViewModel> {
                   if (connectivity.isOnline.value) {
                     Get.toNamed('/detail', arguments: car.id);
                   } else {
-                    null;
+                    const OfflineBanner();
+                    return;
                   }
                 });
               },
             ),
         ],
       ),
+    );
+  }
+
+  Widget buildNewestItem(BuildContext context, Car car) {
+    Widget itemCar = itemNewestCar(car, () {
+      if (connectivity.isOnline.value) {
+        Get.toNamed('/detail', arguments: car.id);
+      } else {
+        const OfflineBanner();
+        return;
+      }
+    });
+
+    if (controller.authVM.account.value!.role == 'admin') {
+      return buildSlidableItem(
+        context,
+        car: car,
+        itemCar: itemCar,
+        onEdit: () async {
+          if (connectivity.isOnline.value) {
+            Get.toNamed(
+              '/add-product',
+              arguments: {'car': car, 'isEdit': true},
+            );
+          } else {
+            const OfflineBanner();
+            return;
+          }
+        },
+        onDelete: () async {
+          if (connectivity.isOnline.value) {
+            await controller.sellerSource.deleteProduct(
+              car.id,
+              controller.authVM.account.value!.uid,
+              controller.authVM.account.value!.role,
+            );
+          } else {
+            const OfflineBanner();
+            return;
+          }
+        },
+      );
+    } else {
+      return itemCar;
+    }
+  }
+
+  Widget buildSlidableItem(
+    BuildContext context, {
+    required Car car,
+    required Widget itemCar,
+    required VoidCallback onEdit,
+    required VoidCallback onDelete,
+  }) {
+    return Slidable(
+      key: ValueKey(car.id),
+      closeOnScroll: true,
+      startActionPane: ActionPane(
+        motion: const ScrollMotion(),
+        children: [
+          SlidableAction(
+            onPressed: (context) => onEdit(),
+            backgroundColor: const Color(0xffFF5722),
+            foregroundColor: Colors.white,
+            icon: Icons.edit,
+          ),
+        ],
+      ),
+      endActionPane: ActionPane(
+        motion: const ScrollMotion(),
+        children: [
+          SlidableAction(
+            onPressed: (context) async {
+              bool? confirm = await controller.showConfirmationDialog(
+                context: context,
+                title: 'Hapus Riwayat Pesanan',
+                content:
+                    'Apakah Anda yakin ingin menghapus riwayat pesanan ini secara permanen?',
+                confirmText: 'Ya, Konfirmasi',
+              );
+              if (confirm == true) {
+                onDelete();
+              }
+            },
+            backgroundColor: const Color(0xffFF2056),
+            foregroundColor: Colors.white,
+            icon: Icons.delete_outline_rounded,
+          ),
+        ],
+      ),
+      child: itemCar,
     );
   }
 }

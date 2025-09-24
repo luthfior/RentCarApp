@@ -68,7 +68,7 @@ Widget itemGridCar(Car car, VoidCallback onTap) {
             children: [
               Expanded(
                 child: RatingBar.builder(
-                  initialRating: car.ratingProduct.toDouble(),
+                  initialRating: car.ratingAverage.toDouble(),
                   itemPadding: const EdgeInsets.all(0),
                   itemSize: 14,
                   unratedColor: Colors.grey[300],

@@ -10,13 +10,31 @@ class BookingViewModel extends GetxController {
   final Rx<Car> _car = (Get.arguments as Car).obs;
   Car get car => _car.value;
 
-  final name = ''.obs;
+  final Rx<String?> _name = ''.obs;
+  String? get name => _name.value;
+  set name(String? value) => _name.value = value;
+
+  final Rx<String?> _email = ''.obs;
+  String? get email => _email.value;
+  set email(String? value) => _email.value = value;
+
+  final Rx<String?> _phoneNumber = ''.obs;
+  String? get phoneNumber => _phoneNumber.value;
+  set phoneNumber(String? value) => _phoneNumber.value = value;
+
+  final Rx<String?> _city = ''.obs;
+  String? get city => _city.value;
+  set city(String? value) => _city.value = value;
+
+  final Rx<String?> _fullAddress = ''.obs;
+  String? get fullAddress => _fullAddress.value;
+  set fullAddress(String? value) => _fullAddress.value = value;
 
   final TextEditingController fullNameController = TextEditingController();
   final TextEditingController startDateController = TextEditingController();
   final TextEditingController endDateController = TextEditingController();
 
-  final Rx<String?> _agencyPicked = 'Jakarta Rent Car'.obs;
+  final Rx<String?> _agencyPicked = 'Rental+'.obs;
   String? get agencyPicked => _agencyPicked.value;
   set agencyPicked(String? value) => _agencyPicked.value = value;
 
@@ -32,11 +50,12 @@ class BookingViewModel extends GetxController {
   set withDriver(bool value) => _withDriver.value = value;
 
   final List<String> listAgency = [
-    'Jakarta Rent Car',
-    'DrivePlus',
+    'Rental+',
+    'Jakarta Rental',
     'Mitra Rental',
-    'Surabaya Otomotif',
-    'Jaya Abadi Rent',
+    'Bandung Rental',
+    'Jaya Abadi Rental',
+    'Surabaya Rental',
   ];
 
   final List<String> listInsurance = [
@@ -49,9 +68,20 @@ class BookingViewModel extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    super.onInit();
+    ever(authVM.account, (_) => _refreshAccountData());
+    _refreshAccountData();
+  }
+
+  void _refreshAccountData() {
     if (authVM.account.value != null) {
-      name.value = authVM.account.value!.fullName;
-      fullNameController.text = name.value;
+      final acc = authVM.account.value!;
+      _name.value = acc.fullName;
+      fullNameController.text = name ?? '';
+      _email.value = acc.email;
+      _phoneNumber.value = acc.phoneNumber ?? '';
+      _city.value = acc.city ?? '';
+      _fullAddress.value = acc.fullAddress ?? '';
     }
   }
 
@@ -105,17 +135,29 @@ class BookingViewModel extends GetxController {
       );
       return;
     }
-    Get.toNamed(
-      '/checkout',
-      arguments: {
-        'car': _car.value,
-        'nameOrder': fullNameController.text,
-        'startDate': _selectedStartDate.value,
-        'endDate': _selectedEndDate.value,
-        'agency': agencyPicked,
-        'insurance': insurancePicked,
-        'withDriver': withDriver,
-      },
-    );
+    if ((phoneNumber ?? '').isEmpty ||
+        (city ?? '').isEmpty ||
+        (fullAddress ?? '').isEmpty) {
+      Message.neutral(
+        'Data Profil Anda belum lengkap. Silahkan lengkapi terlebih dahulu untuk melanjutkan',
+      );
+      Get.toNamed(
+        '/edit-profile',
+        arguments: {'car': _car.value, 'from': 'booking'},
+      );
+    } else {
+      Get.toNamed(
+        '/checkout',
+        arguments: {
+          'car': _car.value,
+          'nameOrder': fullNameController.text,
+          'startDate': _selectedStartDate.value,
+          'endDate': _selectedEndDate.value,
+          'agency': agencyPicked,
+          'insurance': insurancePicked,
+          'withDriver': withDriver,
+        },
+      );
+    }
   }
 }

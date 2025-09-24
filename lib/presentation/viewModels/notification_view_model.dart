@@ -56,4 +56,9 @@ class NotificationViewModel extends GetxController {
   }
 
   bool get hasUnread => notifications.any((n) => !n.isRead);
+
+  Future<void> refreshNotifications() async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    log('Notifications refreshed (UX only).');
+  }
 }

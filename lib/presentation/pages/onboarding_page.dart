@@ -3,6 +3,7 @@ import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:rent_car_app/data/services/connectivity_service.dart';
+import 'package:rent_car_app/presentation/viewModels/permission_view_model.dart';
 import 'package:rent_car_app/presentation/widgets/button_primary.dart';
 import 'package:rent_car_app/presentation/widgets/offline_banner.dart';
 
@@ -10,6 +11,7 @@ class OnBoardingPage extends StatelessWidget {
   OnBoardingPage({super.key});
 
   final connectivity = Get.find<ConnectivityService>();
+  final permissionVM = Get.put(PermissionViewModel());
 
   @override
   Widget build(BuildContext context) {
@@ -75,14 +77,21 @@ class OnBoardingPage extends StatelessWidget {
                         const Gap(50),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 24),
-                          child: ButtonPrimary(
-                            onTap: () {
-                              if (connectivity.isOnline.value) {
-                                Get.offAllNamed('/auth');
-                              }
-                            },
-                            text: 'Jelajahi Sekarang',
-                          ),
+                          child: Obx(() {
+                            return ButtonPrimary(
+                              onTap: permissionVM.hasPermission.value
+                                  ? () {
+                                      if (connectivity.isOnline.value) {
+                                        Get.offAllNamed('/auth');
+                                      } else {
+                                        const OfflineBanner();
+                                        return;
+                                      }
+                                    }
+                                  : null,
+                              text: 'Jelajahi Sekarang',
+                            );
+                          }),
                         ),
                         Gap(70 + MediaQuery.of(context).padding.bottom),
                       ],

@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:rent_car_app/data/models/car.dart';
 import 'package:rent_car_app/data/services/connectivity_service.dart';
+import 'package:rent_car_app/presentation/widgets/offline_banner.dart';
 
 Widget itemFavoriteCar(BuildContext context, {required Car car}) {
   final connectivity = Get.find<ConnectivityService>();
@@ -15,11 +16,11 @@ Widget itemFavoriteCar(BuildContext context, {required Car car}) {
       if (connectivity.isOnline.value) {
         Get.toNamed('/detail', arguments: car.id);
       } else {
-        null;
+        const OfflineBanner();
+        return;
       }
     },
     child: Container(
-      margin: const EdgeInsets.symmetric(vertical: 8),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: Theme.of(Get.context!).colorScheme.surface,
@@ -128,7 +129,7 @@ Widget itemFavoriteCar(BuildContext context, {required Car car}) {
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
                                   RatingBar.builder(
-                                    initialRating: car.ratingProduct.toDouble(),
+                                    initialRating: car.ratingAverage.toDouble(),
                                     itemPadding: const EdgeInsets.all(0),
                                     itemSize: 14,
                                     unratedColor: Colors.grey[300],

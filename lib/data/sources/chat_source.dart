@@ -1,110 +1,131 @@
 import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:rent_car_app/data/models/account.dart';
 import 'package:rent_car_app/data/models/chat.dart';
+import 'package:uuid/uuid.dart';
 
 class ChatSource {
-  static Future<void> openChat({
+  static Future<void> send(
+    Chat chat,
+    String roomId, {
     required String buyerId,
     required String ownerId,
-    required String buyerFullName,
-    required String buyerUsername,
-    required String buyerEmail,
-    required String buyerPhotoUrl,
-    required String ownerStoreName,
-    required String ownerUsername,
-    required String ownerEmail,
-    required String ownerPhotoUrl,
     required String ownerType,
+    required Account currentUser,
+    required Account partner,
   }) async {
     try {
-      String roomId = "${buyerId}_$ownerId";
       final roomRef = FirebaseFirestore.instance
           .collection('Services')
           .doc(roomId);
+      var roomDoc = await roomRef.get();
+      if (!roomDoc.exists) {
+        try {
+          final roomRef = FirebaseFirestore.instance
+              .collection('Services')
+              .doc(roomId);
+          final doc = await roomRef.get();
 
-      final doc = await roomRef.get();
+          if (!doc.exists) {
+            await roomRef.set({
+              'roomId': roomId,
+              'lastMessage': '',
+              'customerId': buyerId,
+              'ownerId': ownerId,
+              'ownerType': ownerType,
+              'customerFullName': currentUser.role == 'customer'
+                  ? currentUser.fullName
+                  : partner.fullName,
+              'customerUsername': currentUser.role == 'customer'
+                  ? currentUser.username
+                  : partner.username,
+              'customerPhotoUrl': currentUser.role == 'customer'
+                  ? (currentUser.photoUrl ?? '')
+                  : (partner.photoUrl ?? ''),
+              'ownerStoreName': currentUser.role != 'customer'
+                  ? currentUser.storeName
+                  : partner.storeName,
+              'ownerUsername': currentUser.role != 'customer'
+                  ? currentUser.username
+                  : partner.username,
+              'ownerEmail': currentUser.role != 'customer'
+                  ? currentUser.email
+                  : partner.email,
+              'ownerPhotoUrl': currentUser.role != 'customer'
+                  ? (currentUser.photoUrl ?? '')
+                  : (partner.photoUrl ?? ''),
+              'lastMessageTime': Timestamp.now(),
+              'unreadCountCustomer': 0,
+              'unreadCountOwner': 0,
+              'autoMessageSent': false,
+              'productDetail': chat.productDetail,
+            });
 
-      if (doc.exists) {
-        await roomRef.update({'newFromServices': false});
-      } else {
-        await roomRef.set({
-          'roomId': roomId,
-          'lastMessage': 'Halo user',
-          'newFromCustomer': false,
-          'newFromOwner': true,
-          'customerId': buyerId,
-          'customerFullName': buyerFullName,
-          'customerUsername': buyerUsername,
-          'customerEmail': buyerEmail,
-          'customerPhotoUrl': buyerPhotoUrl,
-          'ownerId': ownerId,
-          'ownerStoreName': ownerStoreName,
-          'ownerUsername': ownerUsername,
-          'ownerEmail': ownerEmail,
-          'ownerType': ownerType,
-          'ownerPhotoUrl': ownerPhotoUrl,
-          'lastMessageTime': FieldValue.serverTimestamp(),
-          'unreadCountCustomer': 0,
-          'unreadCountOwner': 1,
-        });
-
-        final chatsRef = roomRef.collection('chats');
-        final firstChat = await chatsRef.orderBy('timeStamp').limit(1).get();
-
-        if (firstChat.docs.isEmpty) {
-          await chatsRef.add({
-            'chatId': roomId,
-            'message':
-                'Halo, selamat datang! Ini adalah pesan otomatis, silakan tunggu penyedia merespons pesan ini, ya. Terima kasih.',
-            'productDetail': null,
-            'receiverId': buyerId,
-            'senderId': ownerId,
-            'timeStamp': FieldValue.serverTimestamp(),
-          });
+            roomDoc = await roomRef.get();
+          }
+        } catch (e) {
+          log('Error di openChat: $e');
+          rethrow;
         }
       }
-    } on FirebaseException catch (e) {
-      log('Terjadi kesalahan pada Firebase: ${e.code} - ${e.message}');
-      rethrow;
-    } catch (e) {
-      log('Terjadi kesalahan: $e');
-      rethrow;
-    }
-  }
 
-  static Future<void> send(Chat chat, String uid, String ownerId) async {
-    try {
-      String roomId = "${uid}_$ownerId";
-      final roomRef = FirebaseFirestore.instance
-          .collection('Services')
-          .doc(roomId);
-
-      bool fromCustomer = chat.senderId == uid;
-      bool fromSeller = chat.senderId == ownerId;
+      final customerId = roomDoc.data()?['customerId'];
+      bool sentByCustomer = chat.senderId == customerId;
 
       await roomRef.update({
         'lastMessage': chat.message,
-        'newFromCustomer': fromCustomer,
-        'newFromOwner': fromSeller,
-        'lastMessageTime': FieldValue.serverTimestamp(),
-        'unreadCountCustomer': fromSeller ? FieldValue.increment(1) : 0,
-        'unreadCountOwner': fromCustomer ? FieldValue.increment(1) : 0,
+        'lastMessageTime': Timestamp.now(),
+        'unreadCountOwner': sentByCustomer ? FieldValue.increment(1) : 0,
+        'unreadCountCustomer': !sentByCustomer ? FieldValue.increment(1) : 0,
+        if (chat.productDetail != null) 'productDetail': chat.productDetail,
       });
 
-      await roomRef.collection('chats').add({
-        'chatId': chat.chatId,
-        'message': chat.message,
-        'productDetail': chat.productDetail,
-        'receiverId': chat.receiverId,
-        'senderId': chat.senderId,
-        'timeStamp': FieldValue.serverTimestamp(),
-      });
-    } on FirebaseException catch (e) {
-      log('Terjadi kesalahan pada Firebase: ${e.code} - ${e.message}');
-      rethrow;
+      await roomRef.collection('chats').doc(chat.chatId).set(chat.toJson());
+
+      if (sentByCustomer) {
+        final data = roomDoc.data()!;
+        final autoSent = data['autoMessageSent'] ?? false;
+        final Timestamp? lastMsgTs = data['lastMessageTime'];
+
+        bool shouldSendAuto = false;
+
+        if (!autoSent) {
+          shouldSendAuto = true;
+        } else if (lastMsgTs != null) {
+          final lastDate = lastMsgTs.toDate();
+          final now = DateTime.now();
+          if (now.difference(lastDate).inDays >= 1) {
+            shouldSendAuto = true;
+          }
+        }
+
+        if (shouldSendAuto) {
+          const autoMessage =
+              'Halo, selamat datang! Ini adalah pesan otomatis, silakan tunggu penyedia merespons pesan ini, ya. Terima kasih.';
+
+          Chat autoChat = Chat(
+            chatId: const Uuid().v4(),
+            message: autoMessage,
+            receiverId: customerId,
+            senderId: roomDoc.data()?['ownerId'],
+            timeStamp: Timestamp.now(),
+            productDetail: null,
+          );
+
+          await roomRef
+              .collection('chats')
+              .doc(autoChat.chatId)
+              .set(autoChat.toJson());
+          await roomRef.update({
+            'lastMessage': autoMessage,
+            'lastMessageTime': Timestamp.now(),
+            'autoMessageSent': true,
+          });
+        }
+      }
     } catch (e) {
-      log('Terjadi kesalahan $e');
+      log('Error di ChatSource.send: $e');
       rethrow;
     }
   }

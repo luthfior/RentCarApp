@@ -7,7 +7,7 @@ class CarSource {
     try {
       final fetchFeaturedCars = FirebaseFirestore.instance
           .collection('Cars')
-          .where('ratingProduct', isGreaterThan: 4.5)
+          .where('ratingAverage', isGreaterThan: 4.5)
           .orderBy('purchasedProduct', descending: true)
           .snapshots()
           .map((querySnapshot) {
@@ -84,30 +84,39 @@ class CarSource {
     }
   }
 
-  static Future<void> updateImageProduct(String id, String url) async {
-    try {
-      await FirebaseFirestore.instance.collection('Cars').doc(id).update({
-        'imageProduct': url,
-      });
-    } on FirebaseException catch (e) {
-      log('Firebase Error: ${e.code} - ${e.message}');
-      rethrow;
-    } catch (e) {
-      log('Gagal memperbarui imageProduct: $e');
-      rethrow;
-    }
-  }
+  static Future<void> updateProductAfterPurchase(String id) async {
+    final docRef = FirebaseFirestore.instance.collection('Cars').doc(id);
 
-  static Future<void> updatePurchasedProduct(String id) async {
     try {
-      final docRef = FirebaseFirestore.instance.collection('Cars').doc(id);
-      await docRef.update({'purchasedProduct': FieldValue.increment(1)});
-      log('Berhasil memperbarui purchasedProduct untuk mobil dengan ID: $id');
+      await FirebaseFirestore.instance.runTransaction((transaction) async {
+        final snapshot = await transaction.get(docRef);
+
+        if (!snapshot.exists) {
+          throw Exception("Produk tidak ditemukan!");
+        }
+
+        final oldRatingAverage = snapshot.data()?['ratingAverage'] as num? ?? 0;
+        final oldReviewCount = snapshot.data()?['reviewCount'] as num? ?? 0;
+
+        const newRatingFromPurchase = 5;
+        final newReviewCount = oldReviewCount + 1;
+        final newRatingAverage =
+            ((oldRatingAverage * oldReviewCount) + newRatingFromPurchase) /
+            newReviewCount;
+
+        transaction.update(docRef, {
+          'purchasedProduct': FieldValue.increment(1),
+          'reviewCount': FieldValue.increment(1),
+          'ratingAverage': newRatingAverage,
+        });
+      });
+
+      log('Berhasil memperbarui data produk setelah pembelian untuk ID: $id');
     } on FirebaseException catch (e) {
-      log('Firebase Error: ${e.code} - ${e.message}');
+      log('Firebase Error saat update produk: ${e.code} - ${e.message}');
       rethrow;
     } catch (e) {
-      log('Gagal memperbarui purchasedProduct: $e');
+      log('Gagal memperbarui data produk setelah pembelian: $e');
       rethrow;
     }
   }

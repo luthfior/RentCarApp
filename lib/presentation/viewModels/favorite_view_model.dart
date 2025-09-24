@@ -1,12 +1,19 @@
 import 'dart:async';
 import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:rent_car_app/core/constants/message.dart';
+import 'package:rent_car_app/data/models/account.dart';
 import 'package:rent_car_app/data/models/car.dart';
+import 'package:rent_car_app/data/models/chat.dart';
+import 'package:rent_car_app/data/services/notification_service.dart';
+import 'package:rent_car_app/data/services/push_notification_service.dart';
+import 'package:rent_car_app/data/sources/chat_source.dart';
 import 'package:rent_car_app/data/sources/user_source.dart';
 import 'package:rent_car_app/presentation/viewModels/auth_view_model.dart';
+import 'package:uuid/uuid.dart';
 
 class FavoriteViewModel extends GetxController {
   final firestore = FirebaseFirestore.instance;
@@ -18,6 +25,10 @@ class FavoriteViewModel extends GetxController {
   Car get car => _car.value;
   set car(Car value) => _car.value = value;
 
+  final Rx<Account?> _partner = Rx<Account?>(null);
+  Account? get partner => _partner.value;
+  set partner(Account? value) => _partner.value = value;
+
   final status = ''.obs;
   final hasShownTutorial = false.obs;
   StreamSubscription<QuerySnapshot>? _favoritesSubscription;
@@ -26,7 +37,6 @@ class FavoriteViewModel extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    hasShownTutorial.value = box.read('hasShownSwipeTutorial') ?? false;
     if (authVM.account.value != null) {
       fetchFavorites();
     } else {
@@ -40,14 +50,16 @@ class FavoriteViewModel extends GetxController {
     super.onClose();
   }
 
-  void showTutorial() {
-    box.write('hasShownSwipeTutorial', true);
-    hasShownTutorial.value = true;
+  void _checkAndShowTutorial() {
+    final bool shouldShow =
+        favoriteProducts.isNotEmpty &&
+        !(box.read('hasShownSwipeTutorial') ?? false);
+    hasShownTutorial.value = shouldShow;
   }
 
   void dismissTutorial() {
     box.write('hasShownSwipeTutorial', true);
-    hasShownTutorial.value = true;
+    hasShownTutorial.value = false;
   }
 
   Future<void> fetchFavorites() async {
@@ -66,10 +78,7 @@ class FavoriteViewModel extends GetxController {
             if (snapshot.docs.isEmpty) {
               favoriteProducts.clear();
               status.value = 'empty';
-              if (box.read('hasShownSwipeTutorial') != false) {
-                box.write('hasShownSwipeTutorial', false);
-                hasShownTutorial.value = false;
-              }
+              _checkAndShowTutorial();
               return;
             }
 
@@ -100,30 +109,21 @@ class FavoriteViewModel extends GetxController {
               } catch (e) {
                 log('Gagal fetch data mobil: $e');
                 status.value = 'error';
-                if (box.read('hasShownSwipeTutorial') != false) {
-                  box.write('hasShownSwipeTutorial', false);
-                  hasShownTutorial.value = false;
-                }
               }
             } else {
               favoriteProducts.clear();
               status.value = 'empty';
-              if (box.read('hasShownSwipeTutorial') != false) {
-                box.write('hasShownSwipeTutorial', false);
-                hasShownTutorial.value = false;
-              }
             }
+
+            _checkAndShowTutorial();
           },
           onError: (error) {
+            favoriteProducts.clear();
             log('Gagal fetch favorit: $error');
             status.value = 'error';
-            if (box.read('hasShownSwipeTutorial') != false) {
-              box.write('hasShownSwipeTutorial', false);
-              hasShownTutorial.value = false;
-            }
+            _checkAndShowTutorial();
           },
         );
-    await Future.microtask(() => null);
   }
 
   Future<void> deleteFavorite(Car car) async {
@@ -135,6 +135,100 @@ class FavoriteViewModel extends GetxController {
     } catch (e) {
       log('Failed to toggle favorite status: $e');
       Message.error('Gagal menambahkan Produk ke Favorit');
+    }
+  }
+
+  Future<void> fetchPartner(String id, String role) async {
+    final collection = (role == 'admin') ? 'Admin' : 'Users';
+    final doc = await firestore.collection(collection).doc(id).get();
+
+    if (doc.exists) {
+      partner = Account.fromJson(doc.data()!);
+    }
+  }
+
+  Future<void> openChat(Car selectedCar) async {
+    car = selectedCar;
+    final currentUser = authVM.account.value!;
+    final String roomId = '${currentUser.uid}_${car.ownerId}';
+
+    final String partnerId = car.ownerId;
+    final String partnerRole = car.ownerType;
+
+    await fetchPartner(partnerId, partnerRole);
+    if (partner == null) {
+      Message.error('Gagal memulai chat.');
+      return;
+    }
+
+    Get.dialog(
+      const Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(Color(0xffFF5722)),
+        ),
+      ),
+      barrierDismissible: false,
+    );
+
+    if (authVM.account.value != null && _partner.value != null) {
+      try {
+        Chat chat = Chat(
+          chatId: const Uuid().v4(),
+          message:
+              'Halo, saya tertarik dengan mobil ${car.nameProduct} ${car.releaseProduct}.',
+          receiverId: partner!.uid,
+          senderId: currentUser.uid,
+          productDetail: car.toJson(),
+          timeStamp: Timestamp.now(),
+        );
+        await ChatSource.send(
+          chat,
+          roomId,
+          buyerId: authVM.account.value!.uid,
+          ownerId: car.ownerId,
+          ownerType: car.ownerType,
+          currentUser: currentUser,
+          partner: partner!,
+        );
+
+        Get.back();
+        Get.toNamed(
+          '/chatting',
+          arguments: {
+            'roomId': roomId,
+            'customerId': authVM.account.value!.uid,
+            'ownerId': car.ownerId,
+            'ownerType': car.ownerType,
+            'from': 'favorite',
+          },
+        );
+
+        final tokens = partner?.fcmTokens ?? [];
+        if (tokens.isNotEmpty) {
+          await PushNotificationService.sendToMany(
+            tokens,
+            "Chat Baru",
+            "Kamu mendapat Chat baru dari ${currentUser.fullName.capitalizeFirst}",
+            data: {'type': 'chat', 'referenceId': car.id},
+          );
+        }
+
+        await NotificationService.addNotification(
+          userId: partner!.uid,
+          title: "Chat Baru",
+          body: "Kamu mendapatkan Chat baru dari ${currentUser.fullName}",
+          type: "chat",
+          referenceId: roomId,
+        );
+      } catch (e) {
+        Get.back();
+        log('Gagal membuka chat: $e');
+        Message.error('Gagal membuka chat. Coba lagi.');
+      }
+    } else {
+      Get.back();
+      log('Data Akun yang login & Data Partner tidak ada');
+      Message.error('Gagal membuka chat. Coba lagi.');
     }
   }
 }

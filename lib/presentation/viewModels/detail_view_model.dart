@@ -1,37 +1,52 @@
 import 'dart:developer';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rent_car_app/core/constants/message.dart';
+import 'package:rent_car_app/data/models/account.dart';
 import 'package:rent_car_app/data/models/car.dart';
+import 'package:rent_car_app/data/models/chat.dart';
+import 'package:rent_car_app/data/services/notification_service.dart';
+import 'package:rent_car_app/data/services/push_notification_service.dart';
 import 'package:rent_car_app/data/sources/car_source.dart';
+import 'package:rent_car_app/data/sources/chat_source.dart';
 import 'package:rent_car_app/data/sources/user_source.dart';
 import 'package:rent_car_app/presentation/viewModels/auth_view_model.dart';
+import 'package:uuid/uuid.dart';
 
 class DetailViewModel extends GetxController {
+  DetailViewModel(this.idProduct);
   final String? idProduct;
-  DetailViewModel(this.idProduct) {
-    if (idProduct != null) {
-      getDetail(idProduct!);
-    } else {
-      log('Error: DetailViewModel initialized with a null product ID.');
-      status = 'error';
-    }
-  }
+  final isFavorited = false.obs;
+  final userSource = UserSource();
+  final authVM = Get.find<AuthViewModel>();
+  final firestore = FirebaseFirestore.instance;
 
   final Rx<Car> _car = Car.empty.obs;
   Car get car => _car.value;
   set car(Car value) => _car.value = value;
 
+  final Rx<Account?> _partner = Rx<Account?>(null);
+  Account? get partner => _partner.value;
+  set partner(Account? value) => _partner.value = value;
+
   final _status = ''.obs;
   String get status => _status.value;
   set status(String value) => _status.value = value;
 
-  final isFavorited = false.obs;
-  final _userSource = UserSource();
-  final _authVM = Get.find<AuthViewModel>();
+  @override
+  void onInit() {
+    super.onInit();
+    if (idProduct != null && idProduct!.isNotEmpty) {
+      getDetail(idProduct!);
+    } else {
+      log('Error: DetailViewModel tidak ada product ID.');
+      status = 'error';
+    }
+  }
 
   Future<void> getDetail(String idProduct) async {
     status = 'loading';
-
     try {
       final data = await CarSource.fetchDetailCar(idProduct);
       if (data == null) {
@@ -48,9 +63,9 @@ class DetailViewModel extends GetxController {
   }
 
   void toggleFavorite() async {
-    final userId = _authVM.account.value!.uid;
+    final userId = authVM.account.value!.uid;
     try {
-      await _userSource.toggleFavoriteProduct(userId, car);
+      await userSource.toggleFavoriteProduct(userId, car);
       isFavorited.value = !isFavorited.value;
       if (isFavorited.value) {
         Message.success('Produk ditambahkan ke Favorit');
@@ -64,10 +79,110 @@ class DetailViewModel extends GetxController {
   }
 
   Future<void> checkFavoriteStatus() async {
-    if (_authVM.account.value != null) {
-      final userId = _authVM.account.value!.uid;
-      final isFav = await _userSource.isProductFavorited(userId, car.id);
+    if (authVM.account.value != null) {
+      final userId = authVM.account.value!.uid;
+      final isFav = await userSource.isProductFavorited(userId, car.id);
       isFavorited.value = isFav;
+    }
+  }
+
+  Future<void> fetchPartner(String id, String role) async {
+    final collection = (role == 'admin') ? 'Admin' : 'Users';
+    final doc = await firestore.collection(collection).doc(id).get();
+
+    if (doc.exists) {
+      partner = Account.fromJson(doc.data()!);
+    }
+  }
+
+  Future<void> openChat() async {
+    final currentUser = authVM.account.value!;
+    final String roomId = '${currentUser.uid}_${car.ownerId}';
+
+    final String partnerId = car.ownerId;
+    final String partnerRole = car.ownerType;
+
+    await fetchPartner(partnerId, partnerRole);
+    if (partner == null) {
+      Message.error('Gagal memulai chat.');
+      return;
+    }
+
+    Get.dialog(
+      const Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(Color(0xffFF5722)),
+        ),
+      ),
+      barrierDismissible: false,
+    );
+
+    if (authVM.account.value != null && _partner.value != null) {
+      try {
+        Chat chat = Chat(
+          chatId: const Uuid().v4(),
+          message:
+              'Halo, saya tertarik dengan mobil ${car.nameProduct} ${car.releaseProduct}.',
+          receiverId: partner!.uid,
+          senderId: currentUser.uid,
+          productDetail: car.toJson(),
+          timeStamp: Timestamp.now(),
+        );
+        await ChatSource.send(
+          chat,
+          roomId,
+          buyerId: authVM.account.value!.uid,
+          ownerId: car.ownerId,
+          ownerType: car.ownerType,
+          currentUser: currentUser,
+          partner: partner!,
+        );
+
+        Get.back();
+        Get.toNamed(
+          '/chatting',
+          arguments: {
+            'roomId': roomId,
+            'customerId': authVM.account.value!.uid,
+            'ownerId': car.ownerId,
+            'ownerType': car.ownerType,
+            'from': 'detail',
+          },
+        );
+
+        final tokens = partner?.fcmTokens ?? [];
+        if (tokens.isNotEmpty) {
+          await PushNotificationService.sendToMany(
+            tokens,
+            "Chat Baru",
+            "Kamu mendapat Chat baru dari ${currentUser.fullName.capitalizeFirst}",
+            data: {'type': 'chat', 'referenceId': roomId},
+          );
+        }
+
+        await NotificationService.addNotification(
+          userId: partner!.uid,
+          title: "Chat Baru",
+          body: "Kamu mendapatkan Chat baru dari ${currentUser.fullName}",
+          type: "chat",
+          referenceId: roomId,
+        );
+      } catch (e) {
+        Get.back();
+        log('Gagal membuka chat: $e');
+        Message.error('Gagal membuka chat. Coba lagi.');
+      }
+    } else {
+      Get.back();
+      log('Data Akun yang login & Data Partner tidak ada');
+      Message.error('Gagal membuka chat. Coba lagi.');
+    }
+  }
+
+  Future<void> refreshCarDetail() async {
+    if (idProduct != null && idProduct!.isNotEmpty) {
+      log('Refreshing car detail for ID: $idProduct');
+      await getDetail(idProduct!);
     }
   }
 }

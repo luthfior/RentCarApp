@@ -8,7 +8,7 @@ class AppNotification {
   final String type;
   final String? referenceId;
   final bool isRead;
-  final Timestamp? createdAt;
+  final Timestamp createdAt;
 
   AppNotification({
     required this.id,
@@ -18,7 +18,7 @@ class AppNotification {
     required this.type,
     this.referenceId,
     this.isRead = false,
-    this.createdAt,
+    required this.createdAt,
   });
 
   Map<String, dynamic> toJson() {
@@ -30,7 +30,7 @@ class AppNotification {
       'type': type,
       'referenceId': referenceId,
       'isRead': isRead,
-      'createdAt': FieldValue.serverTimestamp(),
+      'createdAt': createdAt,
     };
   }
 
@@ -43,9 +43,7 @@ class AppNotification {
       type: json['type'] as String,
       referenceId: json['referenceId'] as String?,
       isRead: json['isRead'] as bool? ?? false,
-      createdAt: json['createdAt'] != null
-          ? json['createdAt'] as Timestamp
-          : null,
+      createdAt: json['createdAt'] as Timestamp? ?? Timestamp.now(),
     );
   }
 }

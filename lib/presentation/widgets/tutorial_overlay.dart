@@ -18,7 +18,7 @@ class TutorialOverlay extends StatelessWidget {
     return Align(
       alignment: Alignment.bottomCenter,
       child: Container(
-        margin: const EdgeInsets.fromLTRB(24, 0, 24, 120),
+        margin: const EdgeInsets.fromLTRB(24, 0, 24, 110),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
           color: const Color(0xff292929).withAlpha(215),
@@ -30,7 +30,7 @@ class TutorialOverlay extends StatelessWidget {
               child: Text(
                 message,
                 style: GoogleFonts.poppins(
-                  color: Colors.white,
+                  color: const Color(0xffEFEFF0),
                   fontSize: 12.0,
                   fontWeight: FontWeight.w400,
                 ),
@@ -38,7 +38,7 @@ class TutorialOverlay extends StatelessWidget {
             ),
             Padding(
               padding: const EdgeInsets.only(right: 18),
-              child: Icon(icon, color: Colors.white, size: 16),
+              child: Icon(icon, color: const Color(0xffEFEFF0), size: 16),
             ),
             TextButton(
               onPressed: onDismiss,

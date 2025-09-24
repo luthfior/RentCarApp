@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:rent_car_app/data/services/connectivity_service.dart';
 import 'package:rent_car_app/data/services/theme_service.dart';
 import 'package:rent_car_app/presentation/viewModels/auth_view_model.dart';
+import 'package:rent_car_app/presentation/widgets/offline_banner.dart';
 
 class SettingFragment extends StatelessWidget {
   SettingFragment({super.key});
@@ -14,195 +15,225 @@ class SettingFragment extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Gap(30 + MediaQuery.of(context).padding.top),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Text(
-            'Pengaturan',
-            style: GoogleFonts.poppins(
-              fontSize: 24,
-              fontWeight: FontWeight.w700,
-              color: Theme.of(context).colorScheme.onSurface,
+    return SafeArea(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+            child: Text(
+              'Pengaturan',
+              style: GoogleFonts.poppins(
+                fontSize: 24,
+                fontWeight: FontWeight.w700,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
             ),
           ),
-        ),
-        const Gap(20),
-        Expanded(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final containerHeight = constraints.maxHeight * 0.85;
-              return Align(
-                alignment: Alignment.topCenter,
-                child: SizedBox(
-                  height: containerHeight,
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 24),
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surface,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Column(
-                      children: [
-                        buildProfile(),
-                        const Gap(40),
-                        Expanded(
-                          child: ListView(
-                            padding: EdgeInsets.zero,
-                            children: [
-                              buildDarkMode(),
-                              const Gap(20),
-                              buildItemSettings(
-                                icon: 'assets/ic_profile.png',
-                                title: 'Sunting Profil',
-                                isDisable: !connectivity.isOnline.value,
-                                onTap: () {
-                                  Get.toNamed('/edit-profile');
-                                },
-                              ),
-                              const Gap(20),
-                              Obx(() {
-                                final account = authVM.account.value;
-                                if (account == null) return const SizedBox();
-                                if (account.role == 'seller') {
-                                  return buildItemSettings(
-                                    icon: 'assets/ic_wallet.png',
-                                    title: 'Saldo Dompet Ku',
+          const Gap(20),
+          Expanded(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return Align(
+                  alignment: Alignment.topCenter,
+                  child: SizedBox(
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 24),
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surface,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Column(
+                        children: [
+                          buildProfile(),
+                          const Gap(40),
+                          Expanded(
+                            child: RefreshIndicator(
+                              onRefresh: () async {
+                                if (connectivity.isOnline.value) {
+                                  await authVM.loadUser();
+                                } else {
+                                  const OfflineBanner();
+                                  return;
+                                }
+                              },
+                              color: const Color(0xffFF5722),
+                              child: ListView(
+                                padding: EdgeInsets.zero,
+                                children: [
+                                  buildDarkMode(),
+                                  const Gap(20),
+                                  buildItemSettings(
+                                    icon: Icons.perm_contact_calendar_rounded,
+                                    title: 'Sunting Profil',
                                     isDisable: !connectivity.isOnline.value,
                                     onTap: () {
-                                      if (connectivity.isOnline.value) {
-                                        Get.toNamed('/saldo');
-                                      } else {
-                                        null;
-                                      }
+                                      Get.toNamed(
+                                        '/edit-profile',
+                                        arguments: {'from': 'setting'},
+                                      );
                                     },
-                                  );
-                                } else if (account.role == 'admin') {
-                                  return Column(
-                                    children: [
-                                      buildItemSettings(
-                                        icon: 'assets/ic_wallet.png',
+                                  ),
+                                  const Gap(20),
+                                  Obx(() {
+                                    final account = authVM.account.value;
+                                    if (account == null) {
+                                      return const SizedBox();
+                                    }
+                                    if (account.role == 'seller') {
+                                      return buildItemSettings(
+                                        icon: Icons.wallet,
                                         title: 'Saldo Dompet Ku',
                                         isDisable: !connectivity.isOnline.value,
                                         onTap: () {
                                           if (connectivity.isOnline.value) {
                                             Get.toNamed('/saldo');
                                           } else {
-                                            null;
+                                            const OfflineBanner();
+                                            return;
                                           }
                                         },
-                                      ),
-                                      const Gap(20),
-                                      buildItemSettings(
-                                        icon: 'assets/cards.png',
-                                        title: 'Top Up Saldo',
-                                        isDisable: !connectivity.isOnline.value,
-                                        onTap: () {
-                                          if (connectivity.isOnline.value) {
-                                            Get.toNamed('/top-up');
-                                          } else {
-                                            null;
-                                          }
-                                        },
-                                      ),
-                                      const Gap(20),
-                                      buildItemSettings(
-                                        icon: 'assets/ic_key.png',
-                                        title: 'Ganti Pin Dompet Ku',
-                                        isDisable: !connectivity.isOnline.value,
-                                        onTap: () {
-                                          if (connectivity.isOnline.value) {
-                                            final pin =
-                                                authVM.account.value?.pin;
-                                            if (pin != null && pin.isNotEmpty) {
-                                              Get.toNamed(
-                                                '/pin',
-                                                arguments: {
-                                                  'isForVerification': true,
-                                                },
-                                              );
-                                            } else {
-                                              Get.toNamed('/pin-setup');
-                                            }
-                                          } else {
-                                            null;
-                                          }
-                                        },
-                                      ),
-                                    ],
-                                  );
-                                } else {
-                                  return Column(
-                                    children: [
-                                      buildItemSettings(
-                                        icon: 'assets/cards.png',
-                                        title: 'Top Up Saldo',
-                                        isDisable: !connectivity.isOnline.value,
-                                        onTap: () {
-                                          if (connectivity.isOnline.value) {
-                                            Get.toNamed('/top-up');
-                                          } else {
-                                            null;
-                                          }
-                                        },
-                                      ),
-                                      const Gap(20),
-                                      buildItemSettings(
-                                        icon: 'assets/ic_key.png',
-                                        title: 'Ganti Pin Dompet Ku',
-                                        isDisable: !connectivity.isOnline.value,
-                                        onTap: () {
-                                          if (connectivity.isOnline.value) {
-                                            final pin =
-                                                authVM.account.value?.pin;
-                                            if (pin != null && pin.isNotEmpty) {
-                                              Get.toNamed(
-                                                '/pin',
-                                                arguments: {
-                                                  'isForVerification': true,
-                                                },
-                                              );
-                                            } else {
-                                              Get.toNamed('/pin-setup');
-                                            }
-                                          } else {
-                                            null;
-                                          }
-                                        },
-                                      ),
-                                    ],
-                                  );
-                                }
-                              }),
-                              const Gap(20),
-                              buildItemSettings(
-                                icon: 'assets/ic_logout.png',
-                                title: 'Keluar',
-                                isDisable: !connectivity.isOnline.value,
-                                onTap: () {
-                                  if (connectivity.isOnline.value) {
-                                    authVM.logout();
-                                  } else {
-                                    null;
-                                  }
-                                },
+                                      );
+                                    } else if (account.role == 'admin') {
+                                      return Column(
+                                        children: [
+                                          buildItemSettings(
+                                            icon: Icons.wallet,
+                                            title: 'Saldo Dompet Ku',
+                                            isDisable:
+                                                !connectivity.isOnline.value,
+                                            onTap: () {
+                                              if (connectivity.isOnline.value) {
+                                                Get.toNamed('/saldo');
+                                              } else {
+                                                const OfflineBanner();
+                                                return;
+                                              }
+                                            },
+                                          ),
+                                          const Gap(20),
+                                          buildItemSettings(
+                                            icon: Icons.payments_rounded,
+                                            title: 'Top Up Saldo',
+                                            isDisable:
+                                                !connectivity.isOnline.value,
+                                            onTap: () {
+                                              if (connectivity.isOnline.value) {
+                                                Get.toNamed('/top-up');
+                                              } else {
+                                                const OfflineBanner();
+                                                return;
+                                              }
+                                            },
+                                          ),
+                                          const Gap(20),
+                                          buildItemSettings(
+                                            icon: Icons.pin,
+                                            title: 'Ganti Pin Dompet Ku',
+                                            isDisable:
+                                                !connectivity.isOnline.value,
+                                            onTap: () {
+                                              if (connectivity.isOnline.value) {
+                                                final pin =
+                                                    authVM.account.value?.pin;
+                                                if (pin != null &&
+                                                    pin.isNotEmpty) {
+                                                  Get.toNamed(
+                                                    '/pin',
+                                                    arguments: {
+                                                      'isForVerification': true,
+                                                    },
+                                                  );
+                                                } else {
+                                                  Get.toNamed('/pin-setup');
+                                                }
+                                              } else {
+                                                const OfflineBanner();
+                                                return;
+                                              }
+                                            },
+                                          ),
+                                        ],
+                                      );
+                                    } else {
+                                      return Column(
+                                        children: [
+                                          buildItemSettings(
+                                            icon: Icons.payments_rounded,
+                                            title: 'Top Up Saldo',
+                                            isDisable:
+                                                !connectivity.isOnline.value,
+                                            onTap: () {
+                                              if (connectivity.isOnline.value) {
+                                                Get.toNamed('/top-up');
+                                              } else {
+                                                const OfflineBanner();
+                                                return;
+                                              }
+                                            },
+                                          ),
+                                          const Gap(20),
+                                          buildItemSettings(
+                                            icon: Icons.pin,
+                                            title: 'Ganti Pin Dompet Ku',
+                                            isDisable:
+                                                !connectivity.isOnline.value,
+                                            onTap: () {
+                                              if (connectivity.isOnline.value) {
+                                                final pin =
+                                                    authVM.account.value?.pin;
+                                                if (pin != null &&
+                                                    pin.isNotEmpty) {
+                                                  Get.toNamed(
+                                                    '/pin',
+                                                    arguments: {
+                                                      'isForVerification': true,
+                                                    },
+                                                  );
+                                                } else {
+                                                  Get.toNamed('/pin-setup');
+                                                }
+                                              } else {
+                                                const OfflineBanner();
+                                                return;
+                                              }
+                                            },
+                                          ),
+                                        ],
+                                      );
+                                    }
+                                  }),
+                                  const Gap(20),
+                                  buildItemSettings(
+                                    icon: Icons.power_settings_new_rounded,
+                                    title: 'Keluar',
+                                    isDisable: !connectivity.isOnline.value,
+                                    onTap: () {
+                                      if (connectivity.isOnline.value) {
+                                        authVM.logout();
+                                      } else {
+                                        const OfflineBanner();
+                                        return;
+                                      }
+                                    },
+                                  ),
+                                ],
                               ),
-                            ],
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
-        ),
-        const Gap(20),
-      ],
+          const Gap(20),
+          const OfflineBanner(),
+        ],
+      ),
     );
   }
 
@@ -256,7 +287,7 @@ class SettingFragment extends StatelessWidget {
   }
 
   Widget buildItemSettings({
-    required String icon,
+    required IconData icon,
     required String title,
     VoidCallback? onTap,
     bool isDisable = false,
@@ -280,7 +311,7 @@ class SettingFragment extends StatelessWidget {
                     Color(0xffFF5722),
                     BlendMode.srcIn,
                   ),
-                  child: Image.asset(icon, width: 24, height: 24),
+                  child: Icon(icon),
                 ),
                 const Gap(10),
                 Expanded(
@@ -293,10 +324,9 @@ class SettingFragment extends StatelessWidget {
                     ),
                   ),
                 ),
-                Image.asset(
-                  'assets/ic_arrow_next.png',
-                  width: 20,
-                  height: 20,
+                Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: 20,
                   color: Theme.of(context).colorScheme.onSurface,
                 ),
               ],
