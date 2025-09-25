@@ -16,15 +16,18 @@ class PinSetupPage extends GetView<PinViewModel> {
 
   @override
   Widget build(BuildContext context) {
-    final title = controller.isChangingPin ? 'Ganti PIN' : 'Buat PIN';
-
     return Scaffold(
       body: Stack(
         children: [
           SafeArea(
             child: Column(
               children: [
-                CustomHeader(title: title),
+                Obx(() {
+                  final title = controller.isChangingPin.value
+                      ? 'Ganti PIN'
+                      : 'Buat PIN';
+                  return CustomHeader(title: title);
+                }),
                 const Gap(100),
                 Column(
                   children: [

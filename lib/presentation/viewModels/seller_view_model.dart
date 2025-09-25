@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:rent_car_app/data/models/car.dart';
 import 'package:rent_car_app/data/sources/seller_source.dart';
 import 'package:rent_car_app/presentation/viewModels/auth_view_model.dart';
@@ -119,5 +120,71 @@ class SellerViewModel extends GetxController {
   void dismissTutorial() {
     box.write('hasShownSwipeTutorial', true);
     hasShownTutorial.value = false;
+  }
+
+  Future<bool> showConfirmationDialog({
+    required BuildContext context,
+    required String title,
+    required String content,
+    required String confirmText,
+  }) async {
+    return await Get.dialog<bool>(
+          AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            title: Text(
+              title,
+              style: GoogleFonts.poppins(
+                fontSize: 22,
+                fontWeight: FontWeight.w600,
+                color: Theme.of(Get.context!).colorScheme.onSurface,
+              ),
+            ),
+            content: Text(
+              content,
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: Theme.of(Get.context!).colorScheme.onSurface,
+              ),
+            ),
+            actions: <Widget>[
+              TextButton(
+                child: Text(
+                  'Batal',
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(Get.context!).colorScheme.onSurface,
+                  ),
+                ),
+                onPressed: () {
+                  Get.back(result: false);
+                },
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xffFF5722),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Text(
+                  confirmText,
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+                onPressed: () {
+                  Get.back(result: true);
+                },
+              ),
+            ],
+          ),
+        ) ??
+        false;
   }
 }

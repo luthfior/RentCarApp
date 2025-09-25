@@ -4,7 +4,6 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:rent_car_app/core/constants/message.dart';
 import 'package:rent_car_app/data/models/car.dart';
 import 'package:rent_car_app/data/services/connectivity_service.dart';
 import 'package:rent_car_app/presentation/viewModels/auth_view_model.dart';
@@ -427,58 +426,20 @@ class SellerProductFragment extends GetView<SellerViewModel> {
         children: [
           SlidableAction(
             onPressed: (context) async {
-              bool confirm = await showDialog(
-                context: context,
-                builder: (ctx) => AlertDialog(
-                  title: Text(
-                    'Konfirmasi Hapus',
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Theme.of(Get.context!).colorScheme.onSurface,
-                    ),
-                  ),
-                  content: Text(
-                    'Apakah Anda yakin ingin menghapus ${car.nameProduct}?',
-                    style: GoogleFonts.poppins(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
-                      color: Theme.of(Get.context!).colorScheme.onSurface,
-                    ),
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.of(ctx).pop(false),
-                      child: Text(
-                        'Batal',
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Theme.of(Get.context!).colorScheme.onSurface,
-                        ),
-                      ),
-                    ),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xffFF2056),
-                      ),
-                      onPressed: () => Navigator.of(ctx).pop(true),
-                      child: Text(
-                        'Hapus',
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xffEFEFF0),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-
-              if (confirm) {
-                onDelete();
-                Message.success('Produk berhasil dihapus');
+              if (connectivity.isOnline.value) {
+                bool? confirm = await controller.showConfirmationDialog(
+                  context: context,
+                  title: 'Hapus Produk?',
+                  content:
+                      'Apakah Anda yakin ingin menghapus produk ini secara permanen?',
+                  confirmText: 'Ya, Hapus',
+                );
+                if (confirm == true) {
+                  onDelete();
+                }
+              } else {
+                const OfflineBanner();
+                return;
               }
             },
             backgroundColor: const Color(0xffFF2056),

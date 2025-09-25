@@ -46,7 +46,7 @@ Widget itemGridCar(Car car, VoidCallback onTap) {
                   overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.poppins(
                     fontSize: 14,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w700,
                     color: Theme.of(Get.context!).colorScheme.onSurface,
                   ),
                 ),
@@ -56,7 +56,7 @@ Widget itemGridCar(Car car, VoidCallback onTap) {
                 '(${car.releaseProduct})',
                 style: GoogleFonts.poppins(
                   fontSize: 12,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w700,
                   color: Theme.of(Get.context!).colorScheme.onSurface,
                 ),
               ),
@@ -83,7 +83,7 @@ Widget itemGridCar(Car car, VoidCallback onTap) {
                 '(${car.purchasedProduct}x disewa)',
                 style: GoogleFonts.poppins(
                   fontSize: 12,
-                  fontWeight: FontWeight.w400,
+                  fontWeight: FontWeight.w500,
                   color: Theme.of(Get.context!).colorScheme.onSurface,
                 ),
               ),
@@ -100,17 +100,6 @@ Widget itemGridCar(Car car, VoidCallback onTap) {
               color: Theme.of(Get.context!).colorScheme.secondary,
             ),
           ),
-          Text(
-            car.categoryProduct,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.poppins(
-              fontSize: 12,
-              fontWeight: FontWeight.w400,
-              color: Theme.of(Get.context!).colorScheme.secondary,
-            ),
-          ),
-          const Gap(4),
           Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
@@ -121,15 +110,25 @@ Widget itemGridCar(Car car, VoidCallback onTap) {
               ),
               Expanded(
                 child: Text(
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   " ${car.city}",
                   style: GoogleFonts.poppins(
                     fontSize: 12,
-                    fontWeight: FontWeight.w400,
+                    fontWeight: FontWeight.w500,
                     color: Theme.of(Get.context!).colorScheme.secondary,
                   ),
                 ),
               ),
             ],
+          ),
+          Text(
+            car.ownerStoreName,
+            style: GoogleFonts.poppins(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: Theme.of(Get.context!).colorScheme.secondary,
+            ),
           ),
           const Gap(16),
           Row(
@@ -151,7 +150,7 @@ Widget itemGridCar(Car car, VoidCallback onTap) {
                 '/hari',
                 style: GoogleFonts.poppins(
                   fontSize: 10,
-                  fontWeight: FontWeight.w400,
+                  fontWeight: FontWeight.w500,
                   color: Theme.of(Get.context!).colorScheme.secondary,
                 ),
               ),

@@ -26,7 +26,7 @@ class SaldoPage extends StatelessWidget {
         child: Column(
           children: [
             CustomHeader(
-              title: 'Saldo Dompet Ku',
+              title: 'Saldo DompetKu',
               onBackTap: () {
                 if (connectivity.isOnline.value) {
                   if (userRole == 'seller') {

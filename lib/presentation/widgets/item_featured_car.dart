@@ -121,7 +121,7 @@ Widget itemFeaturedCar(Car car, EdgeInsetsGeometry margin, bool isTrending) {
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.poppins(
                         fontSize: 14,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w700,
                         color: Theme.of(Get.context!).colorScheme.onSurface,
                       ),
                     ),
@@ -131,19 +131,33 @@ Widget itemFeaturedCar(Car car, EdgeInsetsGeometry margin, bool isTrending) {
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.poppins(
                         fontSize: 12,
-                        fontWeight: FontWeight.w400,
+                        fontWeight: FontWeight.w500,
                         color: Theme.of(Get.context!).colorScheme.secondary,
                       ),
                     ),
-                    Text(
-                      car.categoryProduct,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.poppins(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w400,
-                        color: Theme.of(Get.context!).colorScheme.secondary,
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Icon(
+                          Icons.location_pin,
+                          color: Theme.of(Get.context!).colorScheme.secondary,
+                          size: 12,
+                        ),
+                        Expanded(
+                          child: Text(
+                            " ${car.city}",
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.poppins(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: Theme.of(
+                                Get.context!,
+                              ).colorScheme.secondary,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -156,7 +170,7 @@ Widget itemFeaturedCar(Car car, EdgeInsetsGeometry margin, bool isTrending) {
                     '(${car.releaseProduct})',
                     style: GoogleFonts.poppins(
                       fontSize: 12,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w700,
                       color: Theme.of(Get.context!).colorScheme.onSurface,
                     ),
                   ),
@@ -176,8 +190,8 @@ Widget itemFeaturedCar(Car car, EdgeInsetsGeometry margin, bool isTrending) {
                     '(${car.purchasedProduct}x disewa)',
                     style: GoogleFonts.poppins(
                       fontSize: 12,
-                      fontWeight: FontWeight.w400,
-                      color: Theme.of(Get.context!).colorScheme.onSurface,
+                      fontWeight: FontWeight.w500,
+                      color: Theme.of(Get.context!).colorScheme.secondary,
                     ),
                   ),
                 ],
@@ -185,25 +199,13 @@ Widget itemFeaturedCar(Car car, EdgeInsetsGeometry margin, bool isTrending) {
             ],
           ),
           const Gap(4),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Icon(
-                Icons.location_pin,
-                color: Theme.of(Get.context!).colorScheme.secondary,
-                size: 12,
-              ),
-              Expanded(
-                child: Text(
-                  " ${car.city}",
-                  style: GoogleFonts.poppins(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w400,
-                    color: Theme.of(Get.context!).colorScheme.secondary,
-                  ),
-                ),
-              ),
-            ],
+          Text(
+            car.ownerStoreName,
+            style: GoogleFonts.poppins(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: Theme.of(Get.context!).colorScheme.secondary,
+            ),
           ),
           const Gap(10),
           Row(
@@ -225,7 +227,7 @@ Widget itemFeaturedCar(Car car, EdgeInsetsGeometry margin, bool isTrending) {
                 '/hari',
                 style: GoogleFonts.poppins(
                   fontSize: 12,
-                  fontWeight: FontWeight.w400,
+                  fontWeight: FontWeight.w500,
                   color: Theme.of(Get.context!).colorScheme.secondary,
                 ),
               ),

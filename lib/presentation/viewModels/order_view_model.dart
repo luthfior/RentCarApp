@@ -383,7 +383,7 @@ class OrderViewModel extends GetxController {
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: title.contains('Konfirmasi')
-                      ? const Color(0xff75A47F)
+                      ? const Color(0xffFF5722)
                       : const Color(0xffFF2056),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),

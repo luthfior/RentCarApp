@@ -35,7 +35,6 @@ class Orders {
 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
-      'id': id,
       'resi': resi,
       'customerId': customerId,
       'sellerId': sellerId,
@@ -43,7 +42,7 @@ class Orders {
       'sellerStoreName': sellerStoreName,
       'customerAddress': customerAddress,
       'sellerAddress': sellerAddress,
-      'orderDetail': orderDetail,
+      'orderDetail': orderDetail.toJson(),
       'orderStatus': orderStatus,
       'orderDate': orderDate,
       'paymentMethod': paymentMethod,

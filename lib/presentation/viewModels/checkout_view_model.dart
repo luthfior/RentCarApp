@@ -25,7 +25,7 @@ class CheckoutViewModel extends GetxController {
 
   final Rx<num?> userBalance = Rx<num?>(null);
   final Rx<bool> hasPin = Rx<bool>(false);
-  final RxString paymentMethodPicked = 'Dompet Ku'.obs;
+  final RxString paymentMethodPicked = 'DompetKu'.obs;
 
   late final int rentDurationInDays;
   late final double totalDriverCost;
@@ -112,9 +112,9 @@ class CheckoutViewModel extends GetxController {
   }
 
   final List<Map<String, dynamic>> listPayment = [
-    {'name': 'Dompet Ku', 'icon': Icons.wallet},
+    {'name': 'DompetKu', 'icon': Icons.wallet},
     {'name': 'Tunai', 'icon': Icons.account_balance_wallet_rounded},
-    {'name': 'Lainnya', 'icon': Icons.payments_rounded},
+    {'name': 'Midtrans', 'icon': Icons.payments_rounded},
   ];
 
   String formatCurrency(double amount) {
@@ -151,15 +151,22 @@ class CheckoutViewModel extends GetxController {
     }
   }
 
-  Future<void> processPayment(String enteredPin) async {
+  Future<void> processPayment(
+    String resi,
+    String paymentMethod,
+    String paymentStatus,
+  ) async {
     try {
       final userId = authVM.account.value?.uid;
       final sellerOrAdmin = car.ownerId;
       if (userId != null && sellerOrAdmin.isNotEmpty) {
-        final safeUid = authVM.account.value!.uid.substring(0, 5);
-        final orderId =
-            "ORDER-$safeUid-${DateTime.now().millisecondsSinceEpoch}";
-        await postPaymentSuccessActions(orderId, 'Dompet Ku', 'Sudah Dibayar');
+        if (paymentMethod == 'DompetKu') {
+          await postPaymentSuccessActions(resi, paymentMethod, paymentStatus);
+        } else if (paymentMethod == 'Midtrans') {
+          await postPaymentSuccessActions(resi, paymentMethod, paymentStatus);
+        } else {
+          await postPaymentSuccessActions(resi, paymentMethod, paymentStatus);
+        }
         log(
           'Produk berhasil ditambahkan ke riwayat pesanan customer: $userId dan seller: $sellerOrAdmin',
         );
@@ -226,9 +233,8 @@ class CheckoutViewModel extends GetxController {
   Future<void> cashPayment() async {
     try {
       final safeUid = authVM.account.value!.uid.substring(0, 5);
-      final orderId = "ORDER-$safeUid-${DateTime.now().millisecondsSinceEpoch}";
-      await postPaymentSuccessActions(orderId, 'Tunai', 'Bayar di Tempat');
-      Message.success('Pembayaran berhasil. Pesanan telah dibuat!');
+      final resi = "ORDER-$safeUid-${DateTime.now().millisecondsSinceEpoch}";
+      await processPayment(resi, 'Tunai', 'Bayar di Tempat');
     } catch (e) {
       log('Gagal memproses pembayaran: $e');
       Message.error(
@@ -261,31 +267,16 @@ class CheckoutViewModel extends GetxController {
 
     if (paymentData != null && paymentData.isNotEmpty) {
       final redirectUrl = paymentData['redirect_url']!;
-      final orderId = paymentData['order_id']!;
+      final resi = paymentData['order_id']!;
       final result = await Get.toNamed(
         '/midtrans-web-view',
-        arguments: redirectUrl,
+        arguments: {'url': redirectUrl, 'resi': resi},
       );
 
-      if (result is Map<String, dynamic>) {
-        String midtransStatus = result['status'];
-        String paymentMethod = result['payment_method'] ?? 'Midtrans';
-
-        log(
-          "Midtrans flow selesai, membuat order dengan ID: $orderId, status di Midtrans=$midtransStatus, metode pembayaran=$paymentMethod",
-        );
-
-        await postPaymentSuccessActions(
-          orderId,
-          paymentMethod,
-          'Menunggu Pembayaran',
-        );
-      } else {
-        log("Midtrans flow dibatalkan atau terjadi kendala oleh user.");
-        Message.error(
-          'Pembayaran dibatalkan. Silakan pilih metode pembayaran lain',
-          fontSize: 12,
-        );
+      if (result == 'cancel') {
+        Message.neutral('Pembayaran dibatalkan.');
+        log("User membatalkan pembayaran Midtrans");
+        return;
       }
     } else {
       log("terjadi kesalahan pada MidtransService()");
@@ -301,9 +292,9 @@ class CheckoutViewModel extends GetxController {
     isLoading.value = true;
 
     try {
-      if (paymentMethodPicked.value == 'Lainnya') {
+      if (paymentMethodPicked.value == 'Midtrans') {
         await handleMidtransPayment();
-      } else if (paymentMethodPicked.value == 'Dompet Ku') {
+      } else if (paymentMethodPicked.value == 'DompetKu') {
         goToPin();
       } else {
         await cashPayment();
@@ -316,7 +307,7 @@ class CheckoutViewModel extends GetxController {
   }
 
   Future<void> postPaymentSuccessActions(
-    String orderId,
+    String resi,
     String paymentMethod,
     String paymentStatus,
   ) async {
@@ -324,11 +315,14 @@ class CheckoutViewModel extends GetxController {
       if (partner == null) {
         await fetchPartner(car.ownerId, car.ownerType);
       }
+      if (partner == null) {
+        throw Exception("Partner tidak ditemukan, gagal membuat order.");
+      }
       final userId = authVM.account.value?.uid;
       final sellerOrAdmin = car.ownerId;
       if (userId != null && sellerOrAdmin.isNotEmpty) {
         await UserSource().createOrder(
-          orderId,
+          resi,
           authVM.account.value!.uid,
           partner!.uid,
           authVM.account.value!.fullName,
@@ -356,9 +350,8 @@ class CheckoutViewModel extends GetxController {
         log(
           'Produk berhasil ditambahkan ke riwayat pesanan customer: $userId dan seller: $sellerOrAdmin',
         );
-
         await sendNotification();
-
+        Message.success('Pembayaran berhasil. Pesanan telah dibuat!');
         Get.offAllNamed(
           '/complete',
           arguments: {'fragmentIndex': 0, 'bookedCar': car},

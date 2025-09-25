@@ -84,7 +84,7 @@ class SettingFragment extends StatelessWidget {
                                     if (account.role == 'seller') {
                                       return buildItemSettings(
                                         icon: Icons.wallet,
-                                        title: 'Saldo Dompet Ku',
+                                        title: 'Saldo DompetKu',
                                         isDisable: !connectivity.isOnline.value,
                                         onTap: () {
                                           if (connectivity.isOnline.value) {
@@ -100,7 +100,7 @@ class SettingFragment extends StatelessWidget {
                                         children: [
                                           buildItemSettings(
                                             icon: Icons.wallet,
-                                            title: 'Saldo Dompet Ku',
+                                            title: 'Saldo DompetKu',
                                             isDisable:
                                                 !connectivity.isOnline.value,
                                             onTap: () {
@@ -130,7 +130,7 @@ class SettingFragment extends StatelessWidget {
                                           const Gap(20),
                                           buildItemSettings(
                                             icon: Icons.pin,
-                                            title: 'Ganti Pin Dompet Ku',
+                                            title: 'Ganti Pin DompetKu',
                                             isDisable:
                                                 !connectivity.isOnline.value,
                                             onTap: () {
@@ -176,7 +176,7 @@ class SettingFragment extends StatelessWidget {
                                           const Gap(20),
                                           buildItemSettings(
                                             icon: Icons.pin,
-                                            title: 'Ganti Pin Dompet Ku',
+                                            title: 'Ganti Pin DompetKu',
                                             isDisable:
                                                 !connectivity.isOnline.value,
                                             onTap: () {
@@ -209,9 +209,25 @@ class SettingFragment extends StatelessWidget {
                                     icon: Icons.power_settings_new_rounded,
                                     title: 'Keluar',
                                     isDisable: !connectivity.isOnline.value,
-                                    onTap: () {
+                                    onTap: () async {
                                       if (connectivity.isOnline.value) {
                                         authVM.logout();
+                                        if (connectivity.isOnline.value) {
+                                          bool?
+                                          confirm = await showConfirmationDialog(
+                                            context: context,
+                                            title: 'Keluar Akun',
+                                            content:
+                                                'Apakah Anda yakin ingin Keluar?',
+                                            confirmText: 'Ya, Hapus',
+                                          );
+                                          if (confirm == true) {
+                                            authVM.logout();
+                                          }
+                                        } else {
+                                          const OfflineBanner();
+                                          return;
+                                        }
                                       } else {
                                         const OfflineBanner();
                                         return;
@@ -361,5 +377,71 @@ class SettingFragment extends StatelessWidget {
         ),
       );
     });
+  }
+
+  Future<bool> showConfirmationDialog({
+    required BuildContext context,
+    required String title,
+    required String content,
+    required String confirmText,
+  }) async {
+    return await Get.dialog<bool>(
+          AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            title: Text(
+              title,
+              style: GoogleFonts.poppins(
+                fontSize: 22,
+                fontWeight: FontWeight.w600,
+                color: Theme.of(Get.context!).colorScheme.onSurface,
+              ),
+            ),
+            content: Text(
+              content,
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: Theme.of(Get.context!).colorScheme.onSurface,
+              ),
+            ),
+            actions: <Widget>[
+              TextButton(
+                child: Text(
+                  'Batal',
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(Get.context!).colorScheme.onSurface,
+                  ),
+                ),
+                onPressed: () {
+                  Get.back(result: false);
+                },
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xffFF5722),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Text(
+                  confirmText,
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+                onPressed: () {
+                  Get.back(result: true);
+                },
+              ),
+            ],
+          ),
+        ) ??
+        false;
   }
 }

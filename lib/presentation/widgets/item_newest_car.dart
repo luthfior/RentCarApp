@@ -11,7 +11,6 @@ Widget itemNewestCar(Car car, VoidCallback onTap) {
   return GestureDetector(
     onTap: onTap,
     child: Container(
-      height: 100,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
         color: Theme.of(Get.context!).colorScheme.surface,
@@ -21,7 +20,7 @@ Widget itemNewestCar(Car car, VoidCallback onTap) {
         children: [
           SizedBox(
             width: 90,
-            height: 80,
+            height: 85,
             child: ClipRRect(
               borderRadius: BorderRadius.circular(12),
               child: ExtendedImage.network(
@@ -32,7 +31,7 @@ Widget itemNewestCar(Car car, VoidCallback onTap) {
                     case LoadState.loading:
                       return const SizedBox(
                         width: 90,
-                        height: 80,
+                        height: 85,
                         child: Center(
                           child: CircularProgressIndicator(
                             valueColor: AlwaysStoppedAnimation<Color>(
@@ -45,14 +44,14 @@ Widget itemNewestCar(Car car, VoidCallback onTap) {
                       return ExtendedImage(
                         image: state.imageProvider,
                         width: 90,
-                        height: 80,
+                        height: 85,
                         fit: BoxFit.cover,
                       );
                     case LoadState.failed:
                       return Image.asset(
                         'assets/splash_screen.png',
                         width: 90,
-                        height: 80,
+                        height: 85,
                       );
                   }
                 },
@@ -74,7 +73,7 @@ Widget itemNewestCar(Car car, VoidCallback onTap) {
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.poppins(
                           fontSize: 12,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.w700,
                           color: Theme.of(Get.context!).colorScheme.onSurface,
                         ),
                       ),
@@ -83,7 +82,7 @@ Widget itemNewestCar(Car car, VoidCallback onTap) {
                       " (${car.releaseProduct})",
                       style: GoogleFonts.poppins(
                         fontSize: 12,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w700,
                         color: Theme.of(Get.context!).colorScheme.onSurface,
                       ),
                     ),
@@ -95,12 +94,11 @@ Widget itemNewestCar(Car car, VoidCallback onTap) {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.poppins(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w400,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
                     color: Theme.of(Get.context!).colorScheme.secondary,
                   ),
                 ),
-                const Gap(4),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
@@ -119,13 +117,12 @@ Widget itemNewestCar(Car car, VoidCallback onTap) {
                       '(${car.purchasedProduct}x disewa)',
                       style: GoogleFonts.poppins(
                         fontSize: 10,
-                        fontWeight: FontWeight.w400,
+                        fontWeight: FontWeight.w500,
                         color: Theme.of(Get.context!).colorScheme.onSurface,
                       ),
                     ),
                   ],
                 ),
-                const Gap(4),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
@@ -137,14 +134,25 @@ Widget itemNewestCar(Car car, VoidCallback onTap) {
                     Expanded(
                       child: Text(
                         " ${car.city}",
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w400,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w500,
                           color: Theme.of(Get.context!).colorScheme.secondary,
                         ),
                       ),
                     ),
                   ],
+                ),
+                const Gap(4),
+                Text(
+                  car.ownerStoreName,
+                  style: GoogleFonts.poppins(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(Get.context!).colorScheme.secondary,
+                  ),
                 ),
               ],
             ),
@@ -171,8 +179,8 @@ Widget itemNewestCar(Car car, VoidCallback onTap) {
               Text(
                 '/hari',
                 style: GoogleFonts.poppins(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w400,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
                   color: Theme.of(Get.context!).colorScheme.secondary,
                 ),
               ),

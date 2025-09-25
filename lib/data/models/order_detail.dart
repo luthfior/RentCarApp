@@ -32,7 +32,7 @@ class OrderDetail {
     return <String, dynamic>{
       'carDetail': car.toJson(),
       'withDriver': withDriver,
-      'driverCost': driverCostPerDay,
+      'driverCostPerDay': driverCostPerDay,
       'startDate': startDate,
       'endDate': endDate,
       'duration': duration,
@@ -51,7 +51,7 @@ class OrderDetail {
           ? Car.fromJson(json['carDetail'] as Map<String, dynamic>)
           : Car.empty,
       withDriver: json['withDriver'] as bool? ?? false,
-      driverCostPerDay: json['driverCost'] as num? ?? 0,
+      driverCostPerDay: json['driverCostPerDay'] as num? ?? 0,
       startDate: json['startDate'] as String? ?? '',
       endDate: json['endDate'] as String? ?? '',
       duration: json['duration'] as num? ?? 0,

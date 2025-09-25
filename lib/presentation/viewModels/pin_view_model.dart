@@ -14,12 +14,6 @@ import 'package:rent_car_app/data/sources/user_source.dart';
 import 'package:rent_car_app/presentation/viewModels/discover_view_model.dart';
 
 class PinViewModel extends GetxController {
-  PinViewModel({
-    this.isForVerification = false,
-    this.isChangingPin = false,
-    this.car,
-  });
-
   final authVM = Get.find<AuthViewModel>();
   final discoverVM = Get.find<DiscoverViewModel>();
   CheckoutViewModel? get checkoutVm => Get.isRegistered<CheckoutViewModel>()
@@ -31,26 +25,24 @@ class PinViewModel extends GetxController {
   final pin3 = TextEditingController();
   final pin4 = TextEditingController();
 
-  final bool isForVerification;
+  final isForVerification = false.obs;
   final isPinComplete = false.obs;
   final RxInt _failedAttempts = 0.obs;
 
   final UserSource userSource = UserSource();
-  final bool isChangingPin;
+  final isChangingPin = false.obs;
   final RxString _newPin = ''.obs;
-
-  final Rx<Account?> _partner = Rx<Account?>(null);
-  Account? get partner => _partner.value;
-  set partner(Account? value) => _partner.value = value;
 
   bool _disposed = false;
 
   @override
   void onInit() {
-    super.onInit();
-    if (car != null) {
-      fetchPartner(car!.ownerId, car!.ownerType);
+    final args = Get.arguments;
+    if (args != null) {
+      isForVerification.value = args['isForVerification'];
+      isChangingPin.value = args['isChangingPin'];
     }
+    super.onInit();
   }
 
   @override
@@ -124,7 +116,7 @@ class PinViewModel extends GetxController {
         return;
       }
 
-      if (isChangingPin) {
+      if (isChangingPin.value) {
         await userSource.updatePin(userId, pin);
         Message.success('Pin berhasil diubah');
         Get.until((route) => route.settings.name == '/discover');
@@ -195,17 +187,9 @@ class PinViewModel extends GetxController {
       if (!isPinValid) {
         throw Exception('PIN yang Anda masukkan salah');
       }
-
-      await checkoutVm?.processPayment(enteredPin);
-      if (partner == null) {
-        await fetchPartner(car!.ownerId, car!.ownerType);
-      }
-      await sendNotification();
-      Message.success('Pembayaran berhasil. Pesanan telah dibuat!');
-      Get.offAllNamed(
-        '/complete',
-        arguments: {'fragmentIndex': 0, 'bookedCar': car},
-      );
+      final safeUid = authVM.account.value!.uid.substring(0, 5);
+      final resi = "ORDER-$safeUid-${DateTime.now().millisecondsSinceEpoch}";
+      await checkoutVm?.processPayment(resi, 'DompetKu', 'Sudah Dibayar');
     } catch (e) {
       log('Error dari PinViewModel: $e');
       clearPin();
@@ -227,49 +211,6 @@ class PinViewModel extends GetxController {
       } else {
         Message.error('Pembayaran gagal: ${e.toString()}');
       }
-    }
-  }
-
-  Future<void> sendNotification() async {
-    if (partner == null) {
-      log('Partner belum dimuat, tidak bisa kirim notifikasi');
-      return;
-    }
-    final tokens = partner!.fcmTokens ?? [];
-    String message =
-        "Pesanan baru untuk mobil ${car?.nameProduct ?? ''} ${car?.releaseProduct ?? ''}"
-            .trim();
-    if (message.isEmpty || message == "Pesanan baru untuk mobil") {
-      message = "Pesanan baru di toko Anda";
-    }
-    if (tokens.isNotEmpty) {
-      await PushNotificationService.sendToMany(
-        tokens,
-        "Info Order",
-        message,
-        data: {'type': 'order', 'referenceId': car?.id ?? ''},
-      );
-    } else {
-      log('Gagal kirim push notification: token kosong');
-    }
-    await NotificationService.addNotification(
-      userId: car!.ownerId,
-      title: "Info Order",
-      body: message,
-      type: "order",
-      referenceId: "${authVM.account.value!.uid}_${car?.ownerId}",
-    );
-  }
-
-  Future<void> fetchPartner(String id, String role) async {
-    final collection = (role == 'admin') ? 'Admin' : 'Users';
-    final doc = await FirebaseFirestore.instance
-        .collection(collection)
-        .doc(id)
-        .get();
-
-    if (doc.exists) {
-      partner = Account.fromJson(doc.data()!);
     }
   }
 }

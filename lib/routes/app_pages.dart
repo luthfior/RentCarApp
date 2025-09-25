@@ -120,8 +120,7 @@ class AppPages {
       name: AppRoutes.midtransWebView,
       page: () => const MidtransWebView(),
       binding: BindingsBuilder(() {
-        final String url = Get.arguments ?? "";
-        Get.lazyPut<MidtransWebViewModel>(() => MidtransWebViewModel(url));
+        Get.lazyPut<MidtransWebViewModel>(() => MidtransWebViewModel());
       }),
     ),
     GetPage(

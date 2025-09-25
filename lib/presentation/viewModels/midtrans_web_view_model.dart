@@ -1,24 +1,27 @@
 import 'dart:developer';
 
 import 'package:get/get.dart';
+import 'package:rent_car_app/presentation/viewModels/checkout_view_model.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class MidtransWebViewModel extends GetxController {
   final RxString _status = 'loading'.obs;
   String get status => _status.value;
   set status(String value) => _status.value = value;
-
+  String? resi;
   WebViewController? webViewController;
-  final String url;
   String detectedPaymentMethod = 'Midtrans';
-
-  MidtransWebViewModel(this.url);
+  CheckoutViewModel? get checkoutVm => Get.isRegistered<CheckoutViewModel>()
+      ? Get.find<CheckoutViewModel>()
+      : null;
 
   @override
   void onInit() {
     super.onInit();
-    if (url.isNotEmpty) {
-      init(url);
+    final args = Get.arguments;
+    if (args != null) {
+      resi = args['resi'];
+      init(args['url']);
       ever(_status, (value) {
         if (value == 'error') {
           if (Get.isDialogOpen ?? false) Get.back();
@@ -26,7 +29,7 @@ class MidtransWebViewModel extends GetxController {
         }
       });
     } else {
-      log('Error: MidtransWebViewModel tidak ada URL.');
+      log('Error: MidtransWebViewModel tidak ada URL dan resi');
       status = 'error';
     }
   }
@@ -77,11 +80,24 @@ class MidtransWebViewModel extends GetxController {
               final transactionStatus =
                   uri.queryParameters['transaction_status'] ?? 'pending';
               log('Transaction Status from URL: $transactionStatus');
-              Get.back(
-                result: {
-                  'status': transactionStatus,
-                  'payment_method': detectedPaymentMethod,
-                },
+              String mappedStatus;
+              switch (transactionStatus) {
+                case 'settlement':
+                  mappedStatus = 'Sudah Dibayar';
+                  break;
+                case 'pending':
+                  mappedStatus = 'Menunggu Pembayaran';
+                  break;
+                case 'cancel':
+                  mappedStatus = 'Dibatalkan';
+                  break;
+                default:
+                  mappedStatus = 'Menunggu Pembayaran';
+              }
+              checkoutVm?.processPayment(
+                resi!,
+                detectedPaymentMethod,
+                mappedStatus,
               );
               return NavigationDecision.prevent;
             }
@@ -89,8 +105,27 @@ class MidtransWebViewModel extends GetxController {
             if (request.url.contains('/v2/deeplink/payment') ||
                 request.url.contains('v2/deeplink/index')) {
               log('GoPay deeplink detected, considering payment as pending.');
-              Get.back(
-                result: {'status': 'settlement', 'payment_method': 'GoPay'},
+              final uri = Uri.parse(request.url);
+              final transactionStatus =
+                  uri.queryParameters['transaction_status'] ?? 'pending';
+              String mappedStatus;
+              switch (transactionStatus) {
+                case 'settlement':
+                  mappedStatus = 'Sudah Dibayar';
+                  break;
+                case 'pending':
+                  mappedStatus = 'Menunggu Pembayaran';
+                  break;
+                case 'cancel':
+                  mappedStatus = 'Dibatalkan';
+                  break;
+                default:
+                  mappedStatus = 'Menunggu Pembayaran';
+              }
+              checkoutVm?.processPayment(
+                resi!,
+                detectedPaymentMethod,
+                mappedStatus,
               );
               return NavigationDecision.prevent;
             }

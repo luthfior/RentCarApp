@@ -303,11 +303,11 @@ class UserSource {
   }
 
   Future<void> createOrder(
-    String orderId,
+    String resi,
     String customerId,
     String sellerId,
-    String? customerFullname,
-    String? sellerStoreName,
+    String customerFullname,
+    String sellerStoreName,
     String? customerAddress,
     String? sellerAddress,
     String sellerRole,
@@ -324,8 +324,8 @@ class UserSource {
       final existingOrderQuery = await firestore
           .collection('Orders')
           .where('customerId', isEqualTo: customerId)
-          .where('orderDetail.productId', isEqualTo: productId)
-          .where('orderStatus', isNotEqualTo: 'cancelled')
+          .where('resi', isEqualTo: resi)
+          .where('orderStatus', isEqualTo: 'pending')
           .limit(1)
           .get();
 
@@ -342,11 +342,11 @@ class UserSource {
 
       const String initialOrderStatus = 'pending';
       final orderDocRef = await firestore.collection('Orders').add({
-        'resi': orderId,
+        'resi': resi,
         'customerId': customerId,
         'sellerId': sellerId,
-        'customerFullname': customerFullname ?? '',
-        'sellerStoreName': sellerStoreName ?? '',
+        'customerFullname': customerFullname.isNotEmpty ? customerFullname : '',
+        'sellerStoreName': sellerStoreName.isNotEmpty ? sellerStoreName : '',
         'customerAddress': customerAddress ?? '',
         'sellerAddress': sellerAddress ?? '',
         'orderDetail': orderDetail.toJson(),

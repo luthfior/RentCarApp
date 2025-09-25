@@ -18,126 +18,169 @@ class CheckoutPage extends GetView<CheckoutViewModel> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        children: [
-          SafeArea(
+      body: Obx(() {
+        final isLoading = controller.isLoading.value;
+        final isMidtrans = controller.paymentMethodPicked.value == 'Midtrans';
+
+        if (isLoading && isMidtrans) {
+          return SafeArea(
             child: Column(
               children: [
                 CustomHeader(title: 'Pembayaran'),
-                const Gap(20),
                 Expanded(
-                  child: RefreshIndicator(
-                    onRefresh: () async {
-                      if (connectivity.isOnline.value) {
-                        await controller.refreshCheckoutData();
-                      } else {
-                        const OfflineBanner();
-                        return;
-                      }
-                    },
-                    color: const Color(0xffFF5722),
-                    child: SingleChildScrollView(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      child: Column(
-                        children: [
-                          snippetCar(),
-                          const Gap(20),
-                          buildReceipt(),
-                          const Gap(20),
-                          buildPaymentMethod(),
-                          const Gap(20),
-                          Obx(() {
-                            if (controller.paymentMethodPicked.value ==
-                                'Tunai') {
-                              return Padding(
-                                padding: const EdgeInsetsDirectional.symmetric(
-                                  horizontal: 24,
-                                ),
-                                child: Card(
-                                  color: Theme.of(
-                                    Get.context!,
-                                  ).colorScheme.surface,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  elevation: 3,
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(12),
-                                    child: Text(
-                                      'Anda wajib ke lokasi penyedia dan melakukan pembayaran secara langsung',
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w700,
-                                        color: Theme.of(
-                                          context,
-                                        ).colorScheme.onSurface,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              );
-                            } else if (controller.paymentMethodPicked.value ==
-                                'Lainnya') {
-                              return const SizedBox.shrink();
-                            }
-                            return buildWallet();
-                          }),
-                          const Gap(100),
-                        ],
-                      ),
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Color(0xffFF5722),
+                          ),
+                        ),
+                        const Gap(16),
+                        Text(
+                          'Sedang memproses pembayaran, mohon tunggu...',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: Theme.of(context).colorScheme.secondary,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-                Obx(() {
-                  if (controller.isLoading.value) {
-                    return const Center(
-                      child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          Color(0xffFF5722),
-                        ),
-                      ),
-                    );
-                  }
-                  return const SizedBox.shrink();
-                }),
               ],
             ),
-          ),
+          );
+        }
+        return Stack(
+          children: [
+            SafeArea(
+              child: Column(
+                children: [
+                  CustomHeader(title: 'Pembayaran'),
+                  const Gap(20),
+                  Expanded(
+                    child: RefreshIndicator(
+                      onRefresh: () async {
+                        if (connectivity.isOnline.value) {
+                          await controller.refreshCheckoutData();
+                        } else {
+                          const OfflineBanner();
+                          return;
+                        }
+                      },
+                      color: const Color(0xffFF5722),
+                      child: SingleChildScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        child: Column(
+                          children: [
+                            snippetCar(),
+                            const Gap(20),
+                            buildReceipt(),
+                            const Gap(20),
+                            buildPaymentMethod(),
+                            const Gap(20),
+                            Obx(() {
+                              if (controller.paymentMethodPicked.value ==
+                                  'Tunai') {
+                                return Padding(
+                                  padding:
+                                      const EdgeInsetsDirectional.symmetric(
+                                        horizontal: 24,
+                                      ),
+                                  child: Card(
+                                    color: Theme.of(
+                                      Get.context!,
+                                    ).colorScheme.surface,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    elevation: 3,
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(12),
+                                      child: Text(
+                                        'Anda wajib ke lokasi penyedia dan melakukan pembayaran secara langsung',
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w700,
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.onSurface,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              } else if (controller.paymentMethodPicked.value ==
+                                  'Midtrans') {
+                                return const SizedBox.shrink();
+                              }
+                              return buildWallet();
+                            }),
+                            const Gap(100),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  Obx(() {
+                    if (controller.isLoading.value) {
+                      return const Center(
+                        child: CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Color(0xffFF5722),
+                          ),
+                        ),
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  }),
+                ],
+              ),
+            ),
 
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-              color: Get.isDarkMode
-                  ? const Color(0xff070623)
-                  : const Color(0xffEFEFF0),
-              child: SafeArea(
-                top: false,
-                child: Obx(
-                  () => ButtonPrimary(
-                    onTap: () async {
-                      if (connectivity.isOnline.value) {
-                        await controller.handlePayment();
-                      } else {
-                        const OfflineBanner();
-                        return;
-                      }
-                    },
-                    text: (controller.paymentMethodPicked.value == 'Dompet Ku')
-                        ? 'Bayar Sekarang'
-                        : (controller.paymentMethodPicked.value == 'Lainnya')
-                        ? 'Pilih Pembayaran'
-                        : 'Bayar Sekarang',
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                color: Get.isDarkMode
+                    ? const Color(0xff070623)
+                    : const Color(0xffEFEFF0),
+                child: SafeArea(
+                  top: false,
+                  child: Obx(
+                    () => ButtonPrimary(
+                      onTap: () async {
+                        if (connectivity.isOnline.value) {
+                          if (controller.isLoading.value) {
+                            return;
+                          } else {
+                            await controller.handlePayment();
+                          }
+                        } else {
+                          const OfflineBanner();
+                          return;
+                        }
+                      },
+                      text: (controller.paymentMethodPicked.value == 'DompetKu')
+                          ? 'Bayar Sekarang'
+                          : (controller.paymentMethodPicked.value == 'Midtrans')
+                          ? 'Pilih Pembayaran'
+                          : 'Bayar Sekarang',
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
 
-          const OfflineBanner(),
-        ],
-      ),
+            const OfflineBanner(),
+          ],
+        );
+      }),
     );
   }
 

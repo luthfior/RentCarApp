@@ -118,20 +118,25 @@ class DetailOrderPage extends GetView<DetailOrderViewModel> {
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () async {
-                        if (!connectivity.isOnline.value) return;
-                        bool? confirm = await controller.showConfirmationDialog(
-                          context: context,
-                          title: 'Batalkan Pesanan',
-                          content:
-                              'Apakah Anda yakin ingin membatalkan pesanan ini?',
-                          confirmText: 'Ya, Batalkan',
-                        );
-                        if (confirm == true) {
-                          controller.cancelOrder(
-                            controller.order.id,
-                            controller.order.customerId,
-                            controller.order.sellerId,
+                        if (connectivity.isOnline.value) {
+                          bool?
+                          confirm = await controller.showConfirmationDialog(
+                            context: context,
+                            title: 'Batalkan Pesanan',
+                            content:
+                                'Apakah Anda yakin ingin membatalkan pesanan ini?',
+                            confirmText: 'Ya, Batalkan',
                           );
+                          if (confirm == true) {
+                            controller.cancelOrder(
+                              controller.order.id,
+                              controller.order.customerId,
+                              controller.order.sellerId,
+                            );
+                          }
+                        } else {
+                          const OfflineBanner();
+                          return;
                         }
                       },
                       style: ElevatedButton.styleFrom(
@@ -158,21 +163,26 @@ class DetailOrderPage extends GetView<DetailOrderViewModel> {
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () async {
-                        if (!connectivity.isOnline.value) return;
-                        bool? confirm = await controller.showConfirmationDialog(
-                          context: context,
-                          title: 'Konfirmasi Pesanan',
-                          content:
-                              'Apakah Anda yakin ingin mengonfirmasi pesanan ini?',
-                          confirmText: 'Ya, Konfirmasi',
-                        );
-                        if (confirm == true) {
-                          controller.confirmOrder(
-                            controller.order.id,
-                            controller.order.customerId,
-                            controller.order.sellerId,
-                            controller.order.orderDetail.totalPrice.round(),
+                        if (connectivity.isOnline.value) {
+                          bool?
+                          confirm = await controller.showConfirmationDialog(
+                            context: context,
+                            title: 'Konfirmasi Pesanan',
+                            content:
+                                'Apakah Anda yakin ingin mengonfirmasi pesanan ini?',
+                            confirmText: 'Ya, Konfirmasi',
                           );
+                          if (confirm == true) {
+                            controller.confirmOrder(
+                              controller.order.id,
+                              controller.order.customerId,
+                              controller.order.sellerId,
+                              controller.order.orderDetail.totalPrice.round(),
+                            );
+                          }
+                        } else {
+                          const OfflineBanner();
+                          return;
                         }
                       },
                       style: ElevatedButton.styleFrom(

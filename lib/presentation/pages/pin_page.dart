@@ -16,17 +16,18 @@ class PinPage extends GetView<PinViewModel> {
 
   @override
   Widget build(BuildContext context) {
-    final title = controller.isForVerification
-        ? 'Verifikasi PIN Lama'
-        : 'Masukkan PIN';
-
     return Scaffold(
       body: Stack(
         children: [
           SafeArea(
             child: Column(
               children: [
-                CustomHeader(title: title),
+                Obx(() {
+                  final title = controller.isForVerification.value
+                      ? 'Verifikasi PIN Lama'
+                      : 'Masukkan PIN';
+                  return CustomHeader(title: title);
+                }),
                 const Gap(100),
                 Column(
                   children: [
@@ -66,7 +67,7 @@ class PinPage extends GetView<PinViewModel> {
                   controller.isPinComplete.value || !connectivity.isOnline.value
                   ? () async {
                       if (connectivity.isOnline.value) {
-                        if (controller.isForVerification) {
+                        if (controller.isForVerification.value) {
                           await controller.verifyOldPin();
                         } else {
                           await controller.finishedPayment();
@@ -78,7 +79,7 @@ class PinPage extends GetView<PinViewModel> {
                     }
                   : null;
 
-              final buttonText = controller.isForVerification
+              final buttonText = controller.isForVerification.value
                   ? 'Verifikasi PIN'
                   : 'Konfirmasi Pembayaran';
               return ButtonPrimary(onTap: onPressed, text: buttonText);

@@ -29,7 +29,7 @@ class CarSource {
     try {
       final fetchNewCars = FirebaseFirestore.instance
           .collection('Cars')
-          .orderBy('releaseProduct', descending: true)
+          .orderBy('createdAt', descending: true)
           .snapshots()
           .map((querySnapshot) {
             return querySnapshot.docs

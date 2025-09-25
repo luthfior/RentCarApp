@@ -473,15 +473,20 @@ class BrowseFragment extends GetView<BrowseViewModel> {
         children: [
           SlidableAction(
             onPressed: (context) async {
-              bool? confirm = await controller.showConfirmationDialog(
-                context: context,
-                title: 'Hapus Riwayat Pesanan',
-                content:
-                    'Apakah Anda yakin ingin menghapus riwayat pesanan ini secara permanen?',
-                confirmText: 'Ya, Konfirmasi',
-              );
-              if (confirm == true) {
-                onDelete();
+              if (connectivity.isOnline.value) {
+                bool? confirm = await controller.showConfirmationDialog(
+                  context: context,
+                  title: 'Hapus Produk',
+                  content:
+                      'Apakah Anda yakin ingin menghapus produk ini secara permanen?',
+                  confirmText: 'Ya, Hapus',
+                );
+                if (confirm == true) {
+                  onDelete();
+                }
+              } else {
+                const OfflineBanner();
+                return;
               }
             },
             backgroundColor: const Color(0xffFF2056),

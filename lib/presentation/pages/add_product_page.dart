@@ -283,7 +283,22 @@ class AddProductPage extends GetView<AddProductViewModel> {
                               ? null
                               : () async {
                                   if (connectivity.isOnline.value) {
-                                    await controller.handleAddProduct();
+                                    if (connectivity.isOnline.value) {
+                                      bool? confirm = await controller
+                                          .showConfirmationDialog(
+                                            context: context,
+                                            title: 'Hapus Produk',
+                                            content:
+                                                'Apakah Anda yakin ingin menghapus produk ini secara permanen?',
+                                            confirmText: 'Ya, Hapus',
+                                          );
+                                      if (confirm == true) {
+                                        await controller.handleAddProduct();
+                                      }
+                                    } else {
+                                      const OfflineBanner();
+                                      return;
+                                    }
                                   } else {
                                     const OfflineBanner();
                                     return;

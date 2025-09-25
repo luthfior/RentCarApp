@@ -19,20 +19,46 @@ class DetailPage extends GetView<DetailViewModel> {
 
   @override
   Widget build(BuildContext context) {
-    return Obx(() {
-      final Car car = controller.car;
+    return Scaffold(
+      resizeToAvoidBottomInset: false,
+      body: Obx(() {
+        if (controller.status == 'loading') {
+          return Column(
+            children: [
+              SafeArea(child: _buildHeader()),
+              const Expanded(
+                child: Center(
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      Color(0xffFF5722),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+        }
+        if (controller.car == Car.empty) {
+          return Column(
+            children: [
+              SafeArea(child: _buildHeader()),
+              Expanded(
+                child: Center(
+                  child: Text(
+                    'Data mobil tidak ditemukan.',
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Theme.of(Get.context!).colorScheme.onSurface,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+        }
 
-      if (controller.status == 'loading') {
-        return const Center(
-          child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Color(0xffFF5722)),
-          ),
-        );
-      }
-
-      return Scaffold(
-        resizeToAvoidBottomInset: false,
-        body: Stack(
+        return Stack(
           children: [
             Positioned(
               top: 0,
@@ -40,16 +66,16 @@ class DetailPage extends GetView<DetailViewModel> {
               right: 0,
               child: SafeArea(
                 child: ExtendedImage.network(
-                  car.imageProduct,
+                  controller.car.imageProduct,
                   width: MediaQuery.of(context).size.width,
-                  height: MediaQuery.of(context).size.height * 0.40,
+                  height: MediaQuery.of(context).size.height * 0.45,
                   fit: BoxFit.cover,
                   loadStateChanged: (state) {
                     switch (state.extendedImageLoadState) {
                       case LoadState.loading:
                         return SizedBox(
                           width: MediaQuery.of(context).size.width,
-                          height: MediaQuery.of(context).size.height * 0.40,
+                          height: MediaQuery.of(context).size.height * 0.45,
                           child: const Center(
                             child: CircularProgressIndicator(
                               valueColor: AlwaysStoppedAnimation<Color>(
@@ -62,25 +88,24 @@ class DetailPage extends GetView<DetailViewModel> {
                         final image = state.extendedImageInfo?.image;
                         if (image != null) {
                           final isPortrait = image.height > image.width;
-
                           return ExtendedImage(
                             image: state.imageProvider,
                             width: MediaQuery.of(context).size.width,
-                            height: MediaQuery.of(context).size.height * 0.40,
+                            height: MediaQuery.of(context).size.height * 0.45,
                             fit: isPortrait ? BoxFit.cover : BoxFit.contain,
                           );
                         }
                         return Image.asset(
                           'assets/splash_screen.png',
                           width: MediaQuery.of(context).size.width,
-                          height: MediaQuery.of(context).size.height * 0.40,
+                          height: MediaQuery.of(context).size.height * 0.45,
                           fit: BoxFit.cover,
                         );
                       case LoadState.failed:
                         return Image.asset(
                           'assets/splash_screen.png',
                           width: MediaQuery.of(context).size.width,
-                          height: MediaQuery.of(context).size.height * 0.40,
+                          height: MediaQuery.of(context).size.height * 0.45,
                           fit: BoxFit.cover,
                         );
                     }
@@ -91,8 +116,7 @@ class DetailPage extends GetView<DetailViewModel> {
             SafeArea(
               child: Column(
                 children: [
-                  CustomHeader(
-                    title: '',
+                  _buildHeader(
                     rightIcon: GestureDetector(
                       onTap: () async {
                         if (connectivity.isOnline.value) {
@@ -134,19 +158,6 @@ class DetailPage extends GetView<DetailViewModel> {
                           : const SizedBox.shrink(),
                     ),
                   ),
-                  if (controller.car == Car.empty)
-                    Expanded(
-                      child: Center(
-                        child: Text(
-                          'Data mobil tidak ditemukan.',
-                          style: GoogleFonts.poppins(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            color: Theme.of(Get.context!).colorScheme.onSurface,
-                          ),
-                        ),
-                      ),
-                    ),
                   if (controller.status != 'loading' &&
                       controller.car != Car.empty)
                     Expanded(
@@ -168,7 +179,7 @@ class DetailPage extends GetView<DetailViewModel> {
                               child: Container(
                                 margin: EdgeInsets.only(
                                   top:
-                                      MediaQuery.of(context).size.height * 0.25,
+                                      MediaQuery.of(context).size.height * 0.30,
                                 ),
                                 padding: const EdgeInsets.fromLTRB(
                                   24,
@@ -189,9 +200,9 @@ class DetailPage extends GetView<DetailViewModel> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      "${car.nameProduct} (${car.releaseProduct})",
+                                      "${controller.car.nameProduct} (${controller.car.releaseProduct})",
                                       style: GoogleFonts.poppins(
-                                        fontSize: 22,
+                                        fontSize: 20,
                                         fontWeight: FontWeight.w800,
                                         color: Theme.of(
                                           Get.context!,
@@ -202,7 +213,9 @@ class DetailPage extends GetView<DetailViewModel> {
                                     Row(
                                       children: [
                                         RatingBar.builder(
-                                          initialRating: car.ratingAverage
+                                          initialRating: controller
+                                              .car
+                                              .ratingAverage
                                               .toDouble(),
                                           itemPadding: const EdgeInsets.all(0),
                                           itemSize: 18,
@@ -219,10 +232,10 @@ class DetailPage extends GetView<DetailViewModel> {
                                         const Gap(4),
                                         Expanded(
                                           child: Text(
-                                            "(${car.ratingAverage})",
+                                            "(${controller.car.ratingAverage})",
                                             style: GoogleFonts.poppins(
                                               fontSize: 14,
-                                              fontWeight: FontWeight.w500,
+                                              fontWeight: FontWeight.w600,
                                               color: Theme.of(
                                                 Get.context!,
                                               ).colorScheme.onSurface,
@@ -231,7 +244,8 @@ class DetailPage extends GetView<DetailViewModel> {
                                         ),
                                         RichText(
                                           text: TextSpan(
-                                            text: '${car.purchasedProduct}',
+                                            text:
+                                                '${controller.car.purchasedProduct}',
                                             style: GoogleFonts.poppins(
                                               fontSize: 14,
                                               fontWeight: FontWeight.w600,
@@ -255,7 +269,42 @@ class DetailPage extends GetView<DetailViewModel> {
                                         ),
                                       ],
                                     ),
-                                    const Gap(10),
+                                    const Gap(8),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        CircleAvatar(
+                                          radius: 14,
+                                          backgroundImage:
+                                              controller
+                                                  .car
+                                                  .ownerPhotoUrl
+                                                  .isNotEmpty
+                                              ? NetworkImage(
+                                                  controller.car.ownerPhotoUrl,
+                                                )
+                                              : const AssetImage(
+                                                      'assets/profile.png',
+                                                    )
+                                                    as ImageProvider,
+                                        ),
+                                        const Gap(8),
+                                        Text(
+                                          controller.car.ownerStoreName,
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600,
+                                            color: Theme.of(
+                                              Get.context!,
+                                            ).colorScheme.onSurface,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const Gap(8),
                                     Row(
                                       mainAxisAlignment:
                                           MainAxisAlignment.start,
@@ -270,7 +319,7 @@ class DetailPage extends GetView<DetailViewModel> {
                                         const Gap(8),
                                         Expanded(
                                           child: Text(
-                                            car.fullAddress,
+                                            controller.car.fullAddress,
                                             style: GoogleFonts.poppins(
                                               fontSize: 14,
                                               fontWeight: FontWeight.w500,
@@ -287,7 +336,7 @@ class DetailPage extends GetView<DetailViewModel> {
                                     Text(
                                       'Deskripsi',
                                       style: GoogleFonts.poppins(
-                                        fontSize: 18,
+                                        fontSize: 16,
                                         fontWeight: FontWeight.w700,
                                         color: Theme.of(
                                           Get.context!,
@@ -296,9 +345,9 @@ class DetailPage extends GetView<DetailViewModel> {
                                     ),
                                     const Gap(4),
                                     Text(
-                                      car.descriptionProduct,
+                                      controller.car.descriptionProduct,
                                       style: GoogleFonts.poppins(
-                                        fontSize: 16,
+                                        fontSize: 14,
                                         fontWeight: FontWeight.w500,
                                         color: Theme.of(
                                           Get.context!,
@@ -308,7 +357,7 @@ class DetailPage extends GetView<DetailViewModel> {
                                       overflow: TextOverflow.visible,
                                     ),
                                     const Gap(10),
-                                    _buildInfoCards(context, car),
+                                    _buildInfoCards(context, controller.car),
                                   ],
                                 ),
                               ),
@@ -322,46 +371,28 @@ class DetailPage extends GetView<DetailViewModel> {
             ),
             const OfflineBanner(),
           ],
-        ),
-        bottomNavigationBar: Container(
-          padding: const EdgeInsets.fromLTRB(24, 0, 24, 18),
-          color: Theme.of(Get.context!).colorScheme.surface,
-          child: Obx(() {
-            final account = controller.authVM.account.value;
-            if (account == null ||
-                controller.status == 'loading' ||
-                controller.car == Car.empty) {
-              return const SizedBox.shrink();
-            }
+        );
+      }),
+      bottomNavigationBar: Container(
+        padding: const EdgeInsets.fromLTRB(24, 0, 24, 18),
+        color: Theme.of(Get.context!).colorScheme.surface,
+        child: Obx(() {
+          final account = controller.authVM.account.value;
+          if (account == null ||
+              controller.status == 'loading' ||
+              controller.car == Car.empty) {
+            return const SizedBox.shrink();
+          }
 
-            final isAdmin = account.role == 'admin';
-            final isSeller = account.role == 'seller';
-            final isOwner = controller.car.ownerId == account.uid;
+          final isAdmin = account.role == 'admin';
+          final isSeller = account.role == 'seller';
+          final isOwner = controller.car.ownerId == account.uid;
 
-            if (isSeller || (isAdmin && isOwner)) {
-              return buildEditProductButton(controller.car);
-            }
+          if (isSeller || (isAdmin && isOwner)) {
+            return buildEditProductButton(controller.car);
+          }
 
-            if (isAdmin && !isOwner) {
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  buildCarPrice(controller.car),
-                  const Gap(10),
-                  ButtonChat(
-                    text: 'Chat Sekarang',
-                    customBorderRadius: BorderRadius.circular(20),
-                    customIconSize: 24,
-                    onTap: () async {
-                      if (connectivity.isOnline.value) {
-                        controller.openChat();
-                      }
-                    },
-                  ),
-                ],
-              );
-            }
-
+          if (isAdmin && !isOwner) {
             return Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -379,10 +410,32 @@ class DetailPage extends GetView<DetailViewModel> {
                 ),
               ],
             );
-          }),
-        ),
-      );
-    });
+          }
+
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              buildCarPrice(controller.car),
+              const Gap(10),
+              ButtonChat(
+                text: 'Chat Sekarang',
+                customBorderRadius: BorderRadius.circular(20),
+                customIconSize: 24,
+                onTap: () async {
+                  if (connectivity.isOnline.value) {
+                    controller.openChat();
+                  }
+                },
+              ),
+            ],
+          );
+        }),
+      ),
+    );
+  }
+
+  Widget _buildHeader({Widget? rightIcon}) {
+    return CustomHeader(title: '', rightIcon: rightIcon);
   }
 
   Widget _buildInfoCards(BuildContext context, Car car) {
@@ -451,7 +504,7 @@ class DetailPage extends GetView<DetailViewModel> {
               title,
               style: GoogleFonts.poppins(
                 fontSize: 14,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w700,
                 color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
@@ -462,7 +515,7 @@ class DetailPage extends GetView<DetailViewModel> {
                 textAlign: TextAlign.center,
                 style: GoogleFonts.poppins(
                   fontSize: 16,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w700,
                   color: const Color(0xff9E9EAA),
                   height: 1.0,
                 ),
@@ -472,7 +525,7 @@ class DetailPage extends GetView<DetailViewModel> {
                 textAlign: TextAlign.center,
                 style: GoogleFonts.poppins(
                   fontSize: 16,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w700,
                   color: const Color(0xff9E9EAA),
                 ),
               ),
@@ -484,7 +537,7 @@ class DetailPage extends GetView<DetailViewModel> {
                 overflow: TextOverflow.ellipsis,
                 style: GoogleFonts.poppins(
                   fontSize: 18,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w700,
                   color: const Color(0xff9E9EAA),
                 ),
               ),
@@ -564,7 +617,7 @@ class DetailPage extends GetView<DetailViewModel> {
                   textAlign: TextAlign.center,
                   style: GoogleFonts.poppins(
                     fontSize: 14,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w700,
                     color: const Color(0xffEFEFF0),
                   ),
                 ),
@@ -603,7 +656,7 @@ class DetailPage extends GetView<DetailViewModel> {
           'Edit Produk',
           style: GoogleFonts.poppins(
             fontSize: 16,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w700,
             color: const Color(0xffEFEFF0),
           ),
         ),

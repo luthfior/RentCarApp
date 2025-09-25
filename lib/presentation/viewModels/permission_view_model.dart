@@ -29,7 +29,7 @@ class PermissionViewModel extends GetxController {
     Get.defaultDialog(
       title: "Izin Diperlukan",
       middleText:
-          "Aplikasi memerlukan izin Internet dan Notifikasi agar bisa digunakan.",
+          "Aplikasi memerlukan akses internet aktif dan izin notifikasi agar bisa digunakan.",
       textCancel: "Keluar",
       textConfirm: "Coba Lagi",
       confirmTextColor: const Color(0xffFF5722),
