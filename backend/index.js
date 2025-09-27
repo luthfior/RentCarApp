@@ -167,7 +167,7 @@ app.post("/create-transaction", async (req, res) => {
     try {
         console.log("Incoming body:", req.body);
 
-        const { amount, customer, product } = req.body;
+        const { amount, customer, product, rentDurationInDays, driverCostPerDay, insuranceCost, additionalCost } = req.body;
 
         if (!amount || !customer || !product) {
             return res.status(400).json({ error: "Missing amount, customer, or product" });
@@ -180,6 +180,40 @@ app.post("/create-transaction", async (req, res) => {
 
         const safeUid = (customer?.uid || "guest").substring(0, 5);
         const orderId = "ORDER-" + safeUid + "-" + new Date().getTime();
+
+        const itemDetails = [
+            {
+                id: product?.id || "Mobil1",
+                price: product?.price || 10000,
+                quantity: rentDurationInDays || 1,
+                name: product?.name || "Mobil",
+                brand: product?.brand || "Automatic",
+                category: product?.category || "SUV",
+                merchant_name: "RentCarApp+",
+                url: "https://rentcarapp.com/mobil"
+            },
+            {
+                id: "insurance",
+                price: insuranceCost || 0,
+                quantity: 1,
+                name: "Biaya Asuransi"
+            },
+            {
+                id: "additional",
+                price: additionalCost || 0,
+                quantity: 1,
+                name: "Biaya Tambahan"
+            }
+        ];
+
+        if (driverCostPerDay && driverCostPerDay > 0) {
+            itemDetails.push({
+                id: "driver",
+                price: driverCostPerDay,
+                quantity: rentDurationInDays || 1,
+                name: "Biaya Driver"
+            });
+        }
 
         const parameter = {
             transaction_details: {
@@ -210,36 +244,7 @@ app.post("/create-transaction", async (req, res) => {
                     country_code: "IDN",
                 },
             },
-            item_details: [
-                {
-                    id: product?.id || "Mobil1",
-                    price: product?.price || 10000,
-                    quantity: req.body.rentDurationInDays || 1,
-                    name: product?.name || "Mobil",
-                    brand: product?.brand || "Automatic",
-                    category: product?.category || "SUV",
-                    merchant_name: "RentCarApp+",
-                    url: "https://rentcarapp.com/mobil"
-                },
-                {
-                    id: "driver",
-                    price: req.body.driverCostPerDay || 10000,
-                    quantity: req.body.rentDurationInDays || 1,
-                    name: "Biaya Driver"
-                },
-                {
-                    id: "insurance",
-                    price: req.body.insuranceCost || 0,
-                    quantity: 1,
-                    name: "Biaya Asuransi"
-                },
-                {
-                    id: "additional",
-                    price: req.body.additionalCost || 0,
-                    quantity: 1,
-                    name: "Biaya Tambahan"
-                }
-            ].filter(item => item.price > 0),
+            item_details: itemDetails.filter(item => item.price > 0),
         };
 
         const transaction = await snap.createTransaction(parameter);
