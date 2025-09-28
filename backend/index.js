@@ -257,6 +257,29 @@ app.post("/create-transaction", async (req, res) => {
     }
 });
 
+app.post("/cancel-transaction", async (req, res) => {
+    try {
+        const { order_id } = req.body;
+        if (!order_id) {
+            return res.status(400).json({ error: "Missing order_id" });
+        }
+
+        const snap = new midtransClient.Snap({
+            isProduction: false,
+            serverKey: process.env.MIDTRANS_SERVER_KEY,
+        });
+
+        const response = await snap.transaction.cancel(order_id);
+        console.log(`Transaksi ${order_id} berhasil dibatalkan di Midtrans.`, response);
+
+        res.status(200).json({ status: "ok", message: "Transaction cancelled", detail: response });
+
+    } catch (err) {
+        console.error(`Gagal membatalkan transaksi: ${err.ApiResponse?.status_message || err.message}`);
+        res.status(500).json({ error: "Failed to cancel transaction", detail: err.message });
+    }
+});
+
 app.post("/midtrans-notification", async (req, res) => {
     try {
         const snap = new midtransClient.Snap({
