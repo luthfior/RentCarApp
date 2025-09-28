@@ -245,6 +245,10 @@ app.post("/create-transaction", async (req, res) => {
                 },
             },
             item_details: itemDetails.filter(item => item.price > 0),
+            expiry: {
+                unit: "minute",
+                duration: 15
+            },
         };
 
         const transaction = await snap.createTransaction(parameter);
