@@ -163,6 +163,45 @@ app.post("/send-all", async (req, res) => {
     }
 });
 
+app.post("/run-cleanup-orders", async (req, res) => {
+    const secretKey = req.headers["x-cleanup-secret"];
+    if (secretKey !== process.env.CLEANUP_SECRET_KEY) {
+        console.warn("Upaya pembersihan order tanpa otorisasi.");
+        return res.status(401).send("Unauthorized");
+    }
+
+    console.log("Memulai proses pembersihan order anomali...");
+
+    try {
+        const db = getFirestore();
+        const query = db.collection("Orders")
+            .where("deletedByCustomer", "==", true)
+            .where("deletedBySeller", "==", true);
+        const snapshot = await query.get();
+
+        if (snapshot.empty) {
+            console.log("Tidak ada order anomali yang perlu dibersihkan.");
+            return res.status(200).send("No orphaned orders to clean up.");
+        }
+
+        const batch = db.batch();
+        snapshot.docs.forEach(doc => {
+            console.log(`Menjadwalkan penghapusan untuk order anomali: ${doc.id}`);
+            batch.delete(doc.ref);
+        });
+
+        await batch.commit();
+
+        const message = `Pembersihan selesai. ${snapshot.size} order anomali telah dihapus.`;
+        console.log(message);
+        return res.status(200).send(message);
+
+    } catch (error) {
+        console.error("Error saat membersihkan order anomali:", error);
+        return res.status(500).send("Internal Server Error during cleanup.");
+    }
+});
+
 app.post("/create-transaction", async (req, res) => {
     try {
         console.log("Incoming body:", req.body);
@@ -187,8 +226,8 @@ app.post("/create-transaction", async (req, res) => {
                 price: product?.price || 10000,
                 quantity: rentDurationInDays || 1,
                 name: product?.name || "Mobil",
-                brand: product?.brand || "Automatic",
-                category: product?.category || "SUV",
+                brand: product?.brand || "Honda",
+                category: product?.category || "Mobil",
                 merchant_name: "RentCarApp+",
                 url: "https://rentcarapp.com/mobil"
             },

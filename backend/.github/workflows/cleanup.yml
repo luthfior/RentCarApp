@@ -1,0 +1,17 @@
+name: Cleanup Orphaned Orders
+
+on:
+  schedule:
+    - cron: '0 17 * * *'
+  workflow_dispatch:
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Cleanup Endpoint
+        run: |
+          curl -X POST \
+          -H "Content-Type: application/json" \
+          -H "x-cleanup-secret: ${{ secrets.CLEANUP_SECRET_KEY }}" \
+          "${{ secrets.CLEANUP_URL }}"
