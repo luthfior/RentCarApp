@@ -46,7 +46,7 @@ class ChatListFragment extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Gap(30 + MediaQuery.of(context).padding.top),
+        Gap(20 + MediaQuery.of(context).padding.top),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Text(
@@ -84,9 +84,9 @@ class ChatListFragment extends StatelessWidget {
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 40),
                         child: Text(
-                          "Kamu tidak memiliki Chat",
+                          "Kamu belum memiliki Chat. Mulai Chat dengan menanyakan Produk yang ingin Anda pesan",
                           style: GoogleFonts.poppins(
-                            fontSize: 15,
+                            fontSize: 14,
                             fontWeight: FontWeight.w600,
                             color: Theme.of(context).colorScheme.secondary,
                           ),

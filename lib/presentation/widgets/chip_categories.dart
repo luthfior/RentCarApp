@@ -6,7 +6,7 @@ import 'package:rent_car_app/data/services/connectivity_service.dart';
 import 'package:rent_car_app/presentation/viewModels/browse_view_model.dart';
 import 'package:rent_car_app/presentation/widgets/offline_banner.dart';
 
-Widget chipCategories(List categories) {
+Widget chipCategories(List<String> items) {
   final connectivity = Get.find<ConnectivityService>();
   final browseVm = Get.find<BrowseViewModel>();
   return Column(
@@ -16,6 +16,7 @@ Widget chipCategories(List categories) {
         padding: const EdgeInsets.fromLTRB(24, 0, 24, 0),
         child: Text(
           'Kategori',
+          textAlign: TextAlign.start,
           style: GoogleFonts.poppins(
             fontSize: 16,
             fontWeight: FontWeight.w700,
@@ -31,14 +32,14 @@ Widget chipCategories(List categories) {
           padding: const EdgeInsets.only(left: 24),
           child: Obx(() {
             return Row(
-              children: categories.map((category) {
+              children: items.map((item) {
                 final isSelected =
                     browseVm.selectedCategory.value.toLowerCase() ==
-                    category.toLowerCase();
+                    item.toLowerCase();
                 return GestureDetector(
                   onTap: () {
                     if (connectivity.isOnline.value) {
-                      browseVm.filterCars(category);
+                      browseVm.filterCars(item);
                     } else {
                       const OfflineBanner();
                       return;
@@ -55,7 +56,7 @@ Widget chipCategories(List categories) {
                           : Theme.of(Get.context!).colorScheme.surface,
                     ),
                     child: Text(
-                      category,
+                      item,
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,

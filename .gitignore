@@ -46,6 +46,7 @@ app.*.map.json
 
 # Ignore environment configuration file
 backend/.env
+backend/functions
 .env
 firebase.json
 android/app/google-services.json

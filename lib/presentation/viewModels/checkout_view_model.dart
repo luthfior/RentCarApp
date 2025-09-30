@@ -113,8 +113,8 @@ class CheckoutViewModel extends GetxController {
 
   final List<Map<String, dynamic>> listPayment = [
     {'name': 'DompetKu', 'icon': Icons.wallet},
-    {'name': 'Tunai', 'icon': Icons.account_balance_wallet_rounded},
     {'name': 'Midtrans', 'icon': Icons.payments_rounded},
+    {'name': 'Tunai', 'icon': Icons.account_balance_wallet_rounded},
   ];
 
   String formatCurrency(double amount) {
@@ -140,7 +140,7 @@ class CheckoutViewModel extends GetxController {
     if (balance < finalTotal) {
       Message.error(
         'Gagal melakukan Pembayaran. Saldo Anda tidak mencukupi untuk melakukan pembayaran ini. Silahkan lakukan Top Up untuk isi ulang',
-        fontSize: 13,
+        fontSize: 12,
       );
       return;
     }
@@ -148,6 +148,25 @@ class CheckoutViewModel extends GetxController {
       Get.toNamed('/pin-setup');
     } else {
       Get.toNamed('/pin', arguments: {'isForVerification': false, 'car': car});
+    }
+  }
+
+  Future<void> handlePayment() async {
+    if (isLoading.value) return;
+    isLoading.value = true;
+
+    try {
+      if (paymentMethodPicked.value == 'Midtrans') {
+        await handleMidtransPayment();
+      } else if (paymentMethodPicked.value == 'DompetKu') {
+        goToPin();
+      } else {
+        await cashPayment();
+      }
+    } catch (e, s) {
+      log('ERROR handlePayment: $e\n$s');
+    } finally {
+      isLoading.value = false;
     }
   }
 
@@ -162,28 +181,26 @@ class CheckoutViewModel extends GetxController {
       if (userId != null && sellerOrAdmin.isNotEmpty) {
         if (paymentMethod == 'DompetKu') {
           await postPaymentSuccessActions(resi, paymentMethod, paymentStatus);
-        } else if (paymentMethod == 'Midtrans') {
+        } else if (paymentMethod == 'Tunai') {
           await postPaymentSuccessActions(resi, paymentMethod, paymentStatus);
         } else {
-          await postPaymentSuccessActions(resi, paymentMethod, paymentStatus);
+          log("WebView Midtrans selesai. Navigasi ke halaman complete...");
+          await sendNotification();
+          Message.success('Pembayaran berhasil. Pesanan telah dibuat!');
+          Get.offAllNamed(
+            '/complete',
+            arguments: {'fragmentIndex': 0, 'bookedCar': car},
+          );
         }
-        log(
-          'Produk berhasil ditambahkan ke riwayat pesanan customer: $userId dan seller: $sellerOrAdmin',
-        );
       } else {
         Message.error(
-          'Gagal memulai pembayaran. Silakan pilih metode pembayaran lain atau coba beberapa saat lagi.',
+          'Gagal melakukan pembayaran. Silakan pilih metode pembayaran lain atau coba beberapa saat lagi.',
           fontSize: 12,
         );
         log('User atau pemilik mobil tidak terautentikasi');
       }
-    } catch (e) {
-      log('Gagal memproses pembayaran: $e');
-      Message.error(
-        'Gagal memulai pembayaran. Silakan pilih metode pembayaran lain atau coba beberapa saat lagi.',
-        fontSize: 12,
-      );
-      rethrow;
+    } catch (e, s) {
+      log('Gagal memproses pembayaran: $e\n$s');
     }
   }
 
@@ -241,7 +258,6 @@ class CheckoutViewModel extends GetxController {
         'Pembayaran gagal. Silakan pilih metode pembayaran lain atau coba beberapa saat lagi.',
         fontSize: 12,
       );
-      rethrow;
     }
   }
 
@@ -257,17 +273,31 @@ class CheckoutViewModel extends GetxController {
       car.nameProduct,
       car.priceProduct.round(),
       rentDurationInDays.toInt(),
-      driverCostPerDay.round(),
+      (withDriver ? driverCostPerDay : 0).round(),
       totalInsuranceCost.round(),
       additionalCost.round(),
       finalTotal.round(),
-      car.transmissionProduct,
+      car.brandProduct,
       car.categoryProduct,
     );
 
     if (paymentData != null && paymentData.isNotEmpty) {
       final redirectUrl = paymentData['redirect_url']!;
       final resi = paymentData['order_id']!;
+      final newOrderId = await createInitialOrder(
+        resi,
+        'Midtrans',
+        'Menunggu Pembayaran',
+      );
+      if (newOrderId == null) {
+        log(
+          "Gagal membuat order awal di Firebase. Membatalkan transaksi Midtrans...",
+        );
+        await MidtransService.cancelMidtransTransaction(resi);
+        Message.error('Gagal memproses pesanan. Silakan coba lagi.');
+        return;
+      }
+
       final result = await Get.toNamed(
         '/midtrans-web-view',
         arguments: {'url': redirectUrl, 'resi': resi},
@@ -276,33 +306,16 @@ class CheckoutViewModel extends GetxController {
       if (result == 'cancel') {
         Message.neutral('Pembayaran dibatalkan.');
         log("User membatalkan pembayaran Midtrans");
+        await MidtransService.cancelMidtransTransaction(resi);
+        await deleteCancelledOrder(newOrderId);
         return;
       }
     } else {
       log("terjadi kesalahan pada MidtransService()");
       Message.error(
-        'Terjadi Kesalahan. Gagal memulai pembayaran. Silakan pilih metode pembayaran lain atau coba beberapa saat lagi.',
+        'Gagal melakukan pembayaran. Silakan pilih metode pembayaran lain atau coba beberapa saat lagi.',
         fontSize: 12,
       );
-    }
-  }
-
-  Future<void> handlePayment() async {
-    if (isLoading.value) return;
-    isLoading.value = true;
-
-    try {
-      if (paymentMethodPicked.value == 'Midtrans') {
-        await handleMidtransPayment();
-      } else if (paymentMethodPicked.value == 'DompetKu') {
-        goToPin();
-      } else {
-        await cashPayment();
-      }
-    } catch (e) {
-      Message.error('Gagal memproses pembayaran: $e');
-    } finally {
-      isLoading.value = false;
     }
   }
 
@@ -315,13 +328,10 @@ class CheckoutViewModel extends GetxController {
       if (partner == null) {
         await fetchPartner(car.ownerId, car.ownerType);
       }
-      if (partner == null) {
-        throw Exception("Partner tidak ditemukan, gagal membuat order.");
-      }
       final userId = authVM.account.value?.uid;
       final sellerOrAdmin = car.ownerId;
       if (userId != null && sellerOrAdmin.isNotEmpty) {
-        await UserSource().createOrder(
+        final orderId = await UserSource().createOrder(
           resi,
           authVM.account.value!.uid,
           partner!.uid,
@@ -347,9 +357,14 @@ class CheckoutViewModel extends GetxController {
             totalPrice: finalTotal.round(),
           ),
         );
-        log(
-          'Produk berhasil ditambahkan ke riwayat pesanan customer: $userId dan seller: $sellerOrAdmin',
-        );
+        if (orderId == null) {
+          log('Order gagal dibuat, tidak lanjut ke success.');
+          return;
+        } else {
+          log(
+            'Produk berhasil ditambahkan ke riwayat pesanan customer: $userId dan seller: $sellerOrAdmin',
+          );
+        }
         await sendNotification();
         Message.success('Pembayaran berhasil. Pesanan telah dibuat!');
         Get.offAllNamed(
@@ -359,10 +374,97 @@ class CheckoutViewModel extends GetxController {
       } else {
         throw Exception('User atau pemilik mobil tidak terautentikasi');
       }
+    } catch (e, s) {
+      log('ERROR postPaymentSuccessActions: $e\n$s');
+      Message.error(
+        'Gagal melakukan pembayaran. Silakan pilih metode pembayaran lain atau coba beberapa saat lagi.',
+        fontSize: 12,
+      );
+    }
+  }
+
+  Future<String?> createInitialOrder(
+    String resi,
+    String paymentMethod,
+    String paymentStatus,
+  ) async {
+    if (partner == null) {
+      await fetchPartner(car.ownerId, car.ownerType);
+    }
+    final userId = authVM.account.value?.uid;
+    if (userId != null && partner != null) {
+      return await UserSource().createOrder(
+        resi,
+        userId,
+        partner!.uid,
+        authVM.account.value!.fullName,
+        partner!.storeName,
+        authVM.account.value?.fullAddress,
+        partner!.fullAddress,
+        partner!.role,
+        paymentMethod,
+        paymentStatus,
+        OrderDetail(
+          car: car,
+          withDriver: withDriver,
+          driverCostPerDay: withDriver ? driverCostPerDay.round() : 0,
+          startDate: formatDate(startDate),
+          endDate: formatDate(endDate),
+          duration: rentDurationInDays,
+          subTotal: subTotal.round(),
+          agency: agency!,
+          insurance: insurance!,
+          totalInsuranceCost: totalInsuranceCost.round(),
+          additionalCost: additionalCost.round(),
+          totalPrice: finalTotal.round(),
+        ),
+      );
+    }
+    return null;
+  }
+
+  Future<void> deleteCancelledOrder(String orderId) async {
+    try {
+      final db = FirebaseFirestore.instance;
+      final customerId = authVM.account.value!.uid;
+
+      if (partner == null) {
+        log("Partner null, tidak bisa menghapus order dari sisi seller.");
+        return;
+      }
+
+      final batch = db.batch();
+
+      final orderDocRef = db.collection('Orders').doc(orderId);
+
+      final customerOrderRef = db
+          .collection('Users')
+          .doc(customerId)
+          .collection('myOrders')
+          .doc(orderId);
+
+      final ownerCollection = partner!.role == 'admin' ? 'Admin' : 'Users';
+      final sellerOrderRef = db
+          .collection(ownerCollection)
+          .doc(partner!.uid)
+          .collection('myOrders')
+          .doc(orderId);
+
+      batch.delete(orderDocRef);
+      batch.delete(customerOrderRef);
+      batch.delete(sellerOrderRef);
+
+      await batch.commit();
+
+      log(
+        "Order $orderId yang dibatalkan berhasil dihapus bersih dari database.",
+      );
     } catch (e) {
-      log('Gagal menjalankan aksi pasca-pembayaran: $e');
-      Message.error('Terjadi kesalahan saat menyimpan pesanan Anda.');
-      rethrow;
+      log("Gagal menghapus order $orderId yang dibatalkan: $e");
+      Message.error(
+        'Pembayaran berhasil dibatalkan, tetapi gagal membersihkan pesanan dari riwayat Anda. Anda bisa mengabaikan atau menghapusnya.',
+        fontSize: 12,
+      );
     }
   }
 }

@@ -10,7 +10,7 @@ class ButtonChat extends StatelessWidget {
     required this.text,
     this.textColor,
     this.customTextSize = 16,
-    this.customHeight = 56,
+    this.customHeight = 48,
     required this.customIconSize,
     this.customBorderRadius = const BorderRadius.all(Radius.circular(20)),
   });

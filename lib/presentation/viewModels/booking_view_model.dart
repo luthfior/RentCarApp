@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -45,7 +46,7 @@ class BookingViewModel extends GetxController {
   final Rx<DateTime?> _selectedStartDate = Rx<DateTime?>(null);
   final Rx<DateTime?> _selectedEndDate = Rx<DateTime?>(null);
 
-  final RxBool _withDriver = true.obs;
+  final RxBool _withDriver = false.obs;
   bool get withDriver => _withDriver.value;
   set withDriver(bool value) => _withDriver.value = value;
 
@@ -67,7 +68,6 @@ class BookingViewModel extends GetxController {
 
   @override
   void onInit() {
-    super.onInit();
     super.onInit();
     ever(authVM.account, (_) => _refreshAccountData());
     _refreshAccountData();
@@ -116,7 +116,7 @@ class BookingViewModel extends GetxController {
     controller.text = DateFormat("dd MMM yyyy", "id_ID").format(datePicked);
   }
 
-  void goToCheckout() {
+  Future<void> goToCheckout() async {
     if (fullNameController.text.isEmpty) {
       Message.error('Mohon lengkapi Nama Lengkap Anda.');
       return;
@@ -146,6 +146,14 @@ class BookingViewModel extends GetxController {
         arguments: {'car': _car.value, 'from': 'booking'},
       );
     } else {
+      final pending = await hasPendingOrder(authVM.account.value!.uid, car.id);
+      if (pending) {
+        Message.error(
+          'Anda sudah memesan produk ini dengan status pending. Periksa pada halaman Pesanan Anda.',
+          fontSize: 12,
+        );
+        return;
+      }
       Get.toNamed(
         '/checkout',
         arguments: {
@@ -159,5 +167,17 @@ class BookingViewModel extends GetxController {
         },
       );
     }
+  }
+
+  Future<bool> hasPendingOrder(String customerId, String productId) async {
+    final query = await FirebaseFirestore.instance
+        .collection('Orders')
+        .where('customerId', isEqualTo: customerId)
+        .where('productId', isEqualTo: productId)
+        .where('orderStatus', isEqualTo: 'pending')
+        .limit(1)
+        .get();
+
+    return query.docs.isNotEmpty;
   }
 }

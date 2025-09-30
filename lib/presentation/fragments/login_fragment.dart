@@ -16,6 +16,7 @@ class LoginFragment extends GetView<LoginViewModel> {
   @override
   Widget build(BuildContext context) {
     final connectivity = Get.find<ConnectivityService>();
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Stack(
       children: [
@@ -26,12 +27,11 @@ class LoginFragment extends GetView<LoginViewModel> {
             padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 24),
             children: [
               const Gap(20),
-              ColorFiltered(
-                colorFilter: ColorFilter.mode(
-                  Theme.of(context).colorScheme.onSurface,
-                  BlendMode.srcIn,
-                ),
-                child: Image.asset('assets/logo_text_16_9.png', height: 90),
+              Image.asset(
+                isDarkMode
+                    ? 'assets/logo_text_16_9_dark_mode.png'
+                    : 'assets/logo_text_16_9.png',
+                height: 90,
               ),
               const Gap(20),
               Text(
@@ -103,11 +103,16 @@ class LoginFragment extends GetView<LoginViewModel> {
               Obx(
                 () => ButtonPrimary(
                   text: 'Masuk',
-                  onTap:
-                      (!connectivity.isOnline.value ||
-                          controller.isLoading.value)
+                  onTap: controller.isLoading.value
                       ? null
-                      : () => controller.handleLogin(context),
+                      : () async {
+                          if (connectivity.isOnline.value) {
+                            await controller.handleLogin(context);
+                          } else {
+                            const OfflineBanner();
+                            return;
+                          }
+                        },
                 ),
               ),
               const Gap(20),

@@ -114,19 +114,11 @@ Widget itemOrderCar(
                   children: [
                     Row(
                       children: [
-                        Text(
-                          bookedCar.car.nameProduct,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.poppins(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: Theme.of(Get.context!).colorScheme.onSurface,
-                          ),
-                        ),
-                        Expanded(
+                        Flexible(
                           child: Text(
-                            " (${bookedCar.car.releaseProduct})",
+                            bookedCar.car.nameProduct,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: GoogleFonts.poppins(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
@@ -136,11 +128,19 @@ Widget itemOrderCar(
                             ),
                           ),
                         ),
+                        Text(
+                          " (${bookedCar.car.releaseProduct})",
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Theme.of(Get.context!).colorScheme.onSurface,
+                          ),
+                        ),
                       ],
                     ),
                     const Gap(4),
                     Text(
-                      bookedCar.car.transmissionProduct,
+                      bookedCar.car.brandProduct,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.poppins(

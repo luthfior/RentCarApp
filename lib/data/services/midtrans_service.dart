@@ -16,16 +16,16 @@ class MidtransService {
     String email,
     String phone,
     String fullAddress,
-    String carId,
-    String carNameProduct,
-    int carPriceProduct,
+    String productId,
+    String nameProduct,
+    int priceProduct,
     int rentDurationInDays,
     int driverCostPerDay,
     int totalInsuranceCost,
     int additionalCost,
     int amount,
-    String carTransmissionProduct,
-    String carCategory, {
+    String brandProduct,
+    String categoryProduct, {
     int attempt = 1,
   }) async {
     try {
@@ -51,11 +51,11 @@ class MidtransService {
                 : "Jl. Default No.1",
           },
           "product": {
-            "id": carId,
-            "price": carPriceProduct,
-            "name": carNameProduct,
-            "brand": carTransmissionProduct,
-            "category": carCategory,
+            "id": productId,
+            "price": priceProduct,
+            "name": nameProduct,
+            "brand": brandProduct,
+            "category": categoryProduct,
           },
         }),
       );
@@ -86,16 +86,16 @@ class MidtransService {
           email,
           phone,
           fullAddress,
-          carId,
-          carNameProduct,
-          carPriceProduct,
+          productId,
+          nameProduct,
+          priceProduct,
           rentDurationInDays,
           driverCostPerDay,
           totalInsuranceCost,
           additionalCost,
           amount,
-          carTransmissionProduct,
-          carCategory,
+          brandProduct,
+          categoryProduct,
           attempt: attempt + 1,
         );
       } else {
@@ -117,16 +117,16 @@ class MidtransService {
           email,
           phone,
           fullAddress,
-          carId,
-          carNameProduct,
-          carPriceProduct,
+          productId,
+          nameProduct,
+          priceProduct,
           rentDurationInDays,
           driverCostPerDay,
           totalInsuranceCost,
           additionalCost,
           amount,
-          carTransmissionProduct,
-          carCategory,
+          brandProduct,
+          categoryProduct,
           attempt: attempt + 1,
         );
       } else {
@@ -138,6 +138,26 @@ class MidtransService {
     } catch (e) {
       log("Gagal membuat transaksi. Status: $e");
       return null;
+    }
+  }
+
+  static Future<void> cancelMidtransTransaction(String orderId) async {
+    try {
+      final res = await http.post(
+        Uri.parse("${dotenv.env['BACKEND_URL']}/cancel-transaction"),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"order_id": orderId}),
+      );
+
+      if (res.statusCode == 200) {
+        log('Transaksi $orderId berhasil dibatalkan via backend.');
+      } else {
+        log(
+          'Gagal membatalkan transaksi $orderId. Status: ${res.statusCode}, Body: ${res.body}',
+        );
+      }
+    } catch (e) {
+      log('Error saat memanggil endpoint cancel-transaction: $e');
     }
   }
 }

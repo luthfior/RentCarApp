@@ -52,14 +52,14 @@ class OrderFragment extends GetView<OrderViewModel> {
                   if (controller.status.value == 'empty') {
                     final emptyText = isSeller
                         ? 'Belum ada Pesanan pada Toko kamu untuk saat ini'
-                        : 'Anda belum melakukan Booking sebelumnya. Silahkan lakukan Booking terlebih dahulu';
+                        : 'Anda belum melakukan Booking Produk apapun sebelumnya. Silahkan Booking Produk terlebih dahulu';
                     return Center(
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 40),
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: Text(
                           emptyText,
                           style: GoogleFonts.poppins(
-                            fontSize: 15,
+                            fontSize: 14,
                             fontWeight: FontWeight.w600,
                             color: Theme.of(context).colorScheme.secondary,
                           ),
@@ -131,9 +131,17 @@ class OrderFragment extends GetView<OrderViewModel> {
         Obx(() {
           if (controller.hasShownTutorial.value &&
               controller.status.value == 'success') {
+            if (controller.authVM.account.value!.role != 'customer') {
+              return TutorialOverlay(
+                onDismiss: () => controller.dismissTutorial(),
+                message:
+                    "Geser ke kiri atau kanan pada item untuk menampilkan Opsi",
+                icon: Icons.swipe,
+              );
+            }
             return TutorialOverlay(
               onDismiss: () => controller.dismissTutorial(),
-              message: "Geser kiri pada item untuk menampilkan Opsi",
+              message: "Geser ke kiri pada item untuk menampilkan Opsi",
               icon: Icons.swipe_left,
             );
           }
@@ -174,6 +182,8 @@ class OrderFragment extends GetView<OrderViewModel> {
                           bookedCar.order.customerId,
                           bookedCar.order.sellerId,
                         );
+                      } else {
+                        return;
                       }
                     } else {
                       const OfflineBanner();
@@ -204,8 +214,11 @@ class OrderFragment extends GetView<OrderViewModel> {
                           bookedCar.order.customerId,
                           bookedCar.order.sellerId,
                           bookedCar.car.id,
+                          bookedCar.order.paymentMethod,
                           bookedCar.order.orderDetail.totalPrice,
                         );
+                      } else {
+                        return;
                       }
                     } else {
                       const OfflineBanner();
@@ -252,13 +265,12 @@ class OrderFragment extends GetView<OrderViewModel> {
                     title: 'Hapus Riwayat Pesanan',
                     content:
                         'Apakah Anda yakin ingin menghapus riwayat pesanan ini secara permanen?',
-                    confirmText: 'Ya, Konfirmasi',
+                    confirmText: 'Ya, Hapus',
                   );
                   if (confirm == true) {
-                    controller.deleteOrder(
-                      bookedCar.order.id,
-                      bookedCar.order.customerId,
-                    );
+                    controller.deleteOrder(bookedCar.order.id);
+                  } else {
+                    return;
                   }
                 } else {
                   const OfflineBanner();

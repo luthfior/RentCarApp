@@ -54,11 +54,28 @@ class AddProductPage extends GetView<AddProductViewModel> {
                     Expanded(
                       child: Obx(() {
                         if (controller.isLoading.value) {
-                          return const Center(
-                            child: CircularProgressIndicator(
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                Color(0xffFF5722),
-                              ),
+                          return Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const CircularProgressIndicator(
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Color(0xffFF5722),
+                                  ),
+                                ),
+                                const Gap(16),
+                                Text(
+                                  'Sedang ${controller.arguments['isEdit'] ? 'Sunting' : 'Menambahkan'} Produk, mohon tunggu...',
+                                  textAlign: TextAlign.center,
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w400,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.secondary,
+                                  ),
+                                ),
+                              ],
                             ),
                           );
                         }
@@ -84,7 +101,7 @@ class AddProductPage extends GetView<AddProductViewModel> {
                                 _buildInputForm(
                                   context,
                                   controller.nameProductController,
-                                  'Nama Produk',
+                                  'Nama Produk (Contoh: Avanza, Vario, dsb)',
                                   controller.nameError.value,
                                   controller.nameFocus,
                                   customBorderRadius: 20,
@@ -123,31 +140,84 @@ class AddProductPage extends GetView<AddProductViewModel> {
                                   ],
                                 ),
                                 const Gap(16),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: _buildDropdown(
-                                        context,
-                                        'Kategori',
-                                        controller.categoryError.value,
-                                        controller.categoryFocus,
-                                        controller.categories,
-                                        controller.selectedCategory,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 16),
-                                    Expanded(
-                                      child: _buildDropdown(
-                                        context,
-                                        'Transmisi',
-                                        controller.transmissionError.value,
-                                        controller.transmissionFocus,
-                                        controller.transmissions,
-                                        controller.selectedTransmission,
-                                      ),
-                                    ),
-                                  ],
+                                _buildDropdown(
+                                  context,
+                                  'Kategori',
+                                  controller.categoryError.value,
+                                  controller.categoryFocus,
+                                  controller.newCategories,
+                                  controller.selectedCategory,
                                 ),
+                                Obx(() {
+                                  final category =
+                                      controller.selectedCategory.value;
+                                  if (category == null) {
+                                    return const SizedBox.shrink();
+                                  }
+                                  return Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Gap(16),
+                                      if (category == 'Lainnya')
+                                        _buildInputForm(
+                                          context,
+                                          controller.customCategoryController,
+                                          'Jenis Kategori Produk (Contoh: Laptop, dsb)',
+                                          controller.customCategoryError.value,
+                                          controller.customCategoryFocus,
+                                          isTextCapital: true,
+                                          maxLines: null,
+                                          minLines: 1,
+                                          customBorderRadius: 20,
+                                        ),
+                                      if (category != 'Lainnya')
+                                        Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Expanded(
+                                              child: _buildDropdown(
+                                                context,
+                                                'Sumber Energi',
+                                                controller
+                                                    .energySourceError
+                                                    .value,
+                                                controller.energySourceFocus,
+                                                controller
+                                                    .availableEnergySources
+                                                    .toList(),
+                                                controller.selectedEnergySource,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 16),
+                                            Expanded(
+                                              child: _buildDropdown(
+                                                context,
+                                                'Transmisi',
+                                                controller
+                                                    .transmissionError
+                                                    .value,
+                                                controller.transmissionFocus,
+                                                controller
+                                                    .availableTransmissions
+                                                    .toList(),
+                                                controller.selectedTransmission,
+                                                isEnabled:
+                                                    controller
+                                                        .selectedEnergySource
+                                                        .value
+                                                        ?.toLowerCase() !=
+                                                    'listrik',
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                    ],
+                                  );
+                                }),
+                                const Gap(16),
+                                _buildDynamicBrandField(context),
                                 const Gap(16),
                                 Obx(
                                   () => _buildInputForm(
@@ -156,6 +226,7 @@ class AddProductPage extends GetView<AddProductViewModel> {
                                     'Deskripsi Produk',
                                     controller.descriptionError.value,
                                     controller.descriptionFocus,
+                                    isTextCapital: true,
                                     maxLines: null,
                                     minLines: 1,
                                     customBorderRadius: 20,
@@ -248,11 +319,24 @@ class AddProductPage extends GetView<AddProductViewModel> {
                                   ),
                                 ),
                                 const Gap(10),
-                                _buildImagePicker(
-                                  context,
-                                  controller.pickedImage,
-                                  controller.imageUrl,
-                                  controller.pickImage,
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    _buildImagePicker(
+                                      context,
+                                      controller.pickedImage,
+                                      controller.imageUrl,
+                                      controller.pickImage,
+                                    ),
+                                    const Gap(8),
+                                    Text(
+                                      '*Sesuaikan foto anda dengan box diatas agar mendapatkan foto detail produk yang lebih baik',
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 12,
+                                        color: const Color(0xffFF5722),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                                 const Gap(50),
                               ],
@@ -284,17 +368,7 @@ class AddProductPage extends GetView<AddProductViewModel> {
                               : () async {
                                   if (connectivity.isOnline.value) {
                                     if (connectivity.isOnline.value) {
-                                      bool? confirm = await controller
-                                          .showConfirmationDialog(
-                                            context: context,
-                                            title: 'Hapus Produk',
-                                            content:
-                                                'Apakah Anda yakin ingin menghapus produk ini secara permanen?',
-                                            confirmText: 'Ya, Hapus',
-                                          );
-                                      if (confirm == true) {
-                                        await controller.handleAddProduct();
-                                      }
+                                      await controller.handleAddProduct();
                                     } else {
                                       const OfflineBanner();
                                       return;
@@ -362,14 +436,14 @@ class AddProductPage extends GetView<AddProductViewModel> {
     String? errorText,
     FocusNode focusNode,
     List<String> items,
-    Rx<String?> selectedValue,
-  ) {
+    Rx<String?> selectedValue, {
+    bool isEnabled = true,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Obx(() {
           return SizedBox(
-            height: 50,
             child: DropdownButtonFormField<String>(
               menuMaxHeight: 250,
               isDense: true,
@@ -401,7 +475,7 @@ class AddProductPage extends GetView<AddProductViewModel> {
                 ),
                 filled: true,
                 fillColor: Theme.of(context).colorScheme.surface,
-                contentPadding: const EdgeInsets.fromLTRB(16, 24, 18, 10),
+                contentPadding: const EdgeInsets.fromLTRB(16, 16, 18, 10),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(20),
                   borderSide: BorderSide.none,
@@ -415,10 +489,12 @@ class AddProductPage extends GetView<AddProductViewModel> {
                 ),
                 errorText: errorText,
               ),
-              onChanged: (String? value) {
-                selectedValue.value = value;
-                log('Pilihan $label: $value');
-              },
+              onChanged: isEnabled
+                  ? (String? value) {
+                      selectedValue.value = value;
+                      log('Pilihan $label: $value');
+                    }
+                  : null,
               icon: Icon(
                 Icons.keyboard_arrow_down_rounded,
                 size: 18,
@@ -430,6 +506,80 @@ class AddProductPage extends GetView<AddProductViewModel> {
         }),
       ],
     );
+  }
+
+  Widget _buildDynamicBrandField(BuildContext context) {
+    return Obx(() {
+      final category = controller.selectedCategory.value;
+
+      if (category == null) {
+        return _buildInputForm(
+          context,
+          TextEditingController(),
+          'Brand Produk',
+          controller.brandError.value,
+          controller.brandFocus,
+          customBorderRadius: 20,
+          onTapBox: () {
+            if (category == null) {
+              Message.error(
+                'Anda harus memilih Kategori Produk terlebih dahulu',
+                fontSize: 12,
+              );
+            } else {
+              return;
+            }
+          },
+        );
+      }
+
+      if (category == 'Lainnya') {
+        return _buildInputForm(
+          context,
+          controller.customBrandController,
+          'Brand Produk',
+          controller.brandError.value,
+          controller.brandFocus,
+          customBorderRadius: 20,
+          isTextCapital: true,
+          maxLines: null,
+          minLines: 1,
+        );
+      } else {
+        if (controller.availableBrands.isEmpty) {
+          return const SizedBox.shrink();
+        }
+        return Column(
+          children: [
+            _buildDropdown(
+              context,
+              'Brand Produk',
+              controller.brandError.value,
+              controller.brandFocus,
+              controller.availableBrands.toList(),
+              controller.selectedBrand,
+            ),
+            Obx(() {
+              if (controller.selectedBrand.value == 'Lainnya') {
+                return Padding(
+                  padding: const EdgeInsets.only(top: 16.0),
+                  child: _buildInputForm(
+                    context,
+                    controller.customBrandController,
+                    'Masukkan Nama Brand',
+                    controller.customBrandError.value,
+                    controller.customBrandFocus,
+                    customBorderRadius: 20,
+                  ),
+                );
+              } else {
+                return const SizedBox.shrink();
+              }
+            }),
+          ],
+        );
+      }
+    });
   }
 
   Widget _buildImagePicker(

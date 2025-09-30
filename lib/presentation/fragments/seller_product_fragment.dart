@@ -88,9 +88,9 @@ class SellerProductFragment extends GetView<SellerViewModel> {
             child: FloatingActionButton(
               backgroundColor: Theme.of(Get.context!).colorScheme.surface,
               shape: const CircleBorder(),
-              onPressed: () {
+              onPressed: () async {
                 if (connectivity.isOnline.value) {
-                  Get.toNamed('/add-product', arguments: {'isEdit': false});
+                  controller.goToAddProductPage();
                 } else {
                   const OfflineBanner();
                   return;
@@ -109,8 +109,9 @@ class SellerProductFragment extends GetView<SellerViewModel> {
               controller.status.value == 'success') {
             return TutorialOverlay(
               onDismiss: () => controller.dismissTutorial(),
-              message: "Geser kiri pada item untuk menampilkan Opsi",
-              icon: Icons.swipe_left,
+              message:
+                  "Geser ke kiri atau kanan pada item untuk menampilkan Opsi",
+              icon: Icons.swipe,
             );
           }
           return const SizedBox.shrink();
@@ -306,11 +307,7 @@ class SellerProductFragment extends GetView<SellerViewModel> {
                     onDelete: () async {
                       if (connectivity.isOnline.value) {
                         controller.myProducts.removeAt(index);
-                        await controller.sellerSource.deleteProduct(
-                          car.id,
-                          authVM.account.value!.uid,
-                          authVM.account.value!.role,
-                        );
+                        await controller.deleteProduct(car.id);
                       } else {
                         const OfflineBanner();
                         return;
@@ -385,11 +382,7 @@ class SellerProductFragment extends GetView<SellerViewModel> {
                 onDelete: () async {
                   if (connectivity.isOnline.value) {
                     controller.myProducts.removeAt(index);
-                    await controller.sellerSource.deleteProduct(
-                      car.id,
-                      authVM.account.value!.uid,
-                      authVM.account.value!.role,
-                    );
+                    await controller.deleteProduct(car.id);
                   } else {
                     const OfflineBanner();
                     return;
@@ -425,22 +418,8 @@ class SellerProductFragment extends GetView<SellerViewModel> {
         motion: const ScrollMotion(),
         children: [
           SlidableAction(
-            onPressed: (context) async {
-              if (connectivity.isOnline.value) {
-                bool? confirm = await controller.showConfirmationDialog(
-                  context: context,
-                  title: 'Hapus Produk?',
-                  content:
-                      'Apakah Anda yakin ingin menghapus produk ini secara permanen?',
-                  confirmText: 'Ya, Hapus',
-                );
-                if (confirm == true) {
-                  onDelete();
-                }
-              } else {
-                const OfflineBanner();
-                return;
-              }
+            onPressed: (context) {
+              onDelete();
             },
             backgroundColor: const Color(0xffFF2056),
             foregroundColor: Colors.white,

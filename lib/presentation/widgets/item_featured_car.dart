@@ -126,7 +126,7 @@ Widget itemFeaturedCar(Car car, EdgeInsetsGeometry margin, bool isTrending) {
                       ),
                     ),
                     Text(
-                      car.transmissionProduct,
+                      car.brandProduct,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.poppins(

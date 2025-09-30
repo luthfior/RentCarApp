@@ -242,29 +242,14 @@ class DetailPage extends GetView<DetailViewModel> {
                                             ),
                                           ),
                                         ),
-                                        RichText(
-                                          text: TextSpan(
-                                            text:
-                                                '${controller.car.purchasedProduct}',
-                                            style: GoogleFonts.poppins(
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.w600,
-                                              color: Theme.of(
-                                                Get.context!,
-                                              ).colorScheme.onSurface,
-                                            ),
-                                            children: [
-                                              TextSpan(
-                                                text: 'x disewa',
-                                                style: GoogleFonts.poppins(
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.w600,
-                                                  color: Theme.of(
-                                                    Get.context!,
-                                                  ).colorScheme.onSurface,
-                                                ),
-                                              ),
-                                            ],
+                                        Text(
+                                          "${controller.car.purchasedProduct}x disewa",
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600,
+                                            color: Theme.of(
+                                              Get.context!,
+                                            ).colorScheme.onSurface,
                                           ),
                                         ),
                                       ],
@@ -439,23 +424,70 @@ class DetailPage extends GetView<DetailViewModel> {
   }
 
   Widget _buildInfoCards(BuildContext context, Car car) {
-    final items = [
-      {
-        "title": "Tahun Rilis",
-        "value": car.releaseProduct.toString(),
-        "icon": Icons.calendar_today_outlined,
-      },
-      {
-        "title": "Transmisi",
-        "value": car.transmissionProduct,
+    final List<Map<String, dynamic>> items = [];
+    IconData getCategoryIcon() {
+      switch (car.categoryProduct.toLowerCase()) {
+        case 'truk':
+          return Icons.local_shipping;
+        case 'mobil':
+          return Icons.directions_car_rounded;
+        case 'motor':
+          return Icons.motorcycle_rounded;
+        case 'sepeda':
+          return Icons.pedal_bike_rounded;
+        default:
+          return Icons.category_outlined;
+      }
+    }
+
+    IconData getEnergySourceIcon() {
+      switch (car.energySourceProduct?.toLowerCase()) {
+        case 'listrik':
+          return Icons.battery_charging_full_rounded;
+        case 'hybrid' || 'non-listrik':
+          return Icons.energy_savings_leaf;
+        default:
+          return Icons.local_gas_station_rounded;
+      }
+    }
+
+    items.add({
+      "title": "Kategori",
+      "value": car.categoryProduct,
+      "icon": getCategoryIcon(),
+    });
+    items.add({
+      "title": "Brand",
+      "value": car.brandProduct,
+      "icon": Icons.sell_outlined,
+    });
+    items.add({
+      "title": "Tahun Rilis",
+      "value": car.releaseProduct.toString(),
+      "icon": Icons.calendar_month_outlined,
+    });
+
+    if (car.categoryProduct == 'Mobil' ||
+        car.categoryProduct == 'Truk' ||
+        car.categoryProduct == 'Motor' ||
+        car.categoryProduct == 'Sepeda') {
+      items.add({
+        "title": (car.categoryProduct == 'Sepeda') ? 'Jenis Gigi' : 'Transmisi',
+        "value": car.transmissionProduct ?? '-',
         "icon": Icons.settings_suggest_outlined,
-      },
-      {
-        "title": "Kategori",
-        "value": car.categoryProduct,
-        "icon": Icons.category_outlined,
-      },
-    ];
+      });
+    }
+
+    if (car.categoryProduct == 'Mobil' ||
+        car.categoryProduct == 'Truk' ||
+        car.categoryProduct == 'Motor' ||
+        car.categoryProduct == 'Sepeda') {
+      items.add({
+        "title": "Bahan Bakar",
+        "value": car.energySourceProduct ?? '-',
+        "icon": getEnergySourceIcon(),
+      });
+    }
 
     return SizedBox(
       height: 175,
@@ -464,7 +496,7 @@ class DetailPage extends GetView<DetailViewModel> {
         shrinkWrap: true,
         scrollDirection: Axis.horizontal,
         itemCount: items.length,
-        separatorBuilder: (context, index) => const SizedBox(width: 24),
+        separatorBuilder: (context, index) => const SizedBox(width: 16),
         itemBuilder: (context, index) {
           final item = items[index];
           return _infoCard(
@@ -485,8 +517,8 @@ class DetailPage extends GetView<DetailViewModel> {
     IconData icon,
   ) {
     List<String> valueParts = [value];
-    if (title == 'Kategori' && value.contains(' | ')) {
-      valueParts = value.split(' | ').map((part) => part.trim()).toList();
+    if (title == 'Brand' && value.contains(' ')) {
+      valueParts = value.split(' ').map((part) => part.trim()).toList();
     }
     return SizedBox(
       width: 150,
@@ -530,15 +562,18 @@ class DetailPage extends GetView<DetailViewModel> {
                 ),
               ),
             ] else ...[
-              Text(
-                valueParts[0],
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.poppins(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xff9E9EAA),
+              Padding(
+                padding: const EdgeInsetsGeometry.symmetric(horizontal: 8),
+                child: Text(
+                  valueParts[0],
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.poppins(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xff9E9EAA),
+                  ),
                 ),
               ),
             ],
@@ -552,14 +587,13 @@ class DetailPage extends GetView<DetailViewModel> {
     return GestureDetector(
       onTap: () async {
         if (connectivity.isOnline.value) {
-          Get.toNamed('/booking', arguments: car);
+          await controller.handleBooked();
         } else {
           const OfflineBanner();
           return;
         }
       },
       child: Container(
-        height: 80,
         decoration: BoxDecoration(
           color: const Color(0xff1F2533),
           borderRadius: BorderRadius.circular(20),
@@ -569,7 +603,7 @@ class DetailPage extends GetView<DetailViewModel> {
                 : const Color(0xff070623),
           ),
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         child: Row(
           children: [
             Expanded(

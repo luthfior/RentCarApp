@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Account {
   final String uid;
   final String fullName;
@@ -21,6 +23,7 @@ class Account {
   final Map? favProducts;
   final Map? myOrders;
   final List<String>? fcmTokens;
+  final Timestamp createdAt;
   Account({
     required this.uid,
     required this.fullName,
@@ -45,6 +48,7 @@ class Account {
     this.favProducts,
     this.myOrders,
     this.fcmTokens,
+    required this.createdAt,
   });
 
   Map<String, dynamic> toJson() {
@@ -71,10 +75,23 @@ class Account {
       'favProducts': favProducts,
       'myOrders': myOrders,
       'fcmTokens': fcmTokens,
+      'createdAt': createdAt,
     };
   }
 
+  Map<String, dynamic> toMapForSession() {
+    final map = toJson();
+    map['createdAt'] = createdAt.toDate().toIso8601String();
+    return map;
+  }
+
   factory Account.fromJson(Map<String, dynamic> json) {
+    Timestamp parseTimestamp(dynamic value) {
+      if (value is Timestamp) return value;
+      if (value is String) return Timestamp.fromDate(DateTime.parse(value));
+      return Timestamp.now();
+    }
+
     return Account(
       uid: json['uid'] as String,
       fullName: json['fullName'] as String,
@@ -104,6 +121,7 @@ class Account {
       fcmTokens: json['fcmTokens'] != null
           ? List<String>.from(json['fcmTokens'])
           : null,
+      createdAt: parseTimestamp(json['createdAt']),
     );
   }
 }

@@ -191,7 +191,9 @@ class ProfileViewModel extends GetxController {
           discoverVM.setFragmentIndex(4);
         }
       } else if (fromPage == 'booking') {
-        Get.offAllNamed('/booking', arguments: car);
+        Get.offNamed('/booking', arguments: car);
+      } else if (fromPage == 'add-product') {
+        Get.offNamed('/add-product', arguments: {'isEdit': false});
       } else {
         Get.back();
       }

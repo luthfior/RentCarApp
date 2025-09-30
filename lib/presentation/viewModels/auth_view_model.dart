@@ -52,7 +52,7 @@ class AuthViewModel extends GetxController {
         if (userDocSnapshot.exists) {
           final updatedAccount = Account.fromJson(userDocSnapshot.data()!);
           account.value = updatedAccount;
-          await DSession.setUser(userDocSnapshot.data()!);
+          await DSession.setUser(updatedAccount.toMapForSession());
           log('Data pengguna dari koleksi Users berhasil dimuat');
           return true;
         }
@@ -64,7 +64,7 @@ class AuthViewModel extends GetxController {
         if (adminDocSnapshot.exists) {
           final updatedAccount = Account.fromJson(adminDocSnapshot.data()!);
           account.value = updatedAccount;
-          await DSession.setUser(adminDocSnapshot.data()!);
+          await DSession.setUser(updatedAccount.toMapForSession());
           log('Data pengguna dari koleksi Admin berhasil dimuat');
           return true;
         }

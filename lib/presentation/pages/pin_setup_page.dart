@@ -64,7 +64,8 @@ class PinSetupPage extends GetView<PinViewModel> {
           children: [
             Obx(() {
               final onPressed =
-                  controller.isPinComplete.value || !connectivity.isOnline.value
+                  (controller.isPinComplete.value ||
+                      connectivity.isOnline.value)
                   ? () async {
                       if (connectivity.isOnline.value) {
                         final newPin = controller.getPin;

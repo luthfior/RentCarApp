@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -27,7 +28,6 @@ class OrderViewModel extends GetxController {
   final sellerSource = SellerSource();
 
   final status = ''.obs;
-  final isSeller = false.obs;
   final myOrders = <BookedCar>[].obs;
   StreamSubscription<List<BookedCar>>? _ordersSubscription;
   final hasShownTutorial = false.obs;
@@ -41,9 +41,6 @@ class OrderViewModel extends GetxController {
   void onInit() {
     super.onInit();
     if (authVM.account.value != null) {
-      isSeller.value =
-          authVM.account.value!.role == 'seller' ||
-          authVM.account.value!.role == 'admin';
       startOrdersListener();
     } else {
       myOrders.clear();
@@ -71,6 +68,7 @@ class OrderViewModel extends GetxController {
   Future<void> startOrdersListener() async {
     status.value = 'loading';
     final userId = authVM.account.value!.uid;
+    final userRole = authVM.account.value!.role;
 
     if (authVM.account.value?.uid == null) {
       status.value = 'empty';
@@ -80,7 +78,7 @@ class OrderViewModel extends GetxController {
 
     _ordersSubscription?.cancel();
     _ordersSubscription = userSource
-        .fetchBookedCarStream(userId, isSeller.value)
+        .fetchBookedCarStream(userId, userRole)
         .listen(
           (updatedOrders) {
             if (updatedOrders.isEmpty) {
@@ -154,7 +152,8 @@ class OrderViewModel extends GetxController {
     String? message,
   }) async {
     final currentUser = authVM.account.value!;
-    final isCurrentUserSeller = isSeller.value;
+    final isCurrentUserSeller =
+        currentUser.role == 'admin' || currentUser.role == 'seller';
 
     final String buyerId = isCurrentUserSeller
         ? bookedCar.order.customerId
@@ -277,6 +276,7 @@ class OrderViewModel extends GetxController {
     String customerId,
     String sellerId,
     String carId,
+    String paymentMethod,
     num orderPrice,
   ) async {
     try {
@@ -286,8 +286,6 @@ class OrderViewModel extends GetxController {
         return;
       }
       await SellerSource().updateOrderStatus(orderId, 'success');
-      await userSource.updateUserBalance(customerId, orderPrice.toDouble());
-      log('Saldo berhasil dipotong');
       await CarSource.updateProductAfterPurchase(carId);
       log('Jumlah produk yang disewa berhasil diupdate');
       await SellerSource().markOrderAsSuccess(
@@ -296,7 +294,14 @@ class OrderViewModel extends GetxController {
         authVM.account.value!.role,
         orderPrice.round(),
       );
-      Message.success('Silahkan Cek Saldo Anda di Pengaturan');
+      if (paymentMethod == 'DompetKu') {
+        await userSource.updateUserBalance(customerId, orderPrice.toDouble());
+        log('Saldo berhasil dipotong');
+      }
+      Message.success(
+        'Pesanan berhasil dikonfirmasi. Silahkan Cek Saldo Anda di Pengaturan',
+        fontSize: 12,
+      );
       log('Pesanan dengan ID $orderId berhasil dikonfirmasi');
       await sendNotification(
         customerId,
@@ -339,6 +344,64 @@ class OrderViewModel extends GetxController {
     }
   }
 
+  Future<void> deleteOrder(String orderId) async {
+    if (orderId.isEmpty) {
+      Message.error('Gagal menghapus pesanan: ID tidak valid.');
+      return;
+    }
+
+    Get.dialog(
+      Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Color(0xffFF5722)),
+            ),
+            const Gap(16),
+            Text(
+              'Sedang menghapus Proddduk, mohon tunggu...',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                fontWeight: FontWeight.w400,
+                color: Theme.of(Get.context!).colorScheme.secondary,
+              ),
+            ),
+          ],
+        ),
+      ),
+      barrierDismissible: false,
+    );
+
+    try {
+      final currentUser = authVM.account.value!;
+      final userIsCustomer = currentUser.role == 'customer';
+      await firestore.collection('Orders').doc(orderId).update({
+        if (userIsCustomer) 'deletedByCustomer': true,
+        if (!userIsCustomer) 'deletedBySeller': true,
+      });
+
+      final collectionName = currentUser.role == 'admin' ? 'Admin' : 'Users';
+      await firestore
+          .collection(collectionName)
+          .doc(currentUser.uid)
+          .collection('myOrders')
+          .doc(orderId)
+          .delete();
+
+      Get.back();
+      Message.success('Riwayat pesanan berhasil dihapus.');
+      log(
+        'Referensi order $orderId berhasil dihapus dari myOrders milik ${currentUser.uid}.',
+      );
+    } catch (e) {
+      Get.back();
+      Message.error('Terjadi kesalahan saat menghapus pesanan.');
+      log('Gagal menghapus referensi order $orderId: $e');
+    }
+  }
+
   Future<bool> showConfirmationDialog({
     required BuildContext context,
     required String title,
@@ -353,7 +416,7 @@ class OrderViewModel extends GetxController {
             title: Text(
               title,
               style: GoogleFonts.poppins(
-                fontSize: 22,
+                fontSize: 20,
                 fontWeight: FontWeight.w600,
                 color: Theme.of(Get.context!).colorScheme.onSurface,
               ),
@@ -361,7 +424,7 @@ class OrderViewModel extends GetxController {
             content: Text(
               content,
               style: GoogleFonts.poppins(
-                fontSize: 16,
+                fontSize: 14,
                 fontWeight: FontWeight.w500,
                 color: Theme.of(Get.context!).colorScheme.onSurface,
               ),
@@ -405,51 +468,5 @@ class OrderViewModel extends GetxController {
           ),
         ) ??
         false;
-  }
-
-  Future<void> deleteOrder(String orderId, String customerId) async {
-    if (orderId.isEmpty || customerId.isEmpty) {
-      Message.error('Gagal menghapus pesanan: ID tidak valid.');
-      return;
-    }
-
-    try {
-      Get.dialog(
-        const Center(
-          child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Color(0xffFF5722)),
-          ),
-        ),
-        barrierDismissible: false,
-      );
-
-      await firestore.collection('Orders').doc(orderId).delete();
-
-      await firestore
-          .collection('Users')
-          .doc(customerId)
-          .collection('myOrders')
-          .doc(orderId)
-          .delete();
-
-      final sellerId = authVM.account.value!.uid;
-      final sellerCollection = authVM.account.value!.role == 'admin'
-          ? 'Admin'
-          : 'Users';
-      await firestore
-          .collection(sellerCollection)
-          .doc(sellerId)
-          .collection('myOrders')
-          .doc(orderId)
-          .delete();
-
-      Get.back();
-      Message.success('Riwayat pesanan berhasil dihapus.');
-      log('Order $orderId berhasil dihapus dari semua koleksi.');
-    } catch (e) {
-      Get.back();
-      Message.error('Terjadi kesalahan saat menghapus pesanan.');
-      log('Gagal menghapus order $orderId: $e');
-    }
   }
 }

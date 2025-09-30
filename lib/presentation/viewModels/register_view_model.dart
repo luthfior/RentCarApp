@@ -53,15 +53,25 @@ class RegisterViewModel extends GetxController {
 
   void validateInputs() {
     if (isFullNameTouched.value) {
-      fullNameError.value = fullNameController.text.isEmpty
-          ? 'Nama lengkap tidak boleh kosong'
-          : null;
+      final cleanFullName = fullNameController.text.replaceAll(' ', '');
+      if (fullNameController.text.isEmpty) {
+        fullNameError.value = 'Nama lengkap tidak boleh kosong';
+      } else if (cleanFullName.length > 15) {
+        fullNameError.value = 'Nama lengkap maksimal 15 huruf';
+      } else {
+        fullNameError.value = null;
+      }
     }
 
     if (selectedRole.value == 'seller' && isStoreNameTouched.value) {
-      storeNameError.value = storeNameController.text.isEmpty
-          ? 'Nama Toko tidak boleh kosong'
-          : null;
+      final cleanStoreName = storeNameController.text.replaceAll(' ', '');
+      if (storeNameController.text.isEmpty) {
+        storeNameError.value = 'Nama Toko tidak boleh kosong';
+      } else if (cleanStoreName.length > 15) {
+        storeNameError.value = 'Nama Toko maksimal 15 huruf';
+      } else {
+        storeNameError.value = null;
+      }
     } else {
       storeNameError.value = null;
     }
@@ -87,10 +97,10 @@ class RegisterViewModel extends GetxController {
     }
   }
 
-  void handleRegister(
+  Future<void> handleRegister(
     BuildContext context, {
     required VoidCallback onRegisterSuccess,
-  }) {
+  }) async {
     isFullNameTouched.value = true;
     if (selectedRole.value == 'seller') {
       isStoreNameTouched.value = true;

@@ -8,10 +8,12 @@ import 'package:rent_car_app/presentation/bindings/checkout_binding.dart';
 import 'package:rent_car_app/presentation/bindings/discover_binding.dart';
 import 'package:rent_car_app/presentation/bindings/edit_profile_binding.dart';
 import 'package:rent_car_app/presentation/bindings/location_binding.dart';
+import 'package:rent_car_app/presentation/bindings/onboarding_binding.dart';
 import 'package:rent_car_app/presentation/bindings/pin_binding.dart';
 import 'package:rent_car_app/presentation/bindings/pin_setup_binding.dart';
 import 'package:rent_car_app/presentation/bindings/add_product_binding.dart';
 import 'package:rent_car_app/presentation/bindings/top_up_binding.dart';
+import 'package:rent_car_app/presentation/pages/about_app_page.dart';
 import 'package:rent_car_app/presentation/pages/add_product_page.dart';
 import 'package:rent_car_app/presentation/pages/auth_page.dart';
 import 'package:rent_car_app/presentation/pages/booking_page.dart';
@@ -43,7 +45,11 @@ class AppPages {
 
   static final routes = [
     GetPage(name: AppRoutes.splashScreen, page: () => const SplashScreen()),
-    GetPage(name: AppRoutes.onboarding, page: () => OnBoardingPage()),
+    GetPage(
+      name: AppRoutes.onboarding,
+      page: () => OnBoardingPage(),
+      binding: OnboardingBinding(),
+    ),
     GetPage(
       name: AppRoutes.discover,
       page: () => DiscoverPage(),
@@ -133,5 +139,6 @@ class AppPages {
         );
       }),
     ),
+    GetPage(name: AppRoutes.aboutApp, page: () => const AboutAppPage()),
   ];
 }

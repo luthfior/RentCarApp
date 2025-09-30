@@ -185,4 +185,28 @@ class DetailViewModel extends GetxController {
       await getDetail(idProduct!);
     }
   }
+
+  Future<void> handleBooked() async {
+    final pending = await hasPendingOrder(authVM.account.value!.uid, car.id);
+    if (pending) {
+      Message.error(
+        'Anda sudah memesan produk ini dengan status pending. Periksa pada halaman Pesanan Anda.',
+        fontSize: 12,
+      );
+      return;
+    }
+    Get.toNamed('/booking', arguments: car);
+  }
+
+  Future<bool> hasPendingOrder(String customerId, String productId) async {
+    final query = await firestore
+        .collection('Orders')
+        .where('customerId', isEqualTo: customerId)
+        .where('productId', isEqualTo: productId)
+        .where('orderStatus', isEqualTo: 'pending')
+        .limit(1)
+        .get();
+
+    return query.docs.isNotEmpty;
+  }
 }

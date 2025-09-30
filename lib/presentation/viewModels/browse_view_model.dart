@@ -3,13 +3,14 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:rent_car_app/core/constants/message.dart';
 import 'package:rent_car_app/data/sources/car_source.dart';
 import 'package:rent_car_app/data/models/car.dart';
 import 'package:rent_car_app/data/sources/seller_source.dart';
 import 'package:rent_car_app/presentation/viewModels/auth_view_model.dart';
 
 class BrowseViewModel extends GetxController {
-  final Rx<Car?> car = Rx<Car?>(null);
+  final Rx<Car?> bookedCar = Rx<Car?>(null);
   final authVM = Get.find<AuthViewModel>();
   final sellerSource = SellerSource();
 
@@ -27,8 +28,18 @@ class BrowseViewModel extends GetxController {
   final _status = ''.obs;
   String get status => _status.value;
   set status(String value) => _status.value = value;
+  final isLoadingDelete = false.obs;
 
-  final categories = <String>[].obs;
+  final chipItems = <String>[].obs;
+
+  final RxString chipMode = 'brands'.obs;
+  final List<String> standardCategories = [
+    'Truk',
+    'Mobil',
+    'Motor',
+    'Sepeda',
+    'Lainnya',
+  ];
   final selectedCategory = ''.obs;
 
   final TextEditingController searchController = TextEditingController();
@@ -48,7 +59,7 @@ class BrowseViewModel extends GetxController {
     super.onInit();
     if (authVM.account.value != null) {
       startCarListeners();
-      fetchCategories();
+      loadChipData();
     }
     searchController.addListener(() {
       _searchQuery.value = searchController.text;
@@ -69,9 +80,27 @@ class BrowseViewModel extends GetxController {
     _searchResults.clear();
   }
 
-  Future<void> fetchCategories() async {
-    final result = await CarSource.fetchCategories();
-    categories.assignAll(result);
+  Future<void> loadChipData() async {
+    try {
+      final uniqueCategories = await CarSource.fetchUniqueCategories();
+
+      if (uniqueCategories.length > 4) {
+        chipMode.value = 'categories';
+        chipItems.assignAll(standardCategories);
+        log(
+          'Mode chip diubah ke KATEGORI karena ada ${uniqueCategories.length} kategori unik.',
+        );
+      } else {
+        chipMode.value = 'brands';
+        final fetchedBrands = await CarSource.fetchBrands();
+        chipItems.assignAll(fetchedBrands);
+        log('Mode chip tetap BRAND.');
+      }
+    } catch (e) {
+      log("Gagal memuat data chip: $e");
+      chipMode.value = 'categories';
+      chipItems.assignAll(standardCategories);
+    }
   }
 
   Future<void> startCarListeners() async {
@@ -85,19 +114,6 @@ class BrowseViewModel extends GetxController {
       ) {
         _allFeaturedList.clear();
         _allFeaturedList.addAll(cars);
-        cars.sort((a, b) {
-          int comparedPurchased = b.purchasedProduct.compareTo(
-            a.purchasedProduct,
-          );
-          if (comparedPurchased != 0) {
-            return comparedPurchased;
-          }
-          int compareRating = b.ratingAverage.compareTo(a.ratingAverage);
-          if (compareRating != 0) {
-            return compareRating;
-          }
-          return a.nameProduct.compareTo(b.nameProduct);
-        });
         _featuredList.assignAll(cars);
         log('Fetch mobil populer secara real-time.');
         status = 'success';
@@ -111,13 +127,6 @@ class BrowseViewModel extends GetxController {
       _newestSubscription = CarSource.fetchNewestCarsStream().listen((cars) {
         _allNewestList.clear();
         _allNewestList.addAll(cars);
-        cars.sort((a, b) {
-          int compareReleased = b.releaseProduct.compareTo(a.releaseProduct);
-          if (compareReleased != 0) {
-            return compareReleased;
-          }
-          return a.nameProduct.compareTo(b.nameProduct);
-        });
         _newestList.assignAll(cars);
         log('Fetch mobil terbaru secara real-time.');
         status = 'success';
@@ -128,27 +137,67 @@ class BrowseViewModel extends GetxController {
     }
   }
 
-  void filterCars(String category) {
-    if (selectedCategory.value == category) {
+  void filterCars(String filterValue) {
+    if (selectedCategory.value.toLowerCase() == filterValue.toLowerCase()) {
       selectedCategory.value = '';
-      featuredList = _allFeaturedList;
-      newestList = _allNewestList;
-      _currentView.value = 'home';
+      featuredList.assignAll(_allFeaturedList);
+      newestList.assignAll(_allNewestList);
     } else {
-      selectedCategory.value = category;
-      featuredList = _allFeaturedList
-          .where(
-            (car) =>
-                car.categoryProduct.toLowerCase() == category.toLowerCase(),
-          )
-          .toList();
-      newestList = _allNewestList
-          .where(
-            (car) =>
-                car.categoryProduct.toLowerCase() == category.toLowerCase(),
-          )
-          .toList();
-      _currentView.value = 'home';
+      selectedCategory.value = filterValue;
+      if (chipMode.value == 'brands') {
+        featuredList.assignAll(
+          _allFeaturedList
+              .where(
+                (car) =>
+                    car.brandProduct.toLowerCase() == filterValue.toLowerCase(),
+              )
+              .toList(),
+        );
+        newestList.assignAll(
+          _allNewestList
+              .where(
+                (car) =>
+                    car.brandProduct.toLowerCase() == filterValue.toLowerCase(),
+              )
+              .toList(),
+        );
+      } else {
+        if (filterValue == 'Lainnya') {
+          featuredList.assignAll(
+            _allFeaturedList
+                .where(
+                  (car) => !standardCategories.contains(car.categoryProduct),
+                )
+                .toList(),
+          );
+          newestList.assignAll(
+            _allNewestList
+                .where(
+                  (car) => !standardCategories.contains(car.categoryProduct),
+                )
+                .toList(),
+          );
+        } else {
+          featuredList.assignAll(
+            _allFeaturedList
+                .where(
+                  (car) =>
+                      car.categoryProduct.toLowerCase() ==
+                      filterValue.toLowerCase(),
+                )
+                .toList(),
+          );
+          newestList.assignAll(
+            _allNewestList
+                .where(
+                  (car) =>
+                      car.categoryProduct.toLowerCase() ==
+                      filterValue.toLowerCase(),
+                )
+                .toList(),
+          );
+        }
+      }
     }
   }
 
@@ -169,13 +218,35 @@ class BrowseViewModel extends GetxController {
             (car) =>
                 car.nameProduct.toLowerCase().contains(query) ||
                 car.categoryProduct.toLowerCase().contains(query) ||
-                car.transmissionProduct.toLowerCase().contains(query),
+                car.brandProduct.toLowerCase().contains(query),
           )
           .toList();
       _searchResults.value = filteredResults;
     } else {
       _currentView.value = 'home';
       _searchResults.clear();
+    }
+  }
+
+  Future<void> deleteProduct(String productId) async {
+    bool? confirm = await showConfirmationDialog(
+      context: Get.context!,
+      title: 'Hapus Produk?',
+      content: 'Apakah Anda yakin ingin menghapus produk ini secara permanen?',
+      confirmText: 'Ya, Hapus',
+    );
+    if (confirm != true) {
+      return;
+    }
+    isLoadingDelete.value = true;
+    try {
+      await SellerSource().deleteProduct(productId);
+      startCarListeners();
+    } catch (e) {
+      log("Gagal menghapus produk dari ViewModel: $e");
+      Message.error('Terjadi kesalahan saat menghapus produk.');
+    } finally {
+      isLoadingDelete.value = false;
     }
   }
 
@@ -193,7 +264,7 @@ class BrowseViewModel extends GetxController {
             title: Text(
               title,
               style: GoogleFonts.poppins(
-                fontSize: 22,
+                fontSize: 20,
                 fontWeight: FontWeight.w600,
                 color: Theme.of(Get.context!).colorScheme.onSurface,
               ),
@@ -201,7 +272,7 @@ class BrowseViewModel extends GetxController {
             content: Text(
               content,
               style: GoogleFonts.poppins(
-                fontSize: 16,
+                fontSize: 14,
                 fontWeight: FontWeight.w500,
                 color: Theme.of(Get.context!).colorScheme.onSurface,
               ),

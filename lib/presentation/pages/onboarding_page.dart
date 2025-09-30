@@ -7,11 +7,11 @@ import 'package:rent_car_app/presentation/viewModels/permission_view_model.dart'
 import 'package:rent_car_app/presentation/widgets/button_primary.dart';
 import 'package:rent_car_app/presentation/widgets/offline_banner.dart';
 
-class OnBoardingPage extends StatelessWidget {
+class OnBoardingPage extends GetView<PermissionViewModel> {
   OnBoardingPage({super.key});
 
   final connectivity = Get.find<ConnectivityService>();
-  final permissionVM = Get.put(PermissionViewModel());
+  final isDarkMode = Theme.of(Get.context!).brightness == Brightness.dark;
 
   @override
   Widget build(BuildContext context) {
@@ -27,15 +27,11 @@ class OnBoardingPage extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Gap(20 + MediaQuery.of(context).padding.top),
-                        ColorFiltered(
-                          colorFilter: ColorFilter.mode(
-                            Theme.of(context).colorScheme.onSurface,
-                            BlendMode.srcIn,
-                          ),
-                          child: Image.asset(
-                            'assets/logo_text_16_9.png',
-                            height: 90,
-                          ),
+                        Image.asset(
+                          isDarkMode
+                              ? 'assets/logo_text_16_9_dark_mode.png'
+                              : 'assets/logo_text_16_9.png',
+                          height: 90,
                         ),
                         const Gap(10),
                         Text(
@@ -63,10 +59,10 @@ class OnBoardingPage extends StatelessWidget {
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 24),
                           child: Text(
-                            'Nikmati kemudahan menyewa mobil langsung dari genggamanmu, kapan saja dan di mana saja.',
+                            'Nikmati kemudahan menyewa barang apapun yang Anda mau, langsung dari genggamanmu, kapan saja dan di mana saja.',
                             style: GoogleFonts.poppins(
                               fontSize: 16,
-                              fontWeight: FontWeight.w500,
+                              fontWeight: FontWeight.w700,
                               color: Theme.of(
                                 Get.context!,
                               ).colorScheme.onSurface,
@@ -79,7 +75,7 @@ class OnBoardingPage extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(horizontal: 24),
                           child: Obx(() {
                             return ButtonPrimary(
-                              onTap: permissionVM.hasPermission.value
+                              onTap: controller.hasPermission.value
                                   ? () {
                                       if (connectivity.isOnline.value) {
                                         Get.offAllNamed('/auth');

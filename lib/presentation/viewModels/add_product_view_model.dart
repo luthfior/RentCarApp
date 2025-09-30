@@ -29,12 +29,16 @@ class AddProductViewModel extends GetxController {
   final RxBool isEditMode = false.obs;
   final Rx<Car?> editingCar = Rx<Car?>(null);
   final Rx<String?> imageUrl = Rx<String?>(null);
+  Timestamp? createdAt;
 
   final TextEditingController nameProductController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
   final TextEditingController priceController = TextEditingController();
   final TextEditingController locationController = TextEditingController();
   final TextEditingController phoneNumberController = TextEditingController();
+  final TextEditingController customCategoryController =
+      TextEditingController();
+  final TextEditingController customBrandController = TextEditingController();
 
   final FocusNode nameFocus = FocusNode();
   final FocusNode descriptionFocus = FocusNode();
@@ -42,22 +46,32 @@ class AddProductViewModel extends GetxController {
   final FocusNode locationFocus = FocusNode();
   final FocusNode releaseYearFocus = FocusNode();
   final FocusNode categoryFocus = FocusNode();
+  final FocusNode brandFocus = FocusNode();
+  final FocusNode energySourceFocus = FocusNode();
   final FocusNode transmissionFocus = FocusNode();
   final FocusNode provinceFocus = FocusNode();
   final FocusNode cityFocus = FocusNode();
   final FocusNode districtFocus = FocusNode();
   final FocusNode villageFocus = FocusNode();
   final FocusNode phoneNumberFocus = FocusNode();
+  final FocusNode customCategoryFocus = FocusNode();
+  final FocusNode customBrandFocus = FocusNode();
 
   final Rx<String?> nameError = Rx<String?>(null);
   final Rx<String?> descriptionError = Rx<String?>(null);
   final Rx<String?> priceError = Rx<String?>(null);
   final Rx<String?> locationError = Rx<String?>(null);
   final Rx<String?> categoryError = Rx<String?>(null);
+  final Rx<String?> brandError = Rx<String?>(null);
+  final Rx<String?> energySourceError = Rx<String?>(null);
   final Rx<String?> transmissionError = Rx<String?>(null);
   final Rx<String?> releaseYearError = Rx<String?>(null);
   final Rx<String?> phoneNumberError = Rx<String?>(null);
+  final Rx<String?> customCategoryError = Rx<String?>(null);
+  final Rx<String?> customBrandError = Rx<String?>(null);
 
+  final Rx<String?> selectedBrand = Rx<String?>(null);
+  final Rx<String?> selectedEnergySource = Rx<String?>(null);
   final Rx<String?> selectedCategory = Rx<String?>(null);
   final Rx<String?> selectedStreet = Rx<String?>(null);
   final Rx<double?> selectedLatLocation = Rx<double?>(null);
@@ -70,17 +84,51 @@ class AddProductViewModel extends GetxController {
   final Rx<String?> selectedReleaseYear = Rx<String?>(null);
   final Rx<XFile?> pickedImage = Rx<XFile?>(null);
 
-  final List<String> categories = [
-    'Electric | Mobil Listrik',
-    'Hatchback | Mobil Kota',
-    'LCGC | Mobil Hemat',
-    'MPV | Mobil Keluarga',
-    'Off-road | Mobil Jip',
-    'Sedan | Mobil Elegan',
-    'Sport Car | Mobil Sport',
-    'SUV | Mobil Tangguh & Serbaguna',
+  final RxList<String> availableBrands = RxList<String>([]);
+  final RxList<String> availableEnergySources = RxList<String>([]);
+  final RxList<String> availableTransmissions = RxList<String>([]);
+
+  final List<String> newCategories = [
+    'Truk',
+    'Mobil',
+    'Motor',
+    'Sepeda',
+    'Lainnya',
   ];
-  final List<String> transmissions = ['Automatic', 'CVT', 'Manual'];
+  final Map<String, List<String>> brandsData = {
+    'Truk': [
+      'Mitsubishi Fuso',
+      'Hino',
+      'Isuzu',
+      'UD Trucks',
+      'Scania',
+      'Volvo',
+      'Lainnya',
+    ],
+    'Mobil': [
+      'Toyota',
+      'Daihatsu',
+      'Honda',
+      'Suzuki',
+      'Mitsubishi',
+      'Nissan',
+      'Lainnya',
+    ],
+    'Motor': ['Honda', 'Yamaha', 'Suzuki', 'Kawasaki', 'Vespa', 'Lainnya'],
+    'Sepeda': ['Polygon', 'United', 'Thrill', 'Pacific', 'Element', 'Lainnya'],
+  };
+  final Map<String, List<String>> energySourcesData = {
+    'Truk': ['Diesel', 'Bensin', 'Listrik', 'Hybrid'],
+    'Mobil': ['Bensin', 'Diesel', 'Listrik', 'Hybrid'],
+    'Motor': ['Bensin', 'Listrik', 'Hybrid'],
+    'Sepeda': ['Non-Listrik', 'Listrik'],
+  };
+  final Map<String, List<String>> transmissionsData = {
+    'Truk': ['Manual', 'Automatic'],
+    'Mobil': ['Manual', 'Automatic'],
+    'Motor': ['Automatic', 'Gigi', 'Kopling'],
+    'Sepeda': ['Multi-Speed', 'Single-Speed', 'Automatic'],
+  };
   List<String> get releaseYears {
     final int currentYear = DateTime.now().year;
     const int startYear = 1885;
@@ -123,6 +171,10 @@ class AddProductViewModel extends GetxController {
     } else {
       return;
     }
+    ever(selectedEnergySource, (String? energySource) {
+      _updateTransmissionOptions(energySource);
+    });
+    ever(selectedCategory, _updateDependentFields);
     _initProductData();
   }
 
@@ -154,6 +206,12 @@ class AddProductViewModel extends GetxController {
     releaseYearError.value = null;
     phoneNumberError.value = null;
     pickedImage.value = null;
+    customBrandController.dispose();
+    customBrandFocus.dispose();
+    customBrandError.value = null;
+    customCategoryController.dispose();
+    customCategoryFocus.dispose();
+    customCategoryError.value = null;
     super.onClose();
   }
 
@@ -166,17 +224,59 @@ class AddProductViewModel extends GetxController {
       nameProductController.text = car.nameProduct;
       descriptionController.text = car.descriptionProduct;
       priceController.text = car.priceProduct.toString();
+      selectedCategory.value = car.categoryProduct;
+      selectedReleaseYear.value = car.releaseProduct.toString();
+      imageUrl.value = car.imageProduct;
       phoneNumberController.text = car.ownerPhoneNumber;
       locationController.text = car.fullAddress;
 
-      selectedCategory.value = car.categoryProduct;
-      selectedTransmission.value = car.transmissionProduct;
-      selectedReleaseYear.value = car.releaseProduct.toString();
+      if (newCategories.contains(car.categoryProduct)) {
+        selectedCategory.value = car.categoryProduct;
+        selectedBrand.value = car.brandProduct;
+      } else {
+        selectedCategory.value = 'Lainnya';
+        customCategoryController.text = car.categoryProduct;
+        customBrandController.text = car.brandProduct;
+      }
 
-      imageUrl.value = car.imageProduct;
+      final brandListForCategory = brandsData[car.categoryProduct];
+      if (brandListForCategory != null &&
+          brandListForCategory.contains(car.brandProduct)) {
+        selectedBrand.value = car.brandProduct;
+      } else {
+        selectedBrand.value = 'Lainnya';
+        customBrandController.text = car.brandProduct;
+      }
+
+      selectedEnergySource.value = car.energySourceProduct;
+      selectedTransmission.value = car.transmissionProduct;
+      createdAt = car.createdAt;
     } else {
       isEditMode.value = false;
       locationController.text = authVM.account.value?.fullAddress ?? '';
+    }
+  }
+
+  void _updateDependentFields(String? category) {
+    selectedBrand.value = null;
+    selectedEnergySource.value = null;
+    selectedTransmission.value = null;
+    customBrandController.clear();
+
+    availableBrands.clear();
+    availableEnergySources.clear();
+    availableTransmissions.clear();
+
+    if (category == null) return;
+
+    if (brandsData.containsKey(category)) {
+      availableBrands.assignAll(brandsData[category]!);
+    }
+    if (energySourcesData.containsKey(category)) {
+      availableEnergySources.assignAll(energySourcesData[category]!);
+    }
+    if (transmissionsData.containsKey(category)) {
+      availableTransmissions.assignAll(transmissionsData[category]!);
     }
   }
 
@@ -206,19 +306,27 @@ class AddProductViewModel extends GetxController {
       final carToEdit = editingCar.value!;
 
       final updatedCar = Car(
-        id: carToEdit.id,
-        nameProduct: nameProductController.text,
+        categoryProduct: selectedCategory.value == 'Lainnya'
+            ? customCategoryController.text
+            : selectedCategory.value ?? '',
         descriptionProduct: descriptionController.text,
+        id: carToEdit.id,
         imageProduct: finalImageUrl,
-        categoryProduct: selectedCategory.value ?? '',
-        transmissionProduct: selectedTransmission.value ?? '',
+        nameProduct: nameProductController.text,
         priceProduct: int.parse(
           priceController.text.replaceAll('.', ''),
         ).round(),
-        releaseProduct: int.parse(selectedReleaseYear.value ?? ''),
         ratingAverage: carToEdit.ratingAverage,
         reviewCount: carToEdit.reviewCount,
+        releaseProduct: int.parse(selectedReleaseYear.value ?? ''),
         purchasedProduct: carToEdit.purchasedProduct,
+        brandProduct: (selectedCategory.value == 'Lainnya')
+            ? customBrandController.text
+            : (selectedBrand.value == 'Lainnya')
+            ? customBrandController.text
+            : selectedBrand.value ?? '',
+        energySourceProduct: selectedEnergySource.value,
+        transmissionProduct: selectedTransmission.value,
         ownerId: userAccount.uid,
         ownerType: userAccount.role,
         ownerUsername: userAccount.username,
@@ -235,6 +343,7 @@ class AddProductViewModel extends GetxController {
         village: userAccount.village!,
         latLocation: userAccount.latLocation!,
         longLocation: userAccount.longLocation!,
+        createdAt: createdAt,
         updatedAt: Timestamp.now(),
       );
 
@@ -261,7 +370,9 @@ class AddProductViewModel extends GetxController {
       );
       final imageUrl = cloudinaryResponse.secureUrl;
       final newCar = Car(
-        categoryProduct: selectedCategory.value ?? '',
+        categoryProduct: selectedCategory.value == 'Lainnya'
+            ? customCategoryController.text
+            : selectedCategory.value ?? '',
         descriptionProduct: descriptionController.text,
         id: const Uuid().v4(),
         imageProduct: imageUrl,
@@ -273,7 +384,13 @@ class AddProductViewModel extends GetxController {
         reviewCount: 0,
         releaseProduct: int.parse(selectedReleaseYear.value ?? ''),
         purchasedProduct: 0,
-        transmissionProduct: selectedTransmission.value ?? '',
+        brandProduct: (selectedCategory.value == 'Lainnya')
+            ? customBrandController.text
+            : (selectedBrand.value == 'Lainnya')
+            ? customBrandController.text
+            : selectedBrand.value ?? '',
+        energySourceProduct: selectedEnergySource.value,
+        transmissionProduct: selectedTransmission.value,
         ownerId: userAccount.uid,
         ownerType: userAccount.role,
         ownerUsername: userAccount.username,
@@ -329,6 +446,8 @@ class AddProductViewModel extends GetxController {
     locationError.value = null;
     descriptionError.value = null;
     categoryError.value = null;
+    brandError.value = null;
+    energySourceError.value = null;
     transmissionError.value = null;
     phoneNumberError.value = null;
     nameError.value = null;
@@ -339,64 +458,113 @@ class AddProductViewModel extends GetxController {
     categoryError.value = null;
     transmissionError.value = null;
     phoneNumberError.value = null;
+    customCategoryError.value = null;
 
     if (nameProductController.text.isEmpty) {
       Message.error('Mohon masukkan nama produk Anda');
-      nameError.value = 'Mohon masukkan nama produk Anda';
+      nameError.value = 'Mohon masukkan Nama Produk Anda';
       nameFocus.requestFocus();
       return false;
     }
     if (priceController.text.isEmpty) {
       Message.error('Mohon masukkan harga produk Anda');
-      priceError.value = 'Mohon masukkan harga produk Anda';
+      priceError.value = 'Mohon masukkan Harga Produk Anda';
       priceFocus.requestFocus();
       return false;
     }
     final cleanedPriceText = priceController.text.replaceAll('.', '');
     if (int.tryParse(cleanedPriceText) == null) {
-      Message.error('Format harga tidak valid. Harap masukkan angka saja.');
-      priceError.value = 'Format harga tidak valid';
+      Message.error(
+        'Format harga tidak valid. Harap masukkan angka saja.',
+        fontSize: 12,
+      );
+      priceError.value = 'Format Harga Produk tidak valid';
       priceFocus.requestFocus();
       return false;
     }
     if (selectedReleaseYear.value == null) {
-      Message.error('Mohon masukkan tahun rilis produk Anda');
-      releaseYearError.value = 'Mohon masukkan tahun rilis produk Anda';
+      Message.error('Mohon masukkan Tahun Rilis Produk Anda');
+      releaseYearError.value = 'Mohon masukkan Tahun Rilis produk Anda';
       releaseYearFocus.requestFocus();
       return false;
     }
+    if (selectedCategory.value == null) {
+      Message.error('Mohon pilih Kategori Produk Anda');
+      categoryError.value = 'Mohon pilih Kategori Produk Anda';
+      categoryFocus.requestFocus();
+      return false;
+    }
+    final category = selectedCategory.value!;
+    if (category == 'Lainnya') {
+      if (customCategoryController.text.isEmpty) {
+        Message.error('Mohon masukkan Jenis Kategori Produk');
+        customCategoryError.value = 'Mohon masukkan Jenis Kategori Produk Anda';
+        customCategoryFocus.requestFocus();
+        return false;
+      }
+    }
+    if (category == 'Lainnya') {
+      if (customBrandController.text.isEmpty) {
+        Message.error('Mohon masukkan Brand Produk Anda');
+        customBrandError.value = 'Mohon masukkan Brand Produk Anda';
+        customBrandFocus.requestFocus();
+        return false;
+      }
+    } else if (availableBrands.isNotEmpty) {
+      if (selectedBrand.value == null) {
+        Message.error('Mohon pilih Brand Produk Anda');
+        brandError.value = 'Mohon pilih Brand Produk Anda';
+        brandFocus.requestFocus();
+        return false;
+      }
+      if (selectedBrand.value == 'Lainnya' &&
+          customBrandController.text.isEmpty) {
+        Message.error('Mohon masukkan nama Brand Produk');
+        customBrandError.value = 'Nama Brand wajib diisi';
+        customBrandFocus.requestFocus();
+        return false;
+      }
+    }
+    if (availableEnergySources.isNotEmpty &&
+        selectedEnergySource.value == null) {
+      Message.error('Mohon pilih Sumber Energi Produk Anda');
+      energySourceError.value = 'Mohon pilih Sumber Energi Produk Anda';
+      energySourceFocus.requestFocus();
+      return false;
+    }
     if (locationController.text.isEmpty) {
-      Message.error('Alamat Toko harus diisi');
-      locationError.value = 'Alamat Toko harus diisi';
+      Message.error('Alamat Toko Anda wajib diisi');
+      locationError.value = 'Alamat Toko Anda wajib diisi';
       locationFocus.requestFocus();
       return false;
     }
     if (descriptionController.text.isEmpty) {
-      Message.error('Mohon masukkan deskripsi produk Anda');
-      descriptionError.value = 'Mohon masukkan deskripsi produk Anda';
+      Message.error('Mohon masukkan Deskripsi Produk Anda');
+      descriptionError.value = 'Mohon masukkan Deskripsi Produk Anda';
       descriptionFocus.requestFocus();
       return false;
     }
     if (selectedCategory.value == null) {
-      Message.error('Mohon pilih kategori produk Anda');
-      categoryError.value = 'Mohon pilih kategori produk Anda';
+      Message.error('Mohon pilih Kategori Produk Anda');
+      categoryError.value = 'Mohon pilih Kategori Produk Anda';
       categoryFocus.requestFocus();
       return false;
     }
-    if (selectedTransmission.value == null) {
-      Message.error('Mohon pilih transmisi produk Anda');
-      transmissionError.value = 'Mohon pilih kategori produk Anda';
+    if (availableTransmissions.isNotEmpty &&
+        selectedTransmission.value == null) {
+      Message.error('Mohon pilih Transmisi Produk Anda');
+      transmissionError.value = 'Mohon pilih Transmisi Produk Anda';
       transmissionFocus.requestFocus();
       return false;
     }
     if (phoneNumberController.text.isEmpty) {
-      Message.error('Mohon masukkan nomor WhatsApp Anda');
-      phoneNumberError.value = 'Mohon pilih kategori produk Anda';
+      Message.error('Mohon masukkan No.Telp/WhatsApp Anda');
+      phoneNumberError.value = 'Mohon masukkan No.Telp/WhatsApp Anda';
       phoneNumberFocus.requestFocus();
       return false;
     }
     if (!isEditMode.value && pickedImage.value == null) {
-      Message.error('Mohon masukkan gambar produk Anda');
+      Message.error('Mohon masukkan Gambar Produk Anda');
       return false;
     }
     return true;
@@ -405,8 +573,22 @@ class AddProductViewModel extends GetxController {
   Future<void> handleAddProduct() async {
     if (!validateForm()) return;
     if (isLoading.value) return;
-    isLoading.value = true;
 
+    bool? confirm = await showConfirmationDialog(
+      context: Get.context!,
+      title: (isEditMode.value && editingCar.value != null)
+          ? 'Sunting Produk'
+          : 'Tambah Produk',
+      content:
+          'Apakah Anda yakin ingin ${isEditMode.value && editingCar.value != null ? 'Sunting' : 'Tambah'} produk ini?',
+      confirmText:
+          'Ya, ${isEditMode.value && editingCar.value != null ? 'Sunting' : 'Tambah'}',
+    );
+    if (confirm != true) {
+      return;
+    }
+
+    isLoading.value = true;
     try {
       if (isEditMode.value && editingCar.value != null) {
         await updateExistingProduct(editingCar.value!);
@@ -514,7 +696,7 @@ class AddProductViewModel extends GetxController {
             title: Text(
               title,
               style: GoogleFonts.poppins(
-                fontSize: 22,
+                fontSize: 20,
                 fontWeight: FontWeight.w600,
                 color: Theme.of(Get.context!).colorScheme.onSurface,
               ),
@@ -522,7 +704,7 @@ class AddProductViewModel extends GetxController {
             content: Text(
               content,
               style: GoogleFonts.poppins(
-                fontSize: 16,
+                fontSize: 14,
                 fontWeight: FontWeight.w500,
                 color: Theme.of(Get.context!).colorScheme.onSurface,
               ),
@@ -564,5 +746,28 @@ class AddProductViewModel extends GetxController {
           ),
         ) ??
         false;
+  }
+
+  void _updateTransmissionOptions(String? energySource) {
+    final category = selectedCategory.value;
+    if (category == null) return;
+
+    List<String> originalTransmissions = transmissionsData[category] ?? [];
+
+    if (energySource?.toLowerCase() == 'listrik') {
+      selectedTransmission.value = 'Automatic';
+      availableTransmissions.assignAll(['Automatic']);
+    } else if (category == 'Sepeda' &&
+        energySource?.toLowerCase() == 'non-listrik') {
+      List<String> filteredTransmissions = List.from(originalTransmissions);
+      filteredTransmissions.remove('Automatic');
+      availableTransmissions.assignAll(filteredTransmissions);
+
+      if (selectedTransmission.value == 'Automatic') {
+        selectedTransmission.value = null;
+      }
+    } else {
+      availableTransmissions.assignAll(originalTransmissions);
+    }
   }
 }

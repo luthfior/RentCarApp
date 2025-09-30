@@ -302,7 +302,7 @@ class UserSource {
     }
   }
 
-  Future<void> createOrder(
+  Future<String?> createOrder(
     String resi,
     String customerId,
     String sellerId,
@@ -324,7 +324,7 @@ class UserSource {
       final existingOrderQuery = await firestore
           .collection('Orders')
           .where('customerId', isEqualTo: customerId)
-          .where('resi', isEqualTo: resi)
+          .where('productId', isEqualTo: productId)
           .where('orderStatus', isEqualTo: 'pending')
           .limit(1)
           .get();
@@ -333,9 +333,11 @@ class UserSource {
         log(
           'GAGAL: Pelanggan $customerId sudah pernah memesan produk $productId.',
         );
-        throw Exception(
+        Message.error(
           'Anda sudah memesan produk ini. Periksa pada halaman Pesanan Anda',
+          fontSize: 12,
         );
+        return null;
       }
 
       log('Pengecekan berhasil. Membuat pesanan baru...');
@@ -343,6 +345,7 @@ class UserSource {
       const String initialOrderStatus = 'pending';
       final orderDocRef = await firestore.collection('Orders').add({
         'resi': resi,
+        'productId': productId,
         'customerId': customerId,
         'sellerId': sellerId,
         'customerFullname': customerFullname.isNotEmpty ? customerFullname : '',
@@ -367,6 +370,8 @@ class UserSource {
           .doc(orderDocRef.id)
           .set({
             'orderId': orderDocRef.id,
+            'resi': resi,
+            'productId': productId,
             'orderStatus': initialOrderStatus,
             'orderDate': Timestamp.now(),
           });
@@ -379,16 +384,27 @@ class UserSource {
           .doc(orderDocRef.id)
           .set({
             'orderId': orderDocRef.id,
+            'resi': resi,
+            'productId': productId,
             'orderStatus': initialOrderStatus,
             'orderDate': Timestamp.now(),
           });
       log('Referensi pesanan berhasil ditambahkan ke riwayat pesanan pembeli.');
+      return orderDocRef.id;
     } on FirebaseException catch (e) {
       log('Firebase Error: ${e.code} - ${e.message}');
-      rethrow;
-    } catch (e) {
-      log('Gagal memproses pemesanan: $e');
-      rethrow;
+      Message.error(
+        'Terjadi kesalahan saat membuat pesanan Anda. Silahkan ulangi pembayaran',
+        fontSize: 12,
+      );
+      return null;
+    } catch (e, s) {
+      log('ERROR createOrder: $e\n$s');
+      Message.error(
+        'Terjadi kesalahan saat membuat pesanan Anda. Silahkan ulangi pembayaran',
+        fontSize: 12,
+      );
+      return null;
     }
   }
 
@@ -415,32 +431,39 @@ class UserSource {
     }
   }
 
-  Stream<List<BookedCar>> fetchBookedCarStream(String userId, bool isSeller) {
-    Query<Map<String, dynamic>> ordersQuery = firestore.collection('Orders');
+  Stream<List<BookedCar>> fetchBookedCarStream(String userId, String userRole) {
+    final String userCollection = userRole == 'admin' ? 'Admin' : 'Users';
+    final myOrdersQuery = firestore
+        .collection(userCollection)
+        .doc(userId)
+        .collection('myOrders')
+        .orderBy('orderDate', descending: true);
 
-    if (isSeller) {
-      ordersQuery = ordersQuery.where('sellerId', isEqualTo: userId);
-    } else {
-      ordersQuery = ordersQuery.where('customerId', isEqualTo: userId);
-    }
-
-    ordersQuery = ordersQuery.orderBy('orderDate', descending: true);
-
-    return ordersQuery.snapshots().asyncMap((orderSnapshot) async {
-      if (orderSnapshot.docs.isEmpty) {
+    return myOrdersQuery.snapshots().asyncMap((myOrdersSnapshot) async {
+      if (myOrdersSnapshot.docs.isEmpty) {
         return [];
       }
 
-      final carFutures = orderSnapshot.docs.map<Future<BookedCar?>>((
-        orderDoc,
-      ) async {
-        try {
-          final orderData = Orders.fromJson(orderDoc.data(), orderDoc.id);
+      final orderIds = myOrdersSnapshot.docs.map((doc) => doc.id).toList();
 
+      final orderFutures = orderIds.map((orderId) async {
+        try {
+          final orderDoc = await firestore
+              .collection('Orders')
+              .doc(orderId)
+              .get();
+
+          if (!orderDoc.exists) {
+            log(
+              'Warning: Dokumen order dengan ID $orderId tidak ditemukan di koleksi Orders.',
+            );
+            return null;
+          }
+
+          final orderData = Orders.fromJson(orderDoc.data()!, orderDoc.id);
           final productId = orderData.orderDetail.car.id;
 
-          // ignore: unnecessary_null_comparison
-          if (productId == null || productId.toString().isEmpty) {
+          if (productId.isEmpty) {
             log(
               'Warning: Pesanan dengan ID ${orderDoc.id} tidak memiliki productId.',
             );
@@ -462,13 +485,12 @@ class UserSource {
             return null;
           }
         } catch (e) {
-          log('Gagal memproses pesanan dengan ID ${orderDoc.id}: $e');
+          log('Gagal memproses detail untuk order ID $orderId: $e');
           return null;
         }
       }).toList();
 
-      final List<BookedCar?> bookedCarResults = await Future.wait(carFutures);
-
+      final List<BookedCar?> bookedCarResults = await Future.wait(orderFutures);
       return bookedCarResults.whereType<BookedCar>().toList();
     });
   }

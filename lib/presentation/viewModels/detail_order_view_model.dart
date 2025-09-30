@@ -314,6 +314,8 @@ class DetailOrderViewModel extends GetxController {
     String orderId,
     String customerId,
     String sellerId,
+    String carId,
+    String paymentMethod,
     num orderPrice,
   ) async {
     try {
@@ -323,9 +325,7 @@ class DetailOrderViewModel extends GetxController {
         return;
       }
       await SellerSource().updateOrderStatus(orderId, 'success');
-      await userSource.updateUserBalance(customerId, orderPrice.toDouble());
-      log('Saldo berhasil dipotong');
-      await CarSource.updateProductAfterPurchase(car.id);
+      await CarSource.updateProductAfterPurchase(carId);
       log('Jumlah produk yang disewa berhasil diupdate');
       await SellerSource().markOrderAsSuccess(
         orderId,
@@ -333,7 +333,14 @@ class DetailOrderViewModel extends GetxController {
         authVM.account.value!.role,
         orderPrice.round(),
       );
-      Message.success('Silahkan Cek Saldo Anda di Pengaturan');
+      if (paymentMethod == 'DompetKu') {
+        await userSource.updateUserBalance(customerId, orderPrice.toDouble());
+        log('Saldo berhasil dipotong');
+      }
+      Message.success(
+        'Pesanan berhasil dikonfirmasi. Silahkan Cek Saldo Anda di Pengaturan',
+        fontSize: 12,
+      );
       log('Pesanan dengan ID $orderId berhasil dikonfirmasi');
       await sendNotification(
         customerId,
@@ -390,7 +397,7 @@ class DetailOrderViewModel extends GetxController {
             title: Text(
               title,
               style: GoogleFonts.poppins(
-                fontSize: 22,
+                fontSize: 20,
                 fontWeight: FontWeight.w600,
                 color: Theme.of(Get.context!).colorScheme.onSurface,
               ),
@@ -398,7 +405,7 @@ class DetailOrderViewModel extends GetxController {
             content: Text(
               content,
               style: GoogleFonts.poppins(
-                fontSize: 16,
+                fontSize: 14,
                 fontWeight: FontWeight.w500,
                 color: Theme.of(Get.context!).colorScheme.onSurface,
               ),

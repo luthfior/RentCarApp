@@ -10,7 +10,7 @@ class ButtonPrimary extends StatelessWidget {
     this.customTextColor = const Color(0xffEFEFF0),
     this.customTextSize = 16.0,
     this.customBorderRadius = const BorderRadius.all(Radius.circular(50)),
-    this.customHeight = 52,
+    this.customHeight = 48,
     this.customBorderColor = const Color(0xffFF5722),
   });
   final VoidCallback? onTap;

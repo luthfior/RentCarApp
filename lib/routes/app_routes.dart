@@ -19,4 +19,5 @@ abstract class AppRoutes {
   static const location = '/location';
   static const midtransWebView = '/midtrans-web-view';
   static const detailOrder = '/detail-order';
+  static const aboutApp = '/about-app';
 }

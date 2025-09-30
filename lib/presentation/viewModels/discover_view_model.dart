@@ -36,7 +36,7 @@ class DiscoverViewModel extends GetxController {
       }
       if (bookedCar != null) {
         final browseVM = Get.find<BrowseViewModel>();
-        browseVM.car.value = bookedCar;
+        browseVM.bookedCar.value = bookedCar;
       }
     }
   }

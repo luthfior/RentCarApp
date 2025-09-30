@@ -52,7 +52,7 @@ class LoginViewModel extends GetxController {
     }
   }
 
-  void handleLogin(BuildContext context) {
+  Future<void> handleLogin(BuildContext context) async {
     isEmailTouched.value = true;
     isPasswordTouched.value = true;
     validateInputs();

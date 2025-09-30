@@ -97,7 +97,7 @@ class SaldoPage extends StatelessWidget {
                                   Text(
                                     'Rp${NumberFormat.currency(locale: 'id', symbol: '', decimalDigits: 0).format(saldo).replaceAll(',', '.')}',
                                     style: GoogleFonts.poppins(
-                                      fontSize: 32,
+                                      fontSize: 28,
                                       fontWeight: FontWeight.w700,
                                       color: const Color(0xffFF5722),
                                     ),

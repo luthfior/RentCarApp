@@ -39,7 +39,9 @@ class BookingPage extends GetView<BookingViewModel> {
                         const Gap(20),
                         buildInsurance(),
                         const Gap(20),
-                        buildDriverOption(),
+                        if (controller.car.categoryProduct == 'Mobil' ||
+                            controller.car.categoryProduct == 'Truk')
+                          buildDriverOption(),
                       ],
                     ),
                   ),
@@ -57,9 +59,9 @@ class BookingPage extends GetView<BookingViewModel> {
           mainAxisSize: MainAxisSize.min,
           children: [
             ButtonPrimary(
-              onTap: () {
+              onTap: () async {
                 if (connectivity.isOnline.value) {
-                  controller.goToCheckout();
+                  await controller.goToCheckout();
                 } else {
                   const OfflineBanner();
                   return;
@@ -111,7 +113,7 @@ class BookingPage extends GetView<BookingViewModel> {
                   ),
                 ),
                 Text(
-                  controller.car.transmissionProduct,
+                  controller.car.brandProduct,
                   style: GoogleFonts.poppins(
                     fontSize: 12,
                     fontWeight: FontWeight.w400,
@@ -203,7 +205,7 @@ class BookingPage extends GetView<BookingViewModel> {
                     ),
                     const Gap(10),
                     CustomInput(
-                      icon: Icons.calendar_month_rounded,
+                      icon: Icons.calendar_month_outlined,
                       hint: 'Pilih Tanggal',
                       customHintFontSize: 14,
                       editingController: controller.startDateController,
@@ -230,7 +232,7 @@ class BookingPage extends GetView<BookingViewModel> {
                     ),
                     const Gap(10),
                     CustomInput(
-                      icon: Icons.calendar_month_rounded,
+                      icon: Icons.calendar_month_outlined,
                       hint: 'Pilih Tanggal',
                       customHintFontSize: 14,
                       editingController: controller.endDateController,
@@ -303,7 +305,7 @@ class BookingPage extends GetView<BookingViewModel> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         const Icon(
-                          Icons.car_rental,
+                          Icons.business_rounded,
                           size: 38,
                           color: Color(0xffFF5722),
                         ),
@@ -433,6 +435,53 @@ class BookingPage extends GetView<BookingViewModel> {
                   child: GestureDetector(
                     onTap: () {
                       if (connectivity.isOnline.value) {
+                        controller.withDriver = false;
+                      } else {
+                        const OfflineBanner();
+                        return;
+                      }
+                    },
+                    child: Container(
+                      height: 65,
+                      decoration: BoxDecoration(
+                        color: Theme.of(Get.context!).colorScheme.surface,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: isWithDriver
+                              ? Colors.transparent
+                              : const Color(0xffFF5722),
+                        ),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.person_off,
+                            size: 24,
+                            color: Color(0xffFF5722),
+                          ),
+                          const Gap(5),
+                          Text(
+                            'Tanpa Driver',
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.poppins(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: Theme.of(
+                                Get.context!,
+                              ).colorScheme.onSurface,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const Gap(16),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      if (connectivity.isOnline.value) {
                         controller.withDriver = true;
                       } else {
                         const OfflineBanner();
@@ -462,53 +511,6 @@ class BookingPage extends GetView<BookingViewModel> {
                           const Gap(5),
                           Text(
                             'Dengan Driver',
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.poppins(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: Theme.of(
-                                Get.context!,
-                              ).colorScheme.onSurface,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () {
-                      if (connectivity.isOnline.value) {
-                        controller.withDriver = false;
-                      } else {
-                        const OfflineBanner();
-                        return;
-                      }
-                    },
-                    child: Container(
-                      height: 65,
-                      decoration: BoxDecoration(
-                        color: Theme.of(Get.context!).colorScheme.surface,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: isWithDriver
-                              ? Colors.transparent
-                              : const Color(0xffFF5722),
-                        ),
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(
-                            Icons.person_off,
-                            size: 24,
-                            color: Color(0xffFF5722),
-                          ),
-                          const Gap(5),
-                          Text(
-                            'Tanpa Driver',
                             textAlign: TextAlign.center,
                             style: GoogleFonts.poppins(
                               fontSize: 12,

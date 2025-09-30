@@ -11,7 +11,9 @@ class Car {
   final num reviewCount;
   final num releaseProduct;
   final num purchasedProduct;
-  final String transmissionProduct;
+  final String brandProduct;
+  final String? transmissionProduct;
+  final String? energySourceProduct;
   final String ownerId;
   final String ownerType;
   final String ownerStoreName;
@@ -41,7 +43,9 @@ class Car {
     required this.reviewCount,
     required this.releaseProduct,
     required this.purchasedProduct,
-    required this.transmissionProduct,
+    required this.brandProduct,
+    this.transmissionProduct,
+    this.energySourceProduct,
     required this.ownerId,
     required this.ownerType,
     required this.ownerStoreName,
@@ -74,7 +78,9 @@ class Car {
       'reviewCount': reviewCount,
       'releaseProduct': releaseProduct,
       'purchasedProduct': purchasedProduct,
+      'brandProduct': brandProduct,
       'transmissionProduct': transmissionProduct,
+      'energySourceProduct': energySourceProduct,
       'ownerId': ownerId,
       'ownerType': ownerType,
       'ownerStoreName': ownerStoreName,
@@ -108,7 +114,9 @@ class Car {
       reviewCount: json['reviewCount'] as num? ?? 0,
       releaseProduct: json['releaseProduct'] as num? ?? 0,
       purchasedProduct: json['purchasedProduct'] as num? ?? 0,
+      brandProduct: json['brandProduct'] as String? ?? '',
       transmissionProduct: json['transmissionProduct'] as String? ?? '',
+      energySourceProduct: json['energySourceProduct'] as String? ?? '',
       ownerId: json['ownerId'] as String? ?? '',
       ownerType: json['ownerType'] as String? ?? '',
       ownerStoreName: json['ownerStoreName'] as String? ?? '',
@@ -141,7 +149,9 @@ class Car {
     reviewCount: 0,
     releaseProduct: 0,
     purchasedProduct: 0,
+    brandProduct: '',
     transmissionProduct: '',
+    energySourceProduct: '',
     ownerId: '',
     ownerType: '',
     ownerStoreName: '',

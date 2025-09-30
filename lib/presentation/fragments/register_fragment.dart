@@ -13,6 +13,7 @@ class RegisterFragment extends GetView<RegisterViewModel> {
   final VoidCallback onSwitchToLogin;
   RegisterFragment({super.key, required this.onSwitchToLogin});
   final connectivity = Get.find<ConnectivityService>();
+  final isDarkMode = Theme.of(Get.context!).brightness == Brightness.dark;
 
   @override
   Widget build(BuildContext context) {
@@ -25,12 +26,11 @@ class RegisterFragment extends GetView<RegisterViewModel> {
             padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 24),
             children: [
               const Gap(20),
-              ColorFiltered(
-                colorFilter: ColorFilter.mode(
-                  Theme.of(context).colorScheme.onSurface,
-                  BlendMode.srcIn,
-                ),
-                child: Image.asset('assets/logo_text_16_9.png', height: 90),
+              Image.asset(
+                isDarkMode
+                    ? 'assets/logo_text_16_9_dark_mode.png'
+                    : 'assets/logo_text_16_9.png',
+                height: 90,
               ),
               const Gap(20),
               Text(
@@ -151,7 +151,7 @@ class RegisterFragment extends GetView<RegisterViewModel> {
                         Text(
                           controller.storeNameSuggestion.value,
                           style: const TextStyle(
-                            color: Colors.orange,
+                            color: Color(0xffFF2056),
                             fontSize: 12,
                           ),
                         ),
@@ -245,14 +245,19 @@ class RegisterFragment extends GetView<RegisterViewModel> {
 
                     ButtonPrimary(
                       text: isSeller ? 'Daftar Toko' : 'Daftar',
-                      onTap:
-                          (!connectivity.isOnline.value ||
-                              controller.isLoading.value)
+                      onTap: controller.isLoading.value
                           ? null
-                          : () => controller.handleRegister(
-                              context,
-                              onRegisterSuccess: onSwitchToLogin,
-                            ),
+                          : () async {
+                              if (connectivity.isOnline.value) {
+                                await controller.handleRegister(
+                                  context,
+                                  onRegisterSuccess: onSwitchToLogin,
+                                );
+                              } else {
+                                const OfflineBanner();
+                                return;
+                              }
+                            },
                     ),
                   ],
                 );

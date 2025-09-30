@@ -62,9 +62,10 @@ class BrowseFragment extends GetView<BrowseViewModel> {
                             return buildSearchProducts();
                           } else {
                             return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 const Gap(10),
-                                chipCategories(controller.categories),
+                                chipCategories(controller.chipItems),
                                 const Gap(20),
                                 buildPopular(),
                                 const Gap(20),
@@ -196,7 +197,7 @@ class BrowseFragment extends GetView<BrowseViewModel> {
   }
 
   Widget buildBookingStatus() {
-    final Car? car = controller.car.value;
+    final Car? car = controller.bookedCar.value;
     if (car == null) return const SizedBox();
 
     return Container(
@@ -265,68 +266,79 @@ class BrowseFragment extends GetView<BrowseViewModel> {
   }
 
   Widget buildPopular() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(24, 0, 24, 10),
-          child: Text(
-            'Populer',
-            style: GoogleFonts.poppins(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: Theme.of(Get.context!).colorScheme.onSurface,
+    return Obx(() {
+      if (controller.featuredList.isEmpty) {
+        return const SizedBox.shrink();
+      }
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 0, 24, 10),
+            child: Text(
+              'Populer',
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: Theme.of(Get.context!).colorScheme.onSurface,
+              ),
             ),
           ),
-        ),
-        SizedBox(
-          height: 275,
-          child: ListView.builder(
-            itemCount: controller.featuredList.length,
-            scrollDirection: Axis.horizontal,
-            itemBuilder: (context, index) {
-              Car car = controller.featuredList[index];
-              final margin = EdgeInsets.only(
-                left: index == 0 ? 24 : 12,
-                right: index == controller.featuredList.length - 1 ? 24 : 12,
-              );
-              bool isTrending = index == 0;
-              return itemFeaturedCar(car, margin, isTrending);
-            },
+          SizedBox(
+            height: 275,
+            child: ListView.builder(
+              itemCount: controller.featuredList.length,
+              scrollDirection: Axis.horizontal,
+              itemBuilder: (context, index) {
+                Car car = controller.featuredList[index];
+                final margin = EdgeInsets.only(
+                  left: index == 0 ? 24 : 12,
+                  right: index == controller.featuredList.length - 1 ? 24 : 12,
+                );
+                bool isTrending = index == 0;
+                return itemFeaturedCar(car, margin, isTrending);
+              },
+            ),
           ),
-        ),
-      ],
-    );
+        ],
+      );
+    });
   }
 
   Widget buildNewest() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(24, 0, 24, 10),
-          child: Text(
-            'Terbaru',
-            style: GoogleFonts.poppins(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: Theme.of(Get.context!).colorScheme.onSurface,
+    return Obx(() {
+      if (controller.newestList.isEmpty) {
+        return const SizedBox.shrink();
+      }
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 0, 24, 10),
+            child: Text(
+              'Terbaru',
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: Theme.of(Get.context!).colorScheme.onSurface,
+              ),
             ),
           ),
-        ),
-        ListView.separated(
-          physics: const NeverScrollableScrollPhysics(),
-          shrinkWrap: true,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 0),
-          itemCount: controller.newestList.length,
-          separatorBuilder: (context, index) => const Gap(16),
-          itemBuilder: (context, index) {
-            Car car = controller.newestList[index];
-            return buildNewestItem(context, car);
-          },
-        ),
-      ],
-    );
+          ListView.separated(
+            physics: const NeverScrollableScrollPhysics(),
+            shrinkWrap: true,
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 0),
+            itemCount: controller.newestList.length,
+            separatorBuilder: (context, index) => const Gap(16),
+            itemBuilder: (context, index) {
+              Car car = controller.newestList[index];
+              return buildNewestItem(context, car);
+            },
+          ),
+        ],
+      );
+    });
   }
 
   Widget buildSearchProducts() {
@@ -431,11 +443,7 @@ class BrowseFragment extends GetView<BrowseViewModel> {
         },
         onDelete: () async {
           if (connectivity.isOnline.value) {
-            await controller.sellerSource.deleteProduct(
-              car.id,
-              controller.authVM.account.value!.uid,
-              controller.authVM.account.value!.role,
-            );
+            await controller.deleteProduct(car.id);
           } else {
             const OfflineBanner();
             return;
@@ -473,21 +481,7 @@ class BrowseFragment extends GetView<BrowseViewModel> {
         children: [
           SlidableAction(
             onPressed: (context) async {
-              if (connectivity.isOnline.value) {
-                bool? confirm = await controller.showConfirmationDialog(
-                  context: context,
-                  title: 'Hapus Produk',
-                  content:
-                      'Apakah Anda yakin ingin menghapus produk ini secara permanen?',
-                  confirmText: 'Ya, Hapus',
-                );
-                if (confirm == true) {
-                  onDelete();
-                }
-              } else {
-                const OfflineBanner();
-                return;
-              }
+              onDelete();
             },
             backgroundColor: const Color(0xffFF2056),
             foregroundColor: Colors.white,

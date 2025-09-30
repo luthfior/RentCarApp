@@ -24,11 +24,11 @@ class CompleteBookingPage extends StatelessWidget {
           children: [
             const Gap(100),
             Text(
-              'Pemesanan Berhasil\nSelamat Menikmati Perjalanan Anda!',
+              'Pemesanan Berhasil\nSelamat Menikmati Produk Sewa Anda!',
               textAlign: TextAlign.center,
               style: GoogleFonts.poppins(
                 fontWeight: FontWeight.w700,
-                fontSize: 24,
+                fontSize: 20,
                 color: Theme.of(Get.context!).colorScheme.onSurface,
               ),
             ),
@@ -74,7 +74,7 @@ class CompleteBookingPage extends StatelessWidget {
               textAlign: TextAlign.center,
               style: GoogleFonts.poppins(
                 fontWeight: FontWeight.w600,
-                fontSize: 22,
+                fontSize: 18,
                 color: Theme.of(Get.context!).colorScheme.onSurface,
               ),
             ),
@@ -84,16 +84,16 @@ class CompleteBookingPage extends StatelessWidget {
               textAlign: TextAlign.center,
               style: GoogleFonts.poppins(
                 fontWeight: FontWeight.w400,
-                fontSize: 18,
+                fontSize: 16,
                 color: const Color(0xff838384),
               ),
             ),
             Text(
-              car.transmissionProduct,
+              car.brandProduct,
               textAlign: TextAlign.center,
               style: GoogleFonts.poppins(
                 fontWeight: FontWeight.w400,
-                fontSize: 18,
+                fontSize: 16,
                 color: const Color(0xff838384),
               ),
             ),
@@ -117,10 +117,7 @@ class CompleteBookingPage extends StatelessWidget {
                   ? const Color(0xffEFEFF0)
                   : const Color(0xff070623),
               onTap: () {
-                Get.offAllNamed(
-                  '/discover',
-                  arguments: {'fragmentIndex': 1, 'bookedCar': car},
-                );
+                Get.offAllNamed('/discover', arguments: {'fragmentIndex': 1});
               },
             ),
           ],

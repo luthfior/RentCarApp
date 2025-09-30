@@ -7,14 +7,13 @@ class SplashScreen extends GetView<AuthViewModel> {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       body: Center(
-        child: ColorFiltered(
-          colorFilter: ColorFilter.mode(
-            Theme.of(context).colorScheme.onSurface,
-            BlendMode.srcIn,
-          ),
-          child: Image.asset('assets/logo_text_1.png'),
+        child: Image.asset(
+          isDarkMode
+              ? 'assets/logo_text_1_dark_mode.png'
+              : 'assets/logo_text_1.png',
         ),
       ),
     );

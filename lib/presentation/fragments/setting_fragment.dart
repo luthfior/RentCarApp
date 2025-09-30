@@ -176,7 +176,16 @@ class SettingFragment extends StatelessWidget {
                                           const Gap(20),
                                           buildItemSettings(
                                             icon: Icons.pin,
-                                            title: 'Ganti Pin DompetKu',
+                                            title:
+                                                (authVM
+                                                        .account
+                                                        .value!
+                                                        .pin!
+                                                        .isEmpty ||
+                                                    authVM.account.value!.pin ==
+                                                        null)
+                                                ? 'Buat Pin DompetKu'
+                                                : 'Ganti Pin DompetKu',
                                             isDisable:
                                                 !connectivity.isOnline.value,
                                             onTap: () {
@@ -206,26 +215,31 @@ class SettingFragment extends StatelessWidget {
                                   }),
                                   const Gap(20),
                                   buildItemSettings(
+                                    icon: Icons.info_rounded,
+                                    title: 'Tentang',
+                                    isDisable: !connectivity.isOnline.value,
+                                    onTap: () {
+                                      Get.toNamed('/about-app');
+                                    },
+                                  ),
+                                  const Gap(20),
+                                  buildItemSettings(
                                     icon: Icons.power_settings_new_rounded,
                                     title: 'Keluar',
                                     isDisable: !connectivity.isOnline.value,
                                     onTap: () async {
                                       if (connectivity.isOnline.value) {
-                                        authVM.logout();
-                                        if (connectivity.isOnline.value) {
-                                          bool?
-                                          confirm = await showConfirmationDialog(
-                                            context: context,
-                                            title: 'Keluar Akun',
-                                            content:
-                                                'Apakah Anda yakin ingin Keluar?',
-                                            confirmText: 'Ya, Hapus',
-                                          );
-                                          if (confirm == true) {
-                                            authVM.logout();
-                                          }
+                                        bool?
+                                        confirm = await showConfirmationDialog(
+                                          context: context,
+                                          title: 'Keluar Akun',
+                                          content:
+                                              'Apakah Anda yakin ingin Keluar?',
+                                          confirmText: 'Ya, Keluar',
+                                        );
+                                        if (confirm == true) {
+                                          authVM.logout();
                                         } else {
-                                          const OfflineBanner();
                                           return;
                                         }
                                       } else {
@@ -393,7 +407,7 @@ class SettingFragment extends StatelessWidget {
             title: Text(
               title,
               style: GoogleFonts.poppins(
-                fontSize: 22,
+                fontSize: 20,
                 fontWeight: FontWeight.w600,
                 color: Theme.of(Get.context!).colorScheme.onSurface,
               ),
@@ -401,7 +415,7 @@ class SettingFragment extends StatelessWidget {
             content: Text(
               content,
               style: GoogleFonts.poppins(
-                fontSize: 16,
+                fontSize: 14,
                 fontWeight: FontWeight.w500,
                 color: Theme.of(Get.context!).colorScheme.onSurface,
               ),

@@ -133,6 +133,8 @@ class DetailOrderPage extends GetView<DetailOrderViewModel> {
                               controller.order.customerId,
                               controller.order.sellerId,
                             );
+                          } else {
+                            return;
                           }
                         } else {
                           const OfflineBanner();
@@ -177,8 +179,12 @@ class DetailOrderPage extends GetView<DetailOrderViewModel> {
                               controller.order.id,
                               controller.order.customerId,
                               controller.order.sellerId,
+                              controller.order.orderDetail.car.id,
+                              controller.order.paymentMethod,
                               controller.order.orderDetail.totalPrice.round(),
                             );
+                          } else {
+                            return;
                           }
                         } else {
                           const OfflineBanner();
@@ -256,7 +262,7 @@ class DetailOrderPage extends GetView<DetailOrderViewModel> {
                   ),
                 ),
                 Text(
-                  controller.order.orderDetail.car.transmissionProduct,
+                  controller.order.orderDetail.car.brandProduct,
                   style: GoogleFonts.poppins(
                     fontSize: 12,
                     fontWeight: FontWeight.w400,

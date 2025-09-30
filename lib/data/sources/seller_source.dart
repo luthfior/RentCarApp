@@ -24,6 +24,7 @@ class SellerSource {
           .doc(car.id)
           .set({'productId': car.id, 'createdAt': Timestamp.now()});
       log('Produk dengan ID ${car.id} berhasil dibuat oleh $userRole');
+      Message.success('Produk Berhasil di Upload');
     } on FirebaseException catch (e) {
       log('Firebase Error: ${e.code} - ${e.message}');
       rethrow;
@@ -75,7 +76,7 @@ class SellerSource {
   Future<void> updateProduct(Car car) async {
     try {
       await firestore.collection('Cars').doc(car.id).update(car.toJson());
-      log('Produk dengan ID ${car.id} berhasil diperbarui');
+      log('Produk dengan ID ${car.id} berhasil di Perbarui');
       Message.success('Produk Berhasil diPerbarui');
     } on FirebaseException catch (e) {
       log('Firebase Error: ${e.code} - ${e.message}');
@@ -86,40 +87,58 @@ class SellerSource {
     }
   }
 
-  Future<void> deleteProduct(
-    String productId,
-    String userId,
-    String userRole,
-  ) async {
+  Future<void> deleteProduct(String productId) async {
     try {
-      await firestore.collection('Cars').doc(productId).delete();
-      final String userCollection = userRole == 'admin' ? 'Admin' : 'Users';
-      await firestore
-          .collection(userCollection)
-          .doc(userId)
-          .collection('myProducts')
-          .doc(productId)
-          .delete();
-      if (userRole == 'admin') {
-        final usersSnapshot = await firestore.collection('Users').get();
-        for (var userDoc in usersSnapshot.docs) {
-          final myProductRef = firestore
-              .collection('Users')
-              .doc(userDoc.id)
-              .collection('myProducts')
-              .doc(productId);
+      final productDocRef = firestore.collection('Cars').doc(productId);
+      final productDoc = await productDocRef.get();
 
-          final doc = await myProductRef.get();
-          if (doc.exists) {
-            await myProductRef.delete();
-          }
-        }
+      if (!productDoc.exists) {
+        log('Produk dengan ID $productId tidak ditemukan.');
+        Message.error('Produk tidak ditemukan.');
+        return;
       }
 
-      log('Produk dengan ID $productId berhasil dihapus');
+      final productData = productDoc.data()!;
+      final String ownerId = productData['ownerId'];
+      final String ownerRole = productData['ownerType'];
+      final batch = firestore.batch();
+
+      batch.delete(productDocRef);
+      log('Menyiapkan penghapusan produk utama: /Cars/$productId');
+
+      final String ownerCollection = (ownerRole == 'admin') ? 'Admin' : 'Users';
+      final myProductRef = firestore
+          .collection(ownerCollection)
+          .doc(ownerId)
+          .collection('myProducts')
+          .doc(productId);
+      batch.delete(myProductRef);
+      log(
+        'Menyiapkan penghapusan referensi produk dari: /$ownerCollection/$ownerId/myProducts/$productId',
+      );
+
+      final usersSnapshot = await firestore.collection('Users').get();
+      for (var userDoc in usersSnapshot.docs) {
+        final favProductRef = firestore
+            .collection('Users')
+            .doc(userDoc.id)
+            .collection('favProducts')
+            .doc(productId);
+
+        batch.delete(favProductRef);
+        log(
+          'Menyiapkan penghapusan referensi favorit dari: /Users/${userDoc.id}/favProducts/$productId',
+        );
+      }
+
+      await batch.commit();
+
+      log(
+        'Produk dengan ID $productId berhasil dihapus sepenuhnya dari collection Cars, myProducts, dan juga favProducts.',
+      );
       Message.success('Produk Berhasil Dihapus');
     } on FirebaseException catch (e) {
-      log('Firebase Error: ${e.code} - ${e.message}');
+      log('Firebase Error saat menghapus produk: ${e.code} - ${e.message}');
       rethrow;
     } catch (e) {
       log('Gagal menghapus produk: $e');

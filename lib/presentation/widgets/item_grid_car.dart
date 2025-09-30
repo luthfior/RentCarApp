@@ -91,7 +91,7 @@ Widget itemGridCar(Car car, VoidCallback onTap) {
           ),
           const Gap(4),
           Text(
-            car.transmissionProduct,
+            car.brandProduct,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: GoogleFonts.poppins(

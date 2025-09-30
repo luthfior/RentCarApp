@@ -1,13 +1,9 @@
 import 'dart:developer';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rent_car_app/core/constants/message.dart';
-import 'package:rent_car_app/data/models/account.dart';
 import 'package:rent_car_app/data/models/car.dart';
-import 'package:rent_car_app/data/services/notification_service.dart';
-import 'package:rent_car_app/data/services/push_notification_service.dart';
 import 'package:rent_car_app/presentation/viewModels/auth_view_model.dart';
 import 'package:rent_car_app/presentation/viewModels/checkout_view_model.dart';
 import 'package:rent_car_app/data/sources/user_source.dart';
@@ -39,8 +35,8 @@ class PinViewModel extends GetxController {
   void onInit() {
     final args = Get.arguments;
     if (args != null) {
-      isForVerification.value = args['isForVerification'];
-      isChangingPin.value = args['isChangingPin'];
+      isForVerification.value = args['isForVerification'] ?? false;
+      isChangingPin.value = args['isChangingPin'] ?? false;
     }
     super.onInit();
   }

@@ -43,7 +43,7 @@ class CheckoutPage extends GetView<CheckoutViewModel> {
                           textAlign: TextAlign.center,
                           style: GoogleFonts.poppins(
                             fontSize: 12,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w400,
                             color: Theme.of(context).colorScheme.secondary,
                           ),
                         ),
@@ -222,7 +222,7 @@ class CheckoutPage extends GetView<CheckoutViewModel> {
                   ),
                 ),
                 Text(
-                  controller.car.transmissionProduct,
+                  controller.car.brandProduct,
                   style: GoogleFonts.poppins(
                     fontSize: 12,
                     fontWeight: FontWeight.w400,

@@ -86,6 +86,7 @@ class AuthSource {
         role: role,
         username: username,
         storeName: finalStoreName,
+        createdAt: Timestamp.now(),
       );
 
       await fireStore
@@ -128,7 +129,7 @@ class AuthSource {
       final userDoc = await fireStore.collection('Users').doc(uid).get();
       if (userDoc.exists) {
         final account = Account.fromJson(userDoc.data()!);
-        await DSession.setUser(account.toJson());
+        await DSession.setUser(account.toMapForSession());
         log('Login berhasil sebagai User');
         saveFcmToken(uid, isAdmin: false);
         return Result.success(account);
@@ -137,7 +138,7 @@ class AuthSource {
       final adminDoc = await fireStore.collection('Admin').doc(uid).get();
       if (adminDoc.exists) {
         final account = Account.fromJson(adminDoc.data()!);
-        await DSession.setUser(account.toJson());
+        await DSession.setUser(account.toMapForSession());
         log('Login berhasil sebagai Admin');
         saveFcmToken(uid, isAdmin: true);
         return Result.success(account);

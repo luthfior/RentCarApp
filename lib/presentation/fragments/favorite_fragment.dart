@@ -139,7 +139,8 @@ class FavoriteFragment extends GetView<FavoriteViewModel> {
               controller.status.value == 'success') {
             return TutorialOverlay(
               onDismiss: () => controller.dismissTutorial(),
-              message: "Geser kiri atau kanan pada item untuk menampilkan Opsi",
+              message:
+                  "Geser ke kiri atau kanan pada item untuk menampilkan Opsi",
               icon: Icons.swipe,
             );
           }

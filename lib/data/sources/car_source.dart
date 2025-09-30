@@ -9,6 +9,7 @@ class CarSource {
           .collection('Cars')
           .where('ratingAverage', isGreaterThan: 4.5)
           .orderBy('purchasedProduct', descending: true)
+          .orderBy('nameProduct')
           .snapshots()
           .map((querySnapshot) {
             return querySnapshot.docs
@@ -30,6 +31,7 @@ class CarSource {
       final fetchNewCars = FirebaseFirestore.instance
           .collection('Cars')
           .orderBy('createdAt', descending: true)
+          .orderBy('nameProduct')
           .snapshots()
           .map((querySnapshot) {
             return querySnapshot.docs
@@ -46,12 +48,12 @@ class CarSource {
     }
   }
 
-  static Future<List<String>> fetchCategories() async {
+  static Future<List<String>> fetchBrands() async {
     try {
       final ref = FirebaseFirestore.instance.collection('Cars');
       final queryDocs = await ref.get();
       final categories = queryDocs.docs
-          .map((doc) => doc['categoryProduct'] as String?)
+          .map((doc) => doc['brandProduct'] as String?)
           .where((e) => e != null)
           .toSet()
           .toList();
@@ -60,7 +62,26 @@ class CarSource {
       log('Firebase Error: ${e.code} - ${e.message}');
       rethrow;
     } catch (e) {
-      log('Gagal ambil kategori mobil $e');
+      log('Gagal ambil brand produk $e');
+      return [];
+    }
+  }
+
+  static Future<List<String>> fetchUniqueCategories() async {
+    try {
+      final ref = FirebaseFirestore.instance.collection('Cars');
+      final queryDocs = await ref.get();
+      final categories = queryDocs.docs
+          .map((doc) => doc['categoryProduct'] as String?)
+          .where((e) => e != null && e.isNotEmpty)
+          .toSet()
+          .toList();
+      return categories.cast<String>();
+    } on FirebaseException catch (e) {
+      log('Firebase Error saat fetch kategori unik: ${e.code} - ${e.message}');
+      rethrow;
+    } catch (e) {
+      log('Gagal ambil kategori unik produk: $e');
       return [];
     }
   }

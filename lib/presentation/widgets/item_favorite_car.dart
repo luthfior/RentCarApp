@@ -113,7 +113,7 @@ Widget itemFavoriteCar(BuildContext context, {required Car car}) {
                               ),
                               const Gap(4),
                               Text(
-                                car.transmissionProduct,
+                                car.brandProduct,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: GoogleFonts.poppins(

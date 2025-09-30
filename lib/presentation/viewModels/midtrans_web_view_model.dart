@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:get/get.dart';
+import 'package:rent_car_app/core/constants/message.dart';
 import 'package:rent_car_app/presentation/viewModels/checkout_view_model.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -8,6 +9,8 @@ class MidtransWebViewModel extends GetxController {
   final RxString _status = 'loading'.obs;
   String get status => _status.value;
   set status(String value) => _status.value = value;
+
+  String? url;
   String? resi;
   WebViewController? webViewController;
   String detectedPaymentMethod = 'Midtrans';
@@ -19,15 +22,10 @@ class MidtransWebViewModel extends GetxController {
   void onInit() {
     super.onInit();
     final args = Get.arguments;
-    if (args != null) {
+    if (args != null && args['url'] != null) {
       resi = args['resi'];
+      url = args['url'];
       init(args['url']);
-      ever(_status, (value) {
-        if (value == 'error') {
-          if (Get.isDialogOpen ?? false) Get.back();
-          Get.back(result: 'error');
-        }
-      });
     } else {
       log('Error: MidtransWebViewModel tidak ada URL dan resi');
       status = 'error';
@@ -58,10 +56,34 @@ class MidtransWebViewModel extends GetxController {
       ..setNavigationDelegate(
         NavigationDelegate(
           onPageStarted: (_) => status = 'loading',
-          onPageFinished: (_) => status = 'done',
+          onPageFinished: (String url) {
+            log("Page finished loading: $url");
+            if (status != 'error') {
+              status = 'done';
+            }
+            if (url.contains('/v2/deeplink/payment') ||
+                url.contains('v2/deeplink/index')) {
+              log(
+                'GoPay simulator page finished. Simulating successful payment.',
+              );
+              checkoutVm?.processPayment(resi!, 'GoPay', 'Sudah Dibayar');
+            }
+          },
           onWebResourceError: (error) {
             log("WebResourceError: ${error.description} (${error.errorCode})");
-            if (error.errorCode == -2 || error.errorCode == -6) {
+            final List<int> fatalErrorCodes = [
+              // Android
+              -2, // ERROR_HOST_LOOKUP
+              -6, // ERROR_CONNECT
+              -7, // ERROR_TIMEOUT
+              // iOS
+              -1001, // NSURLErrorTimedOut
+              -1003, // NSURLErrorCannotFindHost
+              -1004, // NSURLErrorCannotConnectToHost
+              -1009, // NSURLErrorNotConnectedToInternet
+            ];
+
+            if (fatalErrorCodes.contains(error.errorCode)) {
               status = 'error';
             }
           },
@@ -74,6 +96,28 @@ class MidtransWebViewModel extends GetxController {
               log(
                 "Metode pembayaran ter-update menjadi: $detectedPaymentMethod",
               );
+            }
+            if (request.url.startsWith('blob:')) {
+              log(
+                "Download attempt detected for $detectedPaymentMethod, processing as pending payment.",
+              );
+              checkoutVm?.processPayment(
+                resi!,
+                detectedPaymentMethod,
+                'Menunggu Pembayaran',
+              );
+              return NavigationDecision.prevent;
+            }
+            if (request.url.contains('/pdf')) {
+              log(
+                "Download attempt detected for $detectedPaymentMethod, processing as pending payment.",
+              );
+              checkoutVm?.processPayment(
+                resi!,
+                detectedPaymentMethod,
+                'Menunggu Pembayaran',
+              );
+              return NavigationDecision.prevent;
             }
             if (request.url.contains('example.com')) {
               final uri = Uri.parse(request.url);
@@ -102,38 +146,20 @@ class MidtransWebViewModel extends GetxController {
               return NavigationDecision.prevent;
             }
 
-            if (request.url.contains('/v2/deeplink/payment') ||
-                request.url.contains('v2/deeplink/index')) {
-              log('GoPay deeplink detected, considering payment as pending.');
-              final uri = Uri.parse(request.url);
-              final transactionStatus =
-                  uri.queryParameters['transaction_status'] ?? 'pending';
-              String mappedStatus;
-              switch (transactionStatus) {
-                case 'settlement':
-                  mappedStatus = 'Sudah Dibayar';
-                  break;
-                case 'pending':
-                  mappedStatus = 'Menunggu Pembayaran';
-                  break;
-                case 'cancel':
-                  mappedStatus = 'Dibatalkan';
-                  break;
-                default:
-                  mappedStatus = 'Menunggu Pembayaran';
-              }
-              checkoutVm?.processPayment(
-                resi!,
-                detectedPaymentMethod,
-                mappedStatus,
-              );
-              return NavigationDecision.prevent;
-            }
-
             return NavigationDecision.navigate;
           },
         ),
       )
       ..loadRequest(Uri.parse(url));
+  }
+
+  void retryLoad() {
+    if (url != null && webViewController != null) {
+      status = 'loading';
+      webViewController!.loadRequest(Uri.parse(url!));
+    } else {
+      Message.error('Gagal memuat ulang, URL tidak ditemukan.');
+      Get.back(result: 'error');
+    }
   }
 }

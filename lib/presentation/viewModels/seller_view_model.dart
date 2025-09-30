@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:rent_car_app/core/constants/message.dart';
 import 'package:rent_car_app/data/models/car.dart';
 import 'package:rent_car_app/data/sources/seller_source.dart';
 import 'package:rent_car_app/presentation/viewModels/auth_view_model.dart';
@@ -28,6 +29,7 @@ class SellerViewModel extends GetxController {
   final hasShownTutorial = false.obs;
   final box = GetStorage();
   final status = 'loading'.obs;
+  final isLoadingDelete = false.obs;
 
   @override
   void onInit() {
@@ -70,7 +72,7 @@ class SellerViewModel extends GetxController {
             (car) =>
                 car.nameProduct.toLowerCase().contains(query) ||
                 car.categoryProduct.toLowerCase().contains(query) ||
-                car.transmissionProduct.toLowerCase().contains(query),
+                car.brandProduct.toLowerCase().contains(query),
           )
           .toList();
       _searchResults.value = filteredResults;
@@ -109,6 +111,54 @@ class SellerViewModel extends GetxController {
         );
   }
 
+  Future<void> goToAddProductPage() async {
+    final acc = authVM.account.value;
+    if (acc == null) return;
+
+    final isProfileComplete =
+        (acc.phoneNumber?.isNotEmpty ?? false) &&
+        (acc.street?.isNotEmpty ?? false) &&
+        (acc.province?.isNotEmpty ?? false) &&
+        (acc.city?.isNotEmpty ?? false) &&
+        (acc.district?.isNotEmpty ?? false) &&
+        (acc.village?.isNotEmpty ?? false) &&
+        acc.latLocation != null &&
+        acc.longLocation != null;
+
+    if (isProfileComplete) {
+      Get.toNamed('/add-product', arguments: {'isEdit': false});
+    } else {
+      Message.neutral(
+        'Data Profil Anda belum lengkap. Silahkan lengkapi terlebih dahulu untuk melanjutkan',
+        fontSize: 12,
+      );
+      Get.toNamed('/edit-profile', arguments: {'from': 'add-product'});
+    }
+  }
+
+  Future<void> deleteProduct(String productId) async {
+    bool? confirm = await showConfirmationDialog(
+      context: Get.context!,
+      title: 'Hapus Produk?',
+      content:
+          'Apakah Anda yakin ingin menghapus produk ini secara permanen? Tindakan ini tidak dapat diurungkan.',
+      confirmText: 'Ya, Hapus',
+    );
+    if (confirm != true) {
+      return;
+    }
+    isLoadingDelete.value = true;
+    try {
+      await sellerSource.deleteProduct(productId);
+      fetchMyProducts();
+    } catch (e) {
+      log("Gagal menghapus produk dari ViewModel: $e");
+      Message.error('Terjadi kesalahan saat menghapus produk.');
+    } finally {
+      isLoadingDelete.value = false;
+    }
+  }
+
   void _checkAndShowTutorial() {
     final bool shouldShow =
         status.value == 'success' &&
@@ -136,7 +186,7 @@ class SellerViewModel extends GetxController {
             title: Text(
               title,
               style: GoogleFonts.poppins(
-                fontSize: 22,
+                fontSize: 20,
                 fontWeight: FontWeight.w600,
                 color: Theme.of(Get.context!).colorScheme.onSurface,
               ),
@@ -144,7 +194,7 @@ class SellerViewModel extends GetxController {
             content: Text(
               content,
               style: GoogleFonts.poppins(
-                fontSize: 16,
+                fontSize: 14,
                 fontWeight: FontWeight.w500,
                 color: Theme.of(Get.context!).colorScheme.onSurface,
               ),
