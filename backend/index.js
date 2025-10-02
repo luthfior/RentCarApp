@@ -4,6 +4,7 @@ import admin from "firebase-admin";
 import { getFirestore } from "firebase-admin/firestore";
 import midtransClient from "midtrans-client";
 import cors from "cors";
+import { refreshToken } from "firebase-admin/app";
 
 dotenv.config();
 
@@ -39,9 +40,12 @@ app.post("/send-notification", async (req, res) => {
             return res.status(400).json({ error: "Missing token, data, title or body" });
         }
         const message = {
-            notification: { title, body },
             token,
-            data: data || {},
+            data: {
+                ...data,
+                title,
+                body,
+            },
         };
         await admin.messaging().send(message);
         res.json({ success: true, message: "Notification sent!" });
@@ -58,9 +62,12 @@ app.post("/send-multi", async (req, res) => {
             return res.status(400).json({ error: "Missing token, data, title or body" });
         }
         const message = {
-            notification: { title, body },
             tokens,
-            data: data || {},
+            data: {
+                ...data,
+                title,
+                body,
+            },
         };
         const response = await admin.messaging().sendEachForMulticast(message);
         res.json({
@@ -103,9 +110,12 @@ app.post("/send-to-roles", async (req, res) => {
         }
 
         const message = {
-            notification: { title, body },
             tokens: uniqueTokens,
-            data: data || {},
+            data: {
+                ...data,
+                title,
+                body,
+            },
         };
 
         const response = await admin.messaging().sendEachForMulticast(message);
@@ -146,9 +156,12 @@ app.post("/send-all", async (req, res) => {
             return res.json({ success: false, message: "No tokens found in Users/Admin" });
         }
         const message = {
-            notification: { title, body },
             tokens,
-            data: data || {},
+            data: {
+                ...data,
+                title,
+                body,
+            },
         };
         const response = await admin.messaging().sendEachForMulticast(message);
         res.json({
