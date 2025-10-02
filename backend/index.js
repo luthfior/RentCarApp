@@ -46,6 +46,7 @@ app.post("/send-notification", async (req, res) => {
                 title,
                 body,
             },
+            android: { priority: "high" }
         };
         await admin.messaging().send(message);
         res.json({ success: true, message: "Notification sent!" });
@@ -68,6 +69,7 @@ app.post("/send-multi", async (req, res) => {
                 title,
                 body,
             },
+            android: { priority: "high" }
         };
         const response = await admin.messaging().sendEachForMulticast(message);
         res.json({
@@ -116,6 +118,7 @@ app.post("/send-to-roles", async (req, res) => {
                 title,
                 body,
             },
+            android: { priority: "high" }
         };
 
         const response = await admin.messaging().sendEachForMulticast(message);
@@ -162,6 +165,7 @@ app.post("/send-all", async (req, res) => {
                 title,
                 body,
             },
+            android: { priority: "high" }
         };
         const response = await admin.messaging().sendEachForMulticast(message);
         res.json({
