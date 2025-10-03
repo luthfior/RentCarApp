@@ -40,12 +40,9 @@ app.post("/send-notification", async (req, res) => {
             return res.status(400).json({ error: "Missing token, data, title or body" });
         }
         const message = {
+            notification: { title, body },
             token,
-            data: {
-                ...data,
-                title,
-                body,
-            },
+            data: data || {},
             android: { priority: "high" }
         };
         await admin.messaging().send(message);
@@ -63,12 +60,9 @@ app.post("/send-multi", async (req, res) => {
             return res.status(400).json({ error: "Missing token, data, title or body" });
         }
         const message = {
+            notification: { title, body },
             tokens,
-            data: {
-                ...data,
-                title,
-                body,
-            },
+            data: data || {},
             android: { priority: "high" }
         };
         const response = await admin.messaging().sendEachForMulticast(message);
@@ -112,12 +106,9 @@ app.post("/send-to-roles", async (req, res) => {
         }
 
         const message = {
+            notification: { title, body },
             tokens: uniqueTokens,
-            data: {
-                ...data,
-                title,
-                body,
-            },
+            data: data || {},
             android: { priority: "high" }
         };
 
@@ -159,12 +150,9 @@ app.post("/send-all", async (req, res) => {
             return res.json({ success: false, message: "No tokens found in Users/Admin" });
         }
         const message = {
+            notification: { title, body },
             tokens,
-            data: {
-                ...data,
-                title,
-                body,
-            },
+            data: data || {},
             android: { priority: "high" }
         };
         const response = await admin.messaging().sendEachForMulticast(message);
