@@ -42,7 +42,11 @@ app.post("/send-notification", async (req, res) => {
         const message = {
             notification: { title, body },
             token,
-            data: data || {},
+            data: {
+                ...data,
+                title: title,
+                body: body,
+            },
             android: { priority: "high" }
         };
         await admin.messaging().send(message);
@@ -62,7 +66,11 @@ app.post("/send-multi", async (req, res) => {
         const message = {
             notification: { title, body },
             tokens,
-            data: data || {},
+            data: {
+                ...data,
+                title: title,
+                body: body,
+            },
             android: { priority: "high" }
         };
         const response = await admin.messaging().sendEachForMulticast(message);
@@ -108,7 +116,11 @@ app.post("/send-to-roles", async (req, res) => {
         const message = {
             notification: { title, body },
             tokens: uniqueTokens,
-            data: data || {},
+            data: {
+                ...data,
+                title: title,
+                body: body,
+            },
             android: { priority: "high" }
         };
 
@@ -152,7 +164,11 @@ app.post("/send-all", async (req, res) => {
         const message = {
             notification: { title, body },
             tokens,
-            data: data || {},
+            data: {
+                ...data,
+                title: title,
+                body: body,
+            },
             android: { priority: "high" }
         };
         const response = await admin.messaging().sendEachForMulticast(message);
