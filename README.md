@@ -103,4 +103,4 @@ Proyek ini dikembangkan menggunakan teknologi dan arsitektur berikut:
 - **Media Hosting**: Cloudinary
 - **Server**: Railway.
 - **Layanan Lokasi**: LocationIq
-- **Api Wilayah Indonesia**: api.kirimin.id \*shout out to Maftuh Ichsan github.com/maftuh23
+- **Api Wilayah Indonesia**: api.kirimin.id \*dibuat oleh Maftuh Ichsan (github.com/maftuh23)
