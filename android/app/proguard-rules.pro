@@ -1,0 +1,9 @@
+-keepnames class com.google.firebase.** { *; }
+-keep class com.google.android.gms.tasks.** { *; }
+-keep class com.example.rent_car_app.models.Account { *; }
+-keep class com.example.rent_car_app.models.AppNotification { *; }
+-keep class com.example.rent_car_app.models.BookedCar { *; }
+-keep class com.example.rent_car_app.models.Car { *; }
+-keep class com.example.rent_car_app.models.Chat { *; }
+-keep class com.example.rent_car_app.models.OrderDetail { *; }
+-keep class com.example.rent_car_app.models.Orders { *; }

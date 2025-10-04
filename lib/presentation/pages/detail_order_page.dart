@@ -19,40 +19,40 @@ class DetailOrderPage extends GetView<DetailOrderViewModel> {
       body: Stack(
         children: [
           SafeArea(
-            child: Column(
-              children: [
-                buildHeader(),
-                const Gap(20),
-                Expanded(
-                  child: Obx(() {
-                    if (controller.status == 'loading' &&
-                        controller.order.id.isEmpty) {
-                      return const Center(
-                        child: CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            Color(0xffFF5722),
+            child: RefreshIndicator(
+              onRefresh: () async {
+                if (connectivity.isOnline.value) {
+                  await controller.refreshOrder();
+                } else {
+                  const OfflineBanner();
+                  return;
+                }
+              },
+              color: const Color(0xffFF5722),
+              child: Column(
+                children: [
+                  buildHeader(),
+                  const Gap(20),
+                  Expanded(
+                    child: Obx(() {
+                      if (controller.status == 'loading') {
+                        return const Center(
+                          child: CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Color(0xffFF5722),
+                            ),
                           ),
-                        ),
-                      );
-                    }
-                    if (controller.status == 'error') {
-                      return const Center(
-                        child: Text(
-                          "Pesanan tidak ditemukan atau telah dihapus.",
-                        ),
-                      );
-                    }
-                    return RefreshIndicator(
-                      onRefresh: () async {
-                        if (connectivity.isOnline.value) {
-                          await controller.refreshOrder();
-                        } else {
-                          const OfflineBanner();
-                          return;
-                        }
-                      },
-                      color: const Color(0xffFF5722),
-                      child: SingleChildScrollView(
+                        );
+                      }
+                      if (controller.status == 'error' ||
+                          controller.order.id.isEmpty) {
+                        return const Center(
+                          child: Text(
+                            "Pesanan tidak ditemukan atau telah dihapus.",
+                          ),
+                        );
+                      }
+                      return SingleChildScrollView(
                         physics: const AlwaysScrollableScrollPhysics(),
                         padding: const EdgeInsets.only(bottom: 100),
                         child: Column(
@@ -62,16 +62,14 @@ class DetailOrderPage extends GetView<DetailOrderViewModel> {
                             buildReceipt(),
                           ],
                         ),
-                      ),
-                    );
-                  }),
-                ),
-              ],
+                      );
+                    }),
+                  ),
+                ],
+              ),
             ),
           ),
-
           buildSellerActionButtons(context),
-
           Obx(() {
             if (controller.status == 'loading') {
               return const Center(
@@ -124,7 +122,7 @@ class DetailOrderPage extends GetView<DetailOrderViewModel> {
                             context: context,
                             title: 'Batalkan Pesanan',
                             content:
-                                'Apakah Anda yakin ingin membatalkan pesanan ini?',
+                                'Apakah Anda yakin ingin Batalkan Pesanan ini?',
                             confirmText: 'Ya, Batalkan',
                           );
                           if (confirm == true) {
@@ -171,7 +169,7 @@ class DetailOrderPage extends GetView<DetailOrderViewModel> {
                             context: context,
                             title: 'Konfirmasi Pesanan',
                             content:
-                                'Apakah Anda yakin ingin mengonfirmasi pesanan ini?',
+                                'Apakah Anda yakin ingin Konfirmasi Pesanan ini?',
                             confirmText: 'Ya, Konfirmasi',
                           );
                           if (confirm == true) {
@@ -243,7 +241,36 @@ class DetailOrderPage extends GetView<DetailOrderViewModel> {
             controller.order.orderDetail.car.imageProduct,
             width: 80,
             height: 80,
-            fit: BoxFit.contain,
+            fit: BoxFit.cover,
+            loadStateChanged: (state) {
+              switch (state.extendedImageLoadState) {
+                case LoadState.loading:
+                  return const SizedBox(
+                    width: 80,
+                    height: 80,
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          Color(0xffFF5722),
+                        ),
+                      ),
+                    ),
+                  );
+                case LoadState.completed:
+                  return ExtendedImage(
+                    image: state.imageProvider,
+                    width: 80,
+                    height: 80,
+                    fit: BoxFit.cover,
+                  );
+                case LoadState.failed:
+                  return Image.asset(
+                    'assets/splash_screen.png',
+                    width: 80,
+                    height: 80,
+                  );
+              }
+            },
           ),
           const Gap(5),
           Expanded(
@@ -352,139 +379,196 @@ class DetailOrderPage extends GetView<DetailOrderViewModel> {
       );
     }
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Theme.of(Get.context!).colorScheme.surface,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            buildReceiptRow(
-              'Resi',
-              isBold: true,
-              controller.order.resi.isNotEmpty
-                  ? controller.order.resi
-                  : 'Tidak Ada',
-            ),
-            buildReceiptRow(
-              'Metode Pembayaran',
-              isBold: true,
-              controller.order.paymentMethod.isNotEmpty
-                  ? controller.order.paymentMethod
-                  : 'Tidak Ada',
-            ),
-            buildReceiptRow(
-              'Status Pembayaran',
-              isBold: true,
-              controller.order.paymentStatus.isNotEmpty
-                  ? controller.order.paymentStatus
-                  : 'Tidak Ada',
-            ),
-            buildReceiptRow(
-              'Tanggal Order',
-              isBold: true,
-              controller.order.orderDate.toString().isNotEmpty
-                  ? controller.formatTimestamp(controller.order.orderDate)
-                  : 'Tidak Ada',
-            ),
-            buildReceiptRow(
-              'Status Pemesanan',
-              isBold: true,
-              controller.order.orderStatus.toString().isNotEmpty
-                  ? controller.formatOrderStatus(controller.order.orderStatus)
-                  : 'Tidak Ada',
-            ),
-            const Divider(color: Color(0xffEFEEF7), height: 24),
-            buildReceiptRow(
-              'Nama Order',
-              isBold: true,
-              controller.order.customerFullname.isNotEmpty
-                  ? controller.order.customerFullname
-                  : 'Tidak Ada',
-            ),
-            buildReceiptRow(
-              'Harga Sewa',
-              isBold: true,
-              '${controller.formatCurrency(controller.order.orderDetail.car.priceProduct.toDouble())}/hari',
-            ),
-            if (controller.order.orderDetail.withDriver)
+    return Obx(() {
+      if (controller.customer == null || controller.owner == null) {
+        return const Center(
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(Color(0xffFF5722)),
+          ),
+        );
+      }
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Theme.of(Get.context!).colorScheme.surface,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
               buildReceiptRow(
-                'Biaya Driver',
+                'Resi',
                 isBold: true,
-                '${controller.formatCurrency(controller.order.orderDetail.driverCostPerDay.toDouble())}/hari',
+                controller.order.resi.isNotEmpty
+                    ? controller.order.resi
+                    : 'Tidak Ada',
               ),
-            buildReceiptRow(
-              'Tanggal Mulai',
-              isBold: true,
-              controller.order.orderDetail.startDate.isNotEmpty
-                  ? controller.order.orderDetail.startDate
-                  : 'Tidak Ada',
-            ),
-            buildReceiptRow(
-              'Tanggal Berakhir',
-              isBold: true,
-              controller.order.orderDetail.endDate.isNotEmpty
-                  ? controller.order.orderDetail.endDate
-                  : 'Tidak Ada',
-            ),
-            buildReceiptRow(
-              'Durasi',
-              isBold: true,
-              '${controller.order.orderDetail.duration} hari',
-            ),
-            buildReceiptRow(
-              'Penyedia',
-              isBold: true,
-              controller.order.orderDetail.agency.isNotEmpty
-                  ? controller.order.orderDetail.agency
-                  : 'Tidak Ada',
-            ),
-            buildReceiptRow(
-              'Asuransi',
-              isBold: true,
-              isInsurance: true,
-              controller.order.orderDetail.insurance.isNotEmpty
-                  ? controller.order.orderDetail.insurance
-                  : 'Tidak Ada',
-            ),
-            const Divider(color: Color(0xffEFEEF7), height: 24),
-            buildReceiptRow(
-              'Sub Total',
-              isBold: true,
-              controller.formatCurrency(
-                controller.order.orderDetail.subTotal.toDouble(),
+              buildReceiptRow(
+                'Nama Order',
+                isBold: true,
+                controller.customer!.fullName.isNotEmpty
+                    ? controller.customer!.fullName
+                    : 'Tidak Ada',
               ),
-            ),
-            buildReceiptRow(
-              'Biaya Asuransi (20%)',
-              isBold: true,
-              controller.formatCurrency(
-                controller.order.orderDetail.totalInsuranceCost.toDouble(),
+              buildReceiptRow(
+                'Metode Pembayaran',
+                isBold: true,
+                controller.order.paymentMethod.isNotEmpty
+                    ? controller.order.paymentMethod
+                    : 'Tidak Ada',
               ),
-            ),
-            buildReceiptRow(
-              'Biaya Tambahan',
-              isBold: true,
-              controller.formatCurrency(
-                controller.order.orderDetail.additionalCost.toDouble(),
+              buildReceiptRow(
+                'Status Pembayaran',
+                isBold: true,
+                controller.order.paymentStatus.isNotEmpty
+                    ? controller.order.paymentStatus
+                    : 'Tidak Ada',
               ),
-            ),
-            const Divider(color: Color(0xffEFEFF0), height: 24),
-            buildReceiptRow(
-              'Total Harga',
-              isBold: true,
-              isPrice: true,
-              controller.formatCurrency(
-                controller.order.orderDetail.totalPrice.toDouble(),
+              buildReceiptRow(
+                'Tanggal Order',
+                isBold: true,
+                controller.order.orderDate.toString().isNotEmpty
+                    ? controller.formatTimestamp(controller.order.orderDate)
+                    : 'Tidak Ada',
               ),
-            ),
-          ],
+              buildReceiptRow(
+                'Status Pemesanan',
+                isBold: true,
+                controller.order.orderStatus.toString().isNotEmpty
+                    ? controller.formatOrderStatus(controller.order.orderStatus)
+                    : 'Tidak Ada',
+              ),
+              const Divider(color: Color(0xffEFEEF7), height: 24),
+              buildReceiptRow(
+                'Nama Toko',
+                isBold: true,
+                controller.owner!.storeName.isNotEmpty
+                    ? controller.owner!.storeName
+                    : 'Tidak Ada',
+              ),
+              buildReceiptRow(
+                'Nama Produk',
+                isBold: true,
+                controller.car.nameProduct.isNotEmpty &&
+                        controller.car.releaseProduct != 0
+                    ? "${controller.car.nameProduct} (${controller.car.releaseProduct})"
+                    : 'Tidak Ada',
+              ),
+              buildReceiptRow(
+                'Kategori Produk',
+                isBold: true,
+                controller.car.categoryProduct.isNotEmpty
+                    ? controller.car.categoryProduct
+                    : 'Tidak Ada',
+              ),
+              if ([
+                'truk',
+                'mobil',
+                'motor',
+                'sepeda',
+              ].contains(controller.car.categoryProduct.toLowerCase())) ...[
+                buildReceiptRow(
+                  'Sumber Energi',
+                  isBold: true,
+                  controller.car.energySourceProduct ?? 'Tidak Ada',
+                ),
+                buildReceiptRow(
+                  (controller.car.categoryProduct.toLowerCase() == 'sepeda')
+                      ? 'Jenis Gigi'
+                      : 'Transmisi',
+                  isBold: true,
+                  controller.car.transmissionProduct ?? 'Tidak Ada',
+                ),
+              ],
+              buildReceiptRow(
+                'Brand Produk',
+                isBold: true,
+                controller.car.brandProduct.isNotEmpty
+                    ? controller.car.brandProduct
+                    : 'Tidak Ada',
+              ),
+              buildReceiptRow(
+                'Harga Sewa',
+                isBold: true,
+                '${controller.formatCurrency(controller.order.orderDetail.car.priceProduct.toDouble())}/hari',
+              ),
+              if (controller.order.orderDetail.withDriver)
+                buildReceiptRow(
+                  'Biaya Driver',
+                  isBold: true,
+                  '${controller.formatCurrency(controller.order.orderDetail.driverCostPerDay.toDouble())}/hari',
+                ),
+              buildReceiptRow(
+                'Tanggal Mulai',
+                isBold: true,
+                controller.order.orderDetail.startDate.isNotEmpty
+                    ? controller.order.orderDetail.startDate
+                    : 'Tidak Ada',
+              ),
+              buildReceiptRow(
+                'Tanggal Berakhir',
+                isBold: true,
+                controller.order.orderDetail.endDate.isNotEmpty
+                    ? controller.order.orderDetail.endDate
+                    : 'Tidak Ada',
+              ),
+              buildReceiptRow(
+                'Durasi',
+                isBold: true,
+                '${controller.order.orderDetail.duration} hari',
+              ),
+              buildReceiptRow(
+                'Penyedia',
+                isBold: true,
+                controller.order.orderDetail.agency.isNotEmpty
+                    ? controller.order.orderDetail.agency
+                    : 'Tidak Ada',
+              ),
+              buildReceiptRow(
+                'Asuransi',
+                isBold: true,
+                isInsurance: true,
+                controller.order.orderDetail.insurance.isNotEmpty
+                    ? controller.order.orderDetail.insurance
+                    : 'Tidak Ada',
+              ),
+              const Divider(color: Color(0xffEFEEF7), height: 24),
+              buildReceiptRow(
+                'Sub Total',
+                isBold: true,
+                controller.formatCurrency(
+                  controller.order.orderDetail.subTotal.toDouble(),
+                ),
+              ),
+              buildReceiptRow(
+                'Biaya Asuransi (20%)',
+                isBold: true,
+                controller.formatCurrency(
+                  controller.order.orderDetail.totalInsuranceCost.toDouble(),
+                ),
+              ),
+              buildReceiptRow(
+                'Biaya Tambahan',
+                isBold: true,
+                controller.formatCurrency(
+                  controller.order.orderDetail.additionalCost.toDouble(),
+                ),
+              ),
+              const Divider(color: Color(0xffEFEFF0), height: 24),
+              buildReceiptRow(
+                'Total Harga',
+                isBold: true,
+                isPrice: true,
+                controller.formatCurrency(
+                  controller.order.orderDetail.totalPrice.toDouble(),
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
-    );
+      );
+    });
   }
 }

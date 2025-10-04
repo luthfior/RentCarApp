@@ -7,7 +7,12 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:rent_car_app/data/models/car.dart';
 
-Widget itemNewestCar(Car car, VoidCallback onTap) {
+Widget itemNewestCar(
+  Car car,
+  String ownerCity,
+  String ownerStoreName,
+  VoidCallback onTap,
+) {
   return GestureDetector(
     onTap: onTap,
     child: Container(
@@ -113,12 +118,16 @@ Widget itemNewestCar(Car car, VoidCallback onTap) {
                       allowHalfRating: true,
                       onRatingUpdate: (value) {},
                     ),
-                    Text(
-                      '(${car.purchasedProduct}x disewa)',
-                      style: GoogleFonts.poppins(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w500,
-                        color: Theme.of(Get.context!).colorScheme.onSurface,
+                    Flexible(
+                      child: Text(
+                        '(${car.purchasedProduct}x disewa)',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.poppins(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w500,
+                          color: Theme.of(Get.context!).colorScheme.onSurface,
+                        ),
                       ),
                     ),
                   ],
@@ -133,7 +142,7 @@ Widget itemNewestCar(Car car, VoidCallback onTap) {
                     ),
                     Expanded(
                       child: Text(
-                        " ${car.city}",
+                        " $ownerCity",
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.poppins(
@@ -147,7 +156,7 @@ Widget itemNewestCar(Car car, VoidCallback onTap) {
                 ),
                 const Gap(4),
                 Text(
-                  car.ownerStoreName,
+                  ownerStoreName,
                   style: GoogleFonts.poppins(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,

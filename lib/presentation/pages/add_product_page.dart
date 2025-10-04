@@ -352,38 +352,41 @@ class AddProductPage extends GetView<AddProductViewModel> {
             ],
           ),
           bottomNavigationBar: Obx(
-            () => Container(
-              padding: controller.isLoading.value
-                  ? EdgeInsets.zero
-                  : const EdgeInsets.fromLTRB(24, 0, 24, 24),
-              color: Colors.transparent,
-              child: controller.isLoading.value
-                  ? const SizedBox.shrink()
-                  : Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        ButtonPrimary(
-                          onTap: controller.isLoading.value
-                              ? null
-                              : () async {
-                                  if (connectivity.isOnline.value) {
+            () => SafeArea(
+              top: false,
+              child: Container(
+                padding: controller.isLoading.value
+                    ? EdgeInsets.zero
+                    : const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                color: Colors.transparent,
+                child: controller.isLoading.value
+                    ? const SizedBox.shrink()
+                    : Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          ButtonPrimary(
+                            onTap: controller.isLoading.value
+                                ? null
+                                : () async {
                                     if (connectivity.isOnline.value) {
-                                      await controller.handleAddProduct();
+                                      if (connectivity.isOnline.value) {
+                                        await controller.handleAddProduct();
+                                      } else {
+                                        const OfflineBanner();
+                                        return;
+                                      }
                                     } else {
                                       const OfflineBanner();
                                       return;
                                     }
-                                  } else {
-                                    const OfflineBanner();
-                                    return;
-                                  }
-                                },
-                          text: (controller.arguments?['isEdit'] ?? false)
-                              ? 'Sunting Produk'
-                              : 'Tambah Produk',
-                        ),
-                      ],
-                    ),
+                                  },
+                            text: (controller.arguments?['isEdit'] ?? false)
+                                ? 'Sunting Produk'
+                                : 'Tambah Produk',
+                          ),
+                        ],
+                      ),
+              ),
             ),
           ),
         ),

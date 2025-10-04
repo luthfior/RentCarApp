@@ -4,6 +4,8 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:rent_car_app/data/models/account.dart';
+import 'package:rent_car_app/data/models/booked_car.dart';
 import 'package:rent_car_app/data/models/car.dart';
 import 'package:rent_car_app/data/services/connectivity_service.dart';
 import 'package:rent_car_app/presentation/viewModels/browse_view_model.dart';
@@ -98,9 +100,6 @@ class BrowseFragment extends GetView<BrowseViewModel> {
             child: TextField(
               enabled: connectivity.isOnline.value,
               controller: controller.searchController,
-              onSubmitted: (query) {
-                controller.handleSearchSubmit();
-              },
               style: GoogleFonts.poppins(
                 fontSize: 14,
                 fontWeight: FontWeight.w400,
@@ -158,7 +157,7 @@ class BrowseFragment extends GetView<BrowseViewModel> {
                       Get.toNamed('/notification');
                     } else {
                       const OfflineBanner();
-                      return;
+                      null;
                     }
                   },
                   child: Container(
@@ -197,70 +196,113 @@ class BrowseFragment extends GetView<BrowseViewModel> {
   }
 
   Widget buildBookingStatus() {
-    final Car? car = controller.bookedCar.value;
-    if (car == null) return const SizedBox();
+    final BookedCar? bookedData = controller.bookedCar.value;
+    if (bookedData == null) return const SizedBox();
+    final Car car = bookedData.car;
 
-    return Container(
-      height: 65,
-      margin: const EdgeInsets.fromLTRB(24, 12, 24, 12),
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-      decoration: BoxDecoration(
-        color: const Color(0xffFF5722),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 80,
-            height: 60,
-            decoration: BoxDecoration(
-              color: Theme.of(Get.context!).colorScheme.surface,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: ExtendedImage.network(
-                car.imageProduct,
-                width: 80,
-                height: 80,
-                fit: BoxFit.cover,
+    final description = (controller.authVM.account.value!.role != 'customer')
+        ? ' menunggu untuk Kamu Proses.'
+        : ' menunggu untuk diproses oleh Penyedia.';
+
+    return GestureDetector(
+      onTap: () {
+        if (connectivity.isOnline.value) {
+          Get.toNamed('/detail-order', arguments: bookedData);
+        } else {
+          const OfflineBanner();
+        }
+      },
+      child: Container(
+        height: 65,
+        margin: const EdgeInsets.fromLTRB(24, 12, 24, 12),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+        decoration: BoxDecoration(
+          color: const Color(0xffFF5722),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 80,
+              height: 60,
+              decoration: BoxDecoration(
+                color: Theme.of(Get.context!).colorScheme.surface,
+                borderRadius: BorderRadius.circular(16),
               ),
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: RichText(
-              overflow: TextOverflow.ellipsis,
-              maxLines: 2,
-              text: TextSpan(
-                text: 'Produk ',
-                style: GoogleFonts.poppins(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xffEFEFF0),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: ExtendedImage.network(
+                  car.imageProduct,
+                  width: 80,
+                  height: 80,
+                  fit: BoxFit.cover,
+                  loadStateChanged: (state) {
+                    switch (state.extendedImageLoadState) {
+                      case LoadState.loading:
+                        return const SizedBox(
+                          width: 80,
+                          height: 80,
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Color(0xffFF5722),
+                              ),
+                            ),
+                          ),
+                        );
+                      case LoadState.completed:
+                        return ExtendedImage(
+                          image: state.imageProvider,
+                          width: 80,
+                          height: 80,
+                          fit: BoxFit.cover,
+                        );
+                      case LoadState.failed:
+                        return Image.asset(
+                          'assets/splash_screen.png',
+                          width: 80,
+                          height: 80,
+                        );
+                    }
+                  },
                 ),
-                children: [
-                  TextSpan(
-                    text: car.nameProduct,
-                    style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
-                      color: const Color(0xff070623),
-                    ),
-                  ),
-                  TextSpan(
-                    text: ' menunggu untuk diproses oleh penyedia.',
-                    style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xffEFEFF0),
-                    ),
-                  ),
-                ],
               ),
             ),
-          ),
-        ],
+            const SizedBox(width: 10),
+            Expanded(
+              child: RichText(
+                overflow: TextOverflow.ellipsis,
+                maxLines: 2,
+                text: TextSpan(
+                  text: 'Produk ',
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xffEFEFF0),
+                  ),
+                  children: [
+                    TextSpan(
+                      text: car.nameProduct,
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        color: const Color(0xff070623),
+                      ),
+                    ),
+                    TextSpan(
+                      text: description,
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xffEFEFF0),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -292,12 +334,18 @@ class BrowseFragment extends GetView<BrowseViewModel> {
               scrollDirection: Axis.horizontal,
               itemBuilder: (context, index) {
                 Car car = controller.featuredList[index];
+                Account? owner = controller.ownersMap[car.ownerId];
                 final margin = EdgeInsets.only(
                   left: index == 0 ? 24 : 12,
                   right: index == controller.featuredList.length - 1 ? 24 : 12,
                 );
-                bool isTrending = index == 0;
-                return itemFeaturedCar(car, margin, isTrending);
+                return itemFeaturedCar(
+                  car,
+                  margin,
+                  index == 0,
+                  owner?.city ?? '',
+                  owner?.storeName ?? '',
+                );
               },
             ),
           ),
@@ -347,17 +395,18 @@ class BrowseFragment extends GetView<BrowseViewModel> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
-            child: Text(
-              'Pencarian untuk "${controller.searchQuery}"',
-              style: GoogleFonts.poppins(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: Theme.of(Get.context!).colorScheme.onSurface,
+          if (controller.searchQuery.trim().isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+              child: Text(
+                'Pencarian untuk "${controller.searchQuery}"',
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: Theme.of(Get.context!).colorScheme.onSurface,
+                ),
               ),
             ),
-          ),
           if (controller.searchResults.isEmpty)
             Center(
               child: Padding(
@@ -374,17 +423,29 @@ class BrowseFragment extends GetView<BrowseViewModel> {
           else if (controller.searchResults.length == 1)
             Padding(
               padding: const EdgeInsets.only(top: 30),
-              child: itemNewestCar(controller.searchResults.first, () {
-                if (connectivity.isOnline.value) {
-                  Get.toNamed(
-                    '/detail',
-                    arguments: controller.searchResults.first.id,
+              child: Builder(
+                builder: (context) {
+                  final car = controller.searchResults.first;
+                  final owner = controller.ownersMap[car.ownerId];
+
+                  return itemNewestCar(
+                    car,
+                    owner?.city ?? '',
+                    owner?.storeName ?? '',
+                    () {
+                      if (connectivity.isOnline.value) {
+                        Get.toNamed(
+                          '/detail',
+                          arguments: controller.searchResults.first.id,
+                        );
+                      } else {
+                        const OfflineBanner();
+                        null;
+                      }
+                    },
                   );
-                } else {
-                  const OfflineBanner();
-                  return;
-                }
-              }),
+                },
+              ),
             )
           else
             GridView.builder(
@@ -400,14 +461,20 @@ class BrowseFragment extends GetView<BrowseViewModel> {
               ),
               itemBuilder: (context, index) {
                 final car = controller.searchResults[index];
-                return itemGridCar(car, () {
-                  if (connectivity.isOnline.value) {
-                    Get.toNamed('/detail', arguments: car.id);
-                  } else {
-                    const OfflineBanner();
-                    return;
-                  }
-                });
+                final owner = controller.ownersMap[car.ownerId];
+                return itemGridCar(
+                  car,
+                  owner?.city ?? '',
+                  owner?.storeName ?? '',
+                  () {
+                    if (connectivity.isOnline.value) {
+                      Get.toNamed('/detail', arguments: car.id);
+                    } else {
+                      const OfflineBanner();
+                      null;
+                    }
+                  },
+                );
               },
             ),
         ],
@@ -416,14 +483,20 @@ class BrowseFragment extends GetView<BrowseViewModel> {
   }
 
   Widget buildNewestItem(BuildContext context, Car car) {
-    Widget itemCar = itemNewestCar(car, () {
-      if (connectivity.isOnline.value) {
-        Get.toNamed('/detail', arguments: car.id);
-      } else {
-        const OfflineBanner();
-        return;
-      }
-    });
+    Account? owner = controller.ownersMap[car.ownerId];
+    Widget itemCar = itemNewestCar(
+      car,
+      owner?.city ?? '',
+      owner?.storeName ?? '',
+      () {
+        if (connectivity.isOnline.value) {
+          Get.toNamed('/detail', arguments: car.id);
+        } else {
+          const OfflineBanner();
+          null;
+        }
+      },
+    );
 
     if (controller.authVM.account.value!.role == 'admin') {
       return buildSlidableItem(
@@ -438,7 +511,7 @@ class BrowseFragment extends GetView<BrowseViewModel> {
             );
           } else {
             const OfflineBanner();
-            return;
+            null;
           }
         },
         onDelete: () async {
@@ -446,7 +519,7 @@ class BrowseFragment extends GetView<BrowseViewModel> {
             await controller.deleteProduct(car.id);
           } else {
             const OfflineBanner();
-            return;
+            null;
           }
         },
       );

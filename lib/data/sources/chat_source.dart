@@ -30,31 +30,11 @@ class ChatSource {
           if (!doc.exists) {
             await roomRef.set({
               'roomId': roomId,
-              'lastMessage': '',
               'customerId': buyerId,
               'ownerId': ownerId,
               'ownerType': ownerType,
-              'customerFullName': currentUser.role == 'customer'
-                  ? currentUser.fullName
-                  : partner.fullName,
-              'customerUsername': currentUser.role == 'customer'
-                  ? currentUser.username
-                  : partner.username,
-              'customerPhotoUrl': currentUser.role == 'customer'
-                  ? (currentUser.photoUrl ?? '')
-                  : (partner.photoUrl ?? ''),
-              'ownerStoreName': currentUser.role != 'customer'
-                  ? currentUser.storeName
-                  : partner.storeName,
-              'ownerUsername': currentUser.role != 'customer'
-                  ? currentUser.username
-                  : partner.username,
-              'ownerEmail': currentUser.role != 'customer'
-                  ? currentUser.email
-                  : partner.email,
-              'ownerPhotoUrl': currentUser.role != 'customer'
-                  ? (currentUser.photoUrl ?? '')
-                  : (partner.photoUrl ?? ''),
+              'participants': [buyerId, ownerId],
+              'lastMessage': '',
               'lastMessageTime': Timestamp.now(),
               'unreadCountCustomer': 0,
               'unreadCountOwner': 0,

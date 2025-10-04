@@ -296,7 +296,7 @@ class ChattingPage extends GetView<ChatViewModel> {
   Widget inputChat(String uid) {
     return Container(
       height: 52,
-      margin: const EdgeInsets.fromLTRB(24, 24, 24, 30),
+      margin: const EdgeInsets.all(24),
       padding: const EdgeInsets.only(left: 16),
       decoration: BoxDecoration(
         color: Theme.of(Get.context!).colorScheme.surface,
@@ -372,7 +372,36 @@ class ChattingPage extends GetView<ChatViewModel> {
             car['imageProduct'],
             width: 80,
             height: 80,
-            fit: BoxFit.contain,
+            fit: BoxFit.cover,
+            loadStateChanged: (state) {
+              switch (state.extendedImageLoadState) {
+                case LoadState.loading:
+                  return const SizedBox(
+                    width: 80,
+                    height: 80,
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          Color(0xffFF5722),
+                        ),
+                      ),
+                    ),
+                  );
+                case LoadState.completed:
+                  return ExtendedImage(
+                    image: state.imageProvider,
+                    width: 80,
+                    height: 80,
+                    fit: BoxFit.cover,
+                  );
+                case LoadState.failed:
+                  return Image.asset(
+                    'assets/splash_screen.png',
+                    width: 80,
+                    height: 80,
+                  );
+              }
+            },
           ),
           const Gap(5),
           Expanded(
@@ -462,6 +491,35 @@ class ChattingPage extends GetView<ChatViewModel> {
                 width: 60,
                 height: 60,
                 fit: BoxFit.cover,
+                loadStateChanged: (state) {
+                  switch (state.extendedImageLoadState) {
+                    case LoadState.loading:
+                      return const SizedBox(
+                        width: 60,
+                        height: 60,
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Color(0xffFF5722),
+                            ),
+                          ),
+                        ),
+                      );
+                    case LoadState.completed:
+                      return ExtendedImage(
+                        image: state.imageProvider,
+                        width: 60,
+                        height: 60,
+                        fit: BoxFit.cover,
+                      );
+                    case LoadState.failed:
+                      return Image.asset(
+                        'assets/splash_screen.png',
+                        width: 60,
+                        height: 60,
+                      );
+                  }
+                },
               ),
               const SizedBox(width: 8),
               Expanded(

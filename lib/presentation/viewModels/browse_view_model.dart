@@ -4,15 +4,17 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:rent_car_app/core/constants/message.dart';
+import 'package:rent_car_app/data/models/account.dart';
+import 'package:rent_car_app/data/models/booked_car.dart';
 import 'package:rent_car_app/data/sources/car_source.dart';
 import 'package:rent_car_app/data/models/car.dart';
 import 'package:rent_car_app/data/sources/seller_source.dart';
+import 'package:rent_car_app/data/sources/user_source.dart';
 import 'package:rent_car_app/presentation/viewModels/auth_view_model.dart';
 
 class BrowseViewModel extends GetxController {
-  final Rx<Car?> bookedCar = Rx<Car?>(null);
+  final Rx<BookedCar?> bookedCar = Rx<BookedCar?>(null);
   final authVM = Get.find<AuthViewModel>();
-  final sellerSource = SellerSource();
 
   final _featuredList = <Car>[].obs;
   List<Car> get featuredList => _featuredList;
@@ -54,16 +56,26 @@ class BrowseViewModel extends GetxController {
   StreamSubscription<List<Car>>? _featuredSubscription;
   StreamSubscription<List<Car>>? _newestSubscription;
 
+  final _ownersMap = <String, Account>{}.obs;
+  Map<String, Account> get ownersMap => _ownersMap;
+
   @override
   void onInit() {
     super.onInit();
     if (authVM.account.value != null) {
-      startCarListeners();
+      checkForPendingOrder();
       loadChipData();
+      startCarListeners();
     }
     searchController.addListener(() {
       _searchQuery.value = searchController.text;
     });
+
+    debounce(
+      _searchQuery,
+      (_) => handleSearchSubmit(),
+      time: const Duration(milliseconds: 500),
+    );
   }
 
   @override
@@ -103,20 +115,59 @@ class BrowseViewModel extends GetxController {
     }
   }
 
+  Future<void> _fetchAndAssignOwners(List<Car> cars) async {
+    final newOwnerIds = cars
+        .map((car) => car.ownerId)
+        .where((id) => !_ownersMap.containsKey(id))
+        .toSet()
+        .toList();
+
+    if (newOwnerIds.isEmpty) return;
+
+    final fetchedOwners = await UserSource.fetchAccountsByIds(newOwnerIds);
+    _ownersMap.addAll(fetchedOwners);
+    log('${fetchedOwners.length} data owner baru berhasil diambil.');
+  }
+
   Future<void> startCarListeners() async {
-    status = 'loading';
+    if (_allFeaturedList.isEmpty && _allNewestList.isEmpty) {
+      status = 'loading';
+    }
     _featuredSubscription?.cancel();
     _newestSubscription?.cancel();
 
     try {
+      final results = await Future.wait([
+        CarSource.fetchFeaturedCarsStream().first,
+        CarSource.fetchNewestCarsStream().first,
+      ]);
+
+      final featuredCars = results[0];
+      final newestCars = results[1];
+
+      final allCars = [...featuredCars, ...newestCars];
+      await _fetchAndAssignOwners(allCars);
+
+      _allFeaturedList.assignAll(featuredCars);
+      _featuredList.assignAll(featuredCars);
+      _allNewestList.assignAll(newestCars);
+      _newestList.assignAll(newestCars);
+
+      status = 'success';
+      log('Initial load selesai. Semua data siap.');
+
       _featuredSubscription = CarSource.fetchFeaturedCarsStream().listen((
         cars,
       ) {
-        _allFeaturedList.clear();
-        _allFeaturedList.addAll(cars);
+        _allFeaturedList.assignAll(cars);
         _featuredList.assignAll(cars);
-        log('Fetch mobil populer secara real-time.');
-        status = 'success';
+        _fetchAndAssignOwners(cars);
+      });
+
+      _newestSubscription = CarSource.fetchNewestCarsStream().listen((cars) {
+        _allNewestList.assignAll(cars);
+        _newestList.assignAll(cars);
+        _fetchAndAssignOwners(cars);
       });
     } catch (e) {
       log('Gagal fetch mobil terbaru secara real-time.');
@@ -128,6 +179,7 @@ class BrowseViewModel extends GetxController {
         _allNewestList.clear();
         _allNewestList.addAll(cars);
         _newestList.assignAll(cars);
+        _fetchAndAssignOwners(cars);
         log('Fetch mobil terbaru secara real-time.');
         status = 'success';
       });
@@ -203,29 +255,29 @@ class BrowseViewModel extends GetxController {
 
   void handleSearchSubmit() {
     final query = searchQuery.trim().toLowerCase();
-    if (query.isNotEmpty) {
-      _currentView.value = 'search';
-      final Map<String, Car> uniqueCarsMap = {};
-      for (var car in _allFeaturedList) {
-        uniqueCarsMap[car.id] = car;
-      }
-      for (var car in _allNewestList) {
-        uniqueCarsMap[car.id] = car;
-      }
-      final uniqueList = uniqueCarsMap.values.toList();
-      final filteredResults = uniqueList
-          .where(
-            (car) =>
-                car.nameProduct.toLowerCase().contains(query) ||
-                car.categoryProduct.toLowerCase().contains(query) ||
-                car.brandProduct.toLowerCase().contains(query),
-          )
-          .toList();
-      _searchResults.value = filteredResults;
-    } else {
+    if (query.isEmpty) {
       _currentView.value = 'home';
       _searchResults.clear();
+      return;
     }
+    _currentView.value = 'search';
+    final Map<String, Car> uniqueCarsMap = {};
+    for (var car in _allFeaturedList) {
+      uniqueCarsMap[car.id] = car;
+    }
+    for (var car in _allNewestList) {
+      uniqueCarsMap[car.id] = car;
+    }
+    final uniqueList = uniqueCarsMap.values.toList();
+    final filteredResults = uniqueList
+        .where(
+          (car) =>
+              car.nameProduct.toLowerCase().contains(query) ||
+              car.categoryProduct.toLowerCase().contains(query) ||
+              car.brandProduct.toLowerCase().contains(query),
+        )
+        .toList();
+    _searchResults.value = filteredResults;
   }
 
   Future<void> deleteProduct(String productId) async {
@@ -277,6 +329,7 @@ class BrowseViewModel extends GetxController {
                 color: Theme.of(Get.context!).colorScheme.onSurface,
               ),
             ),
+            actionsOverflowDirection: VerticalDirection.up,
             actions: <Widget>[
               TextButton(
                 child: Text(
@@ -314,5 +367,21 @@ class BrowseViewModel extends GetxController {
           ),
         ) ??
         false;
+  }
+
+  Future<void> checkForPendingOrder() async {
+    final user = authVM.account.value;
+    if (user == null) return;
+
+    final userSource = UserSource();
+    final allOrders = await userSource
+        .fetchBookedCarStream(user.uid, user.role)
+        .first;
+
+    final pendingOrder = allOrders.firstWhereOrNull(
+      (bookedCar) => bookedCar.order.orderStatus == 'pending',
+    );
+
+    bookedCar.value = pendingOrder;
   }
 }

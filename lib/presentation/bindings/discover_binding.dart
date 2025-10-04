@@ -9,15 +9,11 @@ import 'package:rent_car_app/presentation/viewModels/seller_view_model.dart';
 class DiscoverBinding extends Bindings {
   @override
   void dependencies() {
-    Get.lazyPut<DiscoverViewModel>(() => DiscoverViewModel(), fenix: true);
-
-    Get.lazyPut<BrowseViewModel>(() => BrowseViewModel(), fenix: true);
-    Get.lazyPut<OrderViewModel>(() => OrderViewModel(), fenix: true);
-    Get.lazyPut<FavoriteViewModel>(() => FavoriteViewModel(), fenix: true);
-    Get.lazyPut<SellerViewModel>(() => SellerViewModel(), fenix: true);
-    Get.lazyPut<NotificationViewModel>(
-      () => NotificationViewModel(),
-      fenix: true,
-    );
+    Get.lazyPut<DiscoverViewModel>(() => DiscoverViewModel());
+    Get.lazyPut<BrowseViewModel>(() => BrowseViewModel());
+    Get.lazyPut<OrderViewModel>(() => OrderViewModel());
+    Get.lazyPut<FavoriteViewModel>(() => FavoriteViewModel());
+    Get.lazyPut<SellerViewModel>(() => SellerViewModel());
+    Get.lazyPut<NotificationViewModel>(() => NotificationViewModel());
   }
 }

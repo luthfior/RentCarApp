@@ -58,7 +58,7 @@ Widget chipCategories(List<String> items) {
                     child: Text(
                       item,
                       style: GoogleFonts.poppins(
-                        fontSize: 14,
+                        fontSize: 12,
                         fontWeight: FontWeight.w600,
                         color: isSelected
                             ? Theme.of(Get.context!).colorScheme.surface

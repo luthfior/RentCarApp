@@ -35,7 +35,7 @@ class BookingViewModel extends GetxController {
   final TextEditingController startDateController = TextEditingController();
   final TextEditingController endDateController = TextEditingController();
 
-  final Rx<String?> _agencyPicked = 'Jakarta Rent Car'.obs;
+  final Rx<String?> _agencyPicked = 'Jakarta Rental'.obs;
   String? get agencyPicked => _agencyPicked.value;
   set agencyPicked(String? value) => _agencyPicked.value = value;
 
@@ -51,7 +51,7 @@ class BookingViewModel extends GetxController {
   set withDriver(bool value) => _withDriver.value = value;
 
   final List<String> listAgency = [
-    'Jakarta Rent Car',
+    'Jakarta Rental',
     'DrivePlus',
     'Mitra Rental',
     'Bandung Rental',

@@ -34,6 +34,9 @@ class FavoriteViewModel extends GetxController {
   StreamSubscription<QuerySnapshot>? _favoritesSubscription;
   final box = GetStorage();
 
+  final _ownersMap = <String, Account>{}.obs;
+  Map<String, Account> get ownersMap => _ownersMap;
+
   @override
   void onInit() {
     super.onInit();
@@ -60,6 +63,14 @@ class FavoriteViewModel extends GetxController {
   void dismissTutorial() {
     box.write('hasShownSwipeTutorial', true);
     hasShownTutorial.value = false;
+  }
+
+  Future<void> _fetchAndAssignOwners(List<Car> cars) async {
+    final ownerIds = cars.map((car) => car.ownerId).toSet().toList();
+    if (ownerIds.isEmpty) return;
+    final fetchedOwners = await UserSource.fetchAccountsByIds(ownerIds);
+    _ownersMap.addAll(fetchedOwners);
+    log('${fetchedOwners.length} data owner favorit berhasil diambil.');
   }
 
   Future<void> fetchFavorites() async {
@@ -105,6 +116,7 @@ class FavoriteViewModel extends GetxController {
                 }).toList();
 
                 favoriteProducts.value = sortedCars;
+                await _fetchAndAssignOwners(sortedCars);
                 status.value = 'success';
               } catch (e) {
                 log('Gagal fetch data mobil: $e');

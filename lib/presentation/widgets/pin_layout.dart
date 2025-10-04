@@ -9,11 +9,8 @@ Widget pinLayout(PinViewModel pinVm) {
       return SizedBox(
         width: constraints.maxWidth > 350 ? 350 : constraints.maxWidth,
         child: GridView.count(
-          padding: const EdgeInsets.only(top: 24),
           crossAxisCount: 3,
           childAspectRatio: itemWidth / 75,
-          mainAxisSpacing: 25,
-          crossAxisSpacing: 25,
           physics: const NeverScrollableScrollPhysics(),
           shrinkWrap: true,
           children: [

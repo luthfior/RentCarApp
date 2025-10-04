@@ -4,6 +4,7 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:rent_car_app/core/constants/message.dart';
 import 'package:rent_car_app/data/services/connectivity_service.dart';
 import 'package:rent_car_app/presentation/viewModels/checkout_view_model.dart';
 import 'package:rent_car_app/presentation/widgets/button_primary.dart';
@@ -17,170 +18,182 @@ class CheckoutPage extends GetView<CheckoutViewModel> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Obx(() {
-        final isLoading = controller.isLoading.value;
-        final isMidtrans = controller.paymentMethodPicked.value == 'Midtrans';
+    return Obx(() {
+      final isLoading = controller.isLoading.value;
+      return PopScope(
+        canPop: !isLoading,
+        onPopInvokedWithResult: (didPop, result) {
+          if (didPop && isLoading) {
+            Message.neutral(
+              'Sedang memproses pembayaran, mohon tunggu...',
+              fontSize: 12,
+            );
+            return;
+          }
+        },
+        child: Scaffold(
+          body: isLoading
+              ? SafeArea(
+                  child: Column(
+                    children: [
+                      CustomHeader(
+                        title: 'Pembayaran',
+                        onBackTap: () {
+                          if (isLoading) {
+                            Message.neutral(
+                              'Sedang memproses pembayaran, mohon tunggu...',
+                              fontSize: 12,
+                            );
+                            return;
+                          }
+                        },
+                      ),
+                      Expanded(
+                        child: Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const CircularProgressIndicator(
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Color(0xffFF5722),
+                                ),
+                              ),
+                              const Gap(16),
+                              Text(
+                                'Sedang memproses pembayaran, mohon tunggu...',
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w400,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.secondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              : buildCheckoutContent(context),
+        ),
+      );
+    });
+  }
 
-        if (isLoading && isMidtrans) {
-          return SafeArea(
-            child: Column(
-              children: [
-                CustomHeader(title: 'Pembayaran'),
-                Expanded(
-                  child: Center(
+  Widget buildCheckoutContent(BuildContext context) {
+    return Stack(
+      children: [
+        SafeArea(
+          child: Column(
+            children: [
+              CustomHeader(title: 'Pembayaran'),
+              const Gap(20),
+              Expanded(
+                child: RefreshIndicator(
+                  onRefresh: () async {
+                    if (connectivity.isOnline.value) {
+                      await controller.refreshCheckoutData();
+                    } else {
+                      const OfflineBanner();
+                      return;
+                    }
+                  },
+                  color: const Color(0xffFF5722),
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
                     child: Column(
-                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        const CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            Color(0xffFF5722),
-                          ),
-                        ),
-                        const Gap(16),
-                        Text(
-                          'Sedang memproses pembayaran, mohon tunggu...',
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.poppins(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w400,
-                            color: Theme.of(context).colorScheme.secondary,
-                          ),
-                        ),
+                        snippetCar(),
+                        const Gap(20),
+                        buildReceipt(),
+                        const Gap(20),
+                        buildPaymentMethod(),
+                        const Gap(20),
+                        Obx(() {
+                          if (controller.paymentMethodPicked.value == 'Tunai') {
+                            return Padding(
+                              padding: const EdgeInsetsDirectional.symmetric(
+                                horizontal: 24,
+                              ),
+                              child: Card(
+                                color: Theme.of(
+                                  Get.context!,
+                                ).colorScheme.surface,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                elevation: 3,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(12),
+                                  child: Text(
+                                    'Anda wajib ke lokasi penyedia dan melakukan pembayaran secara langsung',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w700,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onSurface,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          } else if (controller.paymentMethodPicked.value ==
+                              'Midtrans') {
+                            return const SizedBox.shrink();
+                          }
+                          return buildWallet();
+                        }),
+                        const Gap(100),
                       ],
                     ),
                   ),
                 ),
-              ],
-            ),
-          );
-        }
-        return Stack(
-          children: [
-            SafeArea(
-              child: Column(
-                children: [
-                  CustomHeader(title: 'Pembayaran'),
-                  const Gap(20),
-                  Expanded(
-                    child: RefreshIndicator(
-                      onRefresh: () async {
-                        if (connectivity.isOnline.value) {
-                          await controller.refreshCheckoutData();
-                        } else {
-                          const OfflineBanner();
-                          return;
-                        }
-                      },
-                      color: const Color(0xffFF5722),
-                      child: SingleChildScrollView(
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        child: Column(
-                          children: [
-                            snippetCar(),
-                            const Gap(20),
-                            buildReceipt(),
-                            const Gap(20),
-                            buildPaymentMethod(),
-                            const Gap(20),
-                            Obx(() {
-                              if (controller.paymentMethodPicked.value ==
-                                  'Tunai') {
-                                return Padding(
-                                  padding:
-                                      const EdgeInsetsDirectional.symmetric(
-                                        horizontal: 24,
-                                      ),
-                                  child: Card(
-                                    color: Theme.of(
-                                      Get.context!,
-                                    ).colorScheme.surface,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    elevation: 3,
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(12),
-                                      child: Text(
-                                        'Anda wajib ke lokasi penyedia dan melakukan pembayaran secara langsung',
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w700,
-                                          color: Theme.of(
-                                            context,
-                                          ).colorScheme.onSurface,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              } else if (controller.paymentMethodPicked.value ==
-                                  'Midtrans') {
-                                return const SizedBox.shrink();
-                              }
-                              return buildWallet();
-                            }),
-                            const Gap(100),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  Obx(() {
-                    if (controller.isLoading.value) {
-                      return const Center(
-                        child: CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            Color(0xffFF5722),
-                          ),
-                        ),
-                      );
-                    }
-                    return const SizedBox.shrink();
-                  }),
-                ],
               ),
-            ),
+            ],
+          ),
+        ),
 
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-                color: Get.isDarkMode
-                    ? const Color(0xff070623)
-                    : const Color(0xffEFEFF0),
-                child: SafeArea(
-                  top: false,
-                  child: Obx(
-                    () => ButtonPrimary(
-                      onTap: () async {
-                        if (connectivity.isOnline.value) {
-                          if (controller.isLoading.value) {
-                            return;
-                          } else {
-                            await controller.handlePayment();
-                          }
-                        } else {
-                          const OfflineBanner();
-                          return;
-                        }
-                      },
-                      text: (controller.paymentMethodPicked.value == 'DompetKu')
-                          ? 'Bayar Sekarang'
-                          : (controller.paymentMethodPicked.value == 'Midtrans')
-                          ? 'Pilih Pembayaran'
-                          : 'Bayar Sekarang',
-                    ),
-                  ),
+        Align(
+          alignment: Alignment.bottomCenter,
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+            color: Get.isDarkMode
+                ? const Color(0xff070623)
+                : const Color(0xffEFEFF0),
+            child: SafeArea(
+              top: false,
+              child: Obx(
+                () => ButtonPrimary(
+                  onTap: () async {
+                    if (connectivity.isOnline.value) {
+                      if (controller.isLoading.value) {
+                        return;
+                      } else {
+                        await controller.handlePayment();
+                      }
+                    } else {
+                      const OfflineBanner();
+                      return;
+                    }
+                  },
+                  text: (controller.paymentMethodPicked.value == 'DompetKu')
+                      ? 'Bayar Sekarang'
+                      : (controller.paymentMethodPicked.value == 'Midtrans')
+                      ? 'Pilih Pembayaran'
+                      : 'Bayar Sekarang',
                 ),
               ),
             ),
+          ),
+        ),
 
-            const OfflineBanner(),
-          ],
-        );
-      }),
+        const OfflineBanner(),
+      ],
     );
   }
 
@@ -203,7 +216,36 @@ class CheckoutPage extends GetView<CheckoutViewModel> {
             controller.car.imageProduct,
             width: 80,
             height: 80,
-            fit: BoxFit.contain,
+            fit: BoxFit.cover,
+            loadStateChanged: (state) {
+              switch (state.extendedImageLoadState) {
+                case LoadState.loading:
+                  return const SizedBox(
+                    width: 80,
+                    height: 80,
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          Color(0xffFF5722),
+                        ),
+                      ),
+                    ),
+                  );
+                case LoadState.completed:
+                  return ExtendedImage(
+                    image: state.imageProvider,
+                    width: 80,
+                    height: 80,
+                    fit: BoxFit.cover,
+                  );
+                case LoadState.failed:
+                  return Image.asset(
+                    'assets/splash_screen.png',
+                    width: 80,
+                    height: 80,
+                  );
+              }
+            },
           ),
           const Gap(5),
           Expanded(
@@ -327,6 +369,11 @@ class CheckoutPage extends GetView<CheckoutViewModel> {
               'Nama Order',
               isBold: true,
               controller.nameOrder ?? 'Tidak Ada',
+            ),
+            buildReceiptRow(
+              'Nama Toko',
+              isBold: true,
+              controller.partner?.storeName ?? 'Tidak Ada',
             ),
             const Divider(color: Color(0xffEFEEF7), height: 24),
             buildReceiptRow(

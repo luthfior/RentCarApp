@@ -47,6 +47,14 @@ class DetailOrderViewModel extends GetxController {
   Car get car => _car.value;
   set car(Car value) => _car.value = value;
 
+  final Rx<Account?> _customer = Rx<Account?>(null);
+  Account? get customer => _customer.value;
+  set customer(Account? value) => _customer.value = value;
+
+  final Rx<Account?> _owner = Rx<Account?>(null);
+  Account? get owner => _owner.value;
+  set owner(Account? value) => _owner.value = value;
+
   @override
   void onInit() {
     super.onInit();
@@ -57,8 +65,9 @@ class DetailOrderViewModel extends GetxController {
       if (bookedCar != null) {
         _order.value = bookedCar!.order;
         _car.value = bookedCar!.car;
-        status = 'success';
+        _fetchOrderParticipants(bookedCar!.order);
         listenToOrderUpdates(bookedCar!.order.id);
+        status = 'success';
       } else {
         Message.error('Gagal Membuka Detail Order');
         log('Error: DetailOrderViewModel tidak ada BookedCar.');
@@ -86,6 +95,9 @@ class DetailOrderViewModel extends GetxController {
               status = 'error';
               log('Dokumen order dengan ID $orderId tidak ditemukan.');
             } else {
+              if (customer == null || owner == null) {
+                _fetchOrderParticipants(updatedOrder);
+              }
               status = 'success';
             }
           },
@@ -110,6 +122,18 @@ class DetailOrderViewModel extends GetxController {
 
     if (doc.exists) {
       partner = Account.fromJson(doc.data()!);
+    }
+  }
+
+  Future<void> _fetchOrderParticipants(Orders order) async {
+    try {
+      final userIds = [order.customerId, order.sellerId];
+      final accountsMap = await UserSource.fetchAccountsByIds(userIds);
+
+      _customer.value = accountsMap[order.customerId];
+      _owner.value = accountsMap[order.sellerId];
+    } catch (e) {
+      log("Gagal mengambil data peserta order: $e");
     }
   }
 
@@ -410,6 +434,7 @@ class DetailOrderViewModel extends GetxController {
                 color: Theme.of(Get.context!).colorScheme.onSurface,
               ),
             ),
+            actionsOverflowDirection: VerticalDirection.up,
             actions: <Widget>[
               TextButton(
                 child: Text(

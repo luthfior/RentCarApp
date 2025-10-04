@@ -5,7 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:rent_car_app/data/models/car.dart';
 import 'package:rent_car_app/data/services/connectivity_service.dart';
 import 'package:rent_car_app/presentation/viewModels/favorite_view_model.dart';
-import 'package:rent_car_app/presentation/widgets/item_favorite_car.dart';
+import 'package:rent_car_app/presentation/widgets/item_newest_car.dart';
 import 'package:rent_car_app/presentation/widgets/offline_banner.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:rent_car_app/presentation/widgets/tutorial_overlay.dart';
@@ -96,15 +96,18 @@ class FavoriteFragment extends GetView<FavoriteViewModel> {
                       itemCount: controller.favoriteProducts.length,
                       itemBuilder: (context, index) {
                         final car = controller.favoriteProducts[index];
+                        final owner = controller.ownersMap[car.ownerId];
                         return buildSlidableFavoriteItem(
                           context,
                           car: car,
+                          ownerCity: owner?.city ?? '',
+                          ownerStoreName: owner?.storeName ?? '',
                           onChat: () async {
                             if (connectivity.isOnline.value) {
                               controller.openChat(car);
                             } else {
                               const OfflineBanner();
-                              return;
+                              null;
                             }
                           },
                           onBooking: () async {
@@ -112,7 +115,7 @@ class FavoriteFragment extends GetView<FavoriteViewModel> {
                               Get.toNamed('/booking', arguments: car);
                             } else {
                               const OfflineBanner();
-                              return;
+                              null;
                             }
                           },
                           onRemoveFavorite: () async {
@@ -121,7 +124,7 @@ class FavoriteFragment extends GetView<FavoriteViewModel> {
                               controller.deleteFavorite(car);
                             } else {
                               const OfflineBanner();
-                              return;
+                              null;
                             }
                           },
                         );
@@ -154,6 +157,8 @@ class FavoriteFragment extends GetView<FavoriteViewModel> {
 Widget buildSlidableFavoriteItem(
   BuildContext context, {
   required Car car,
+  required String ownerCity,
+  required String ownerStoreName,
   required VoidCallback onRemoveFavorite,
   required VoidCallback onChat,
   required VoidCallback onBooking,
@@ -221,6 +226,13 @@ Widget buildSlidableFavoriteItem(
         ),
       ],
     ),
-    child: itemFavoriteCar(context, car: car),
+    child: itemNewestCar(car, ownerCity, ownerStoreName, () {
+      if (connectivity.isOnline.value) {
+        Get.toNamed('/detail', arguments: car.id);
+      } else {
+        const OfflineBanner();
+        return;
+      }
+    }),
   );
 }

@@ -227,8 +227,6 @@ class AddProductViewModel extends GetxController {
       selectedCategory.value = car.categoryProduct;
       selectedReleaseYear.value = car.releaseProduct.toString();
       imageUrl.value = car.imageProduct;
-      phoneNumberController.text = car.ownerPhoneNumber;
-      locationController.text = car.fullAddress;
 
       if (newCategories.contains(car.categoryProduct)) {
         selectedCategory.value = car.categoryProduct;
@@ -329,20 +327,6 @@ class AddProductViewModel extends GetxController {
         transmissionProduct: selectedTransmission.value,
         ownerId: userAccount.uid,
         ownerType: userAccount.role,
-        ownerUsername: userAccount.username,
-        ownerStoreName: userAccount.storeName,
-        ownerFullName: userAccount.fullName,
-        ownerEmail: userAccount.email,
-        ownerPhotoUrl: userAccount.photoUrl!,
-        ownerPhoneNumber: userAccount.phoneNumber!,
-        fullAddress: userAccount.fullAddress!,
-        street: userAccount.street!,
-        province: userAccount.province!,
-        city: userAccount.city!,
-        district: userAccount.district!,
-        village: userAccount.village!,
-        latLocation: userAccount.latLocation!,
-        longLocation: userAccount.longLocation!,
         createdAt: createdAt,
         updatedAt: Timestamp.now(),
       );
@@ -393,20 +377,6 @@ class AddProductViewModel extends GetxController {
         transmissionProduct: selectedTransmission.value,
         ownerId: userAccount.uid,
         ownerType: userAccount.role,
-        ownerUsername: userAccount.username,
-        ownerStoreName: userAccount.storeName,
-        ownerFullName: userAccount.fullName,
-        ownerEmail: userAccount.email,
-        ownerPhotoUrl: userAccount.photoUrl!,
-        ownerPhoneNumber: userAccount.phoneNumber!,
-        fullAddress: userAccount.fullAddress!,
-        street: userAccount.street!,
-        province: userAccount.province!,
-        city: userAccount.city!,
-        district: userAccount.district!,
-        village: userAccount.village!,
-        latLocation: userAccount.latLocation!,
-        longLocation: userAccount.longLocation!,
         createdAt: Timestamp.now(),
       );
 
@@ -709,6 +679,7 @@ class AddProductViewModel extends GetxController {
                 color: Theme.of(Get.context!).colorScheme.onSurface,
               ),
             ),
+            actionsOverflowDirection: VerticalDirection.up,
             actions: <Widget>[
               TextButton(
                 child: Text(

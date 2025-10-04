@@ -7,10 +7,7 @@ class Orders {
   final String productId;
   final String customerId;
   final String sellerId;
-  final String customerFullname;
-  final String sellerStoreName;
-  final String customerAddress;
-  final String sellerAddress;
+  final String sellerRole;
   final OrderDetail orderDetail;
   final String orderStatus;
   final Timestamp orderDate;
@@ -25,10 +22,7 @@ class Orders {
     required this.productId,
     required this.customerId,
     required this.sellerId,
-    required this.customerFullname,
-    required this.sellerStoreName,
-    required this.customerAddress,
-    required this.sellerAddress,
+    required this.sellerRole,
     required this.orderDetail,
     required this.orderStatus,
     required this.orderDate,
@@ -45,10 +39,7 @@ class Orders {
       'productId': productId,
       'customerId': customerId,
       'sellerId': sellerId,
-      'customerFullname': customerFullname,
-      'sellerStoreName': sellerStoreName,
-      'customerAddress': customerAddress,
-      'sellerAddress': sellerAddress,
+      'sellerRole': sellerRole,
       'orderDetail': orderDetail.toJson(),
       'orderStatus': orderStatus,
       'orderDate': orderDate,
@@ -67,10 +58,7 @@ class Orders {
       productId: json['productId'] as String? ?? '',
       customerId: json['customerId'] as String? ?? '',
       sellerId: json['sellerId'] as String? ?? '',
-      customerFullname: json['customerFullname'] as String? ?? '',
-      sellerStoreName: json['sellerStoreName'] as String? ?? '',
-      customerAddress: json['customerAddress'] as String? ?? '',
-      sellerAddress: json['sellerAddress'] as String? ?? '',
+      sellerRole: json['sellerRole'] as String? ?? '',
       orderDetail: json['orderDetail'] != null
           ? OrderDetail.fromJson(json['orderDetail'] as Map<String, dynamic>)
           : OrderDetail.empty,
@@ -90,10 +78,7 @@ class Orders {
     productId: '',
     customerId: '',
     sellerId: '',
-    customerFullname: '',
-    sellerStoreName: '',
-    customerAddress: '',
-    sellerAddress: '',
+    sellerRole: '',
     orderDetail: OrderDetail.empty,
     orderStatus: '',
     orderDate: Timestamp.now(),

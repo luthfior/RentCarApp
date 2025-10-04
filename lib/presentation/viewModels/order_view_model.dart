@@ -429,6 +429,7 @@ class OrderViewModel extends GetxController {
                 color: Theme.of(Get.context!).colorScheme.onSurface,
               ),
             ),
+            actionsOverflowDirection: VerticalDirection.up,
             actions: <Widget>[
               TextButton(
                 child: Text(

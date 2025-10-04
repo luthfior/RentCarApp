@@ -9,7 +9,13 @@ import 'package:rent_car_app/data/models/car.dart';
 import 'package:rent_car_app/data/services/connectivity_service.dart';
 import 'package:rent_car_app/presentation/widgets/offline_banner.dart';
 
-Widget itemFeaturedCar(Car car, EdgeInsetsGeometry margin, bool isTrending) {
+Widget itemFeaturedCar(
+  Car car,
+  EdgeInsetsGeometry margin,
+  bool isTrending,
+  String ownerCity,
+  String ownerStoreName,
+) {
   final connectivity = Get.find<ConnectivityService>();
   final String productName = car.nameProduct.length > 16
       ? '${car.nameProduct.substring(0, 14)}...'
@@ -145,7 +151,7 @@ Widget itemFeaturedCar(Car car, EdgeInsetsGeometry margin, bool isTrending) {
                         ),
                         Expanded(
                           child: Text(
-                            " ${car.city}",
+                            " $ownerCity",
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: GoogleFonts.poppins(
@@ -200,7 +206,7 @@ Widget itemFeaturedCar(Car car, EdgeInsetsGeometry margin, bool isTrending) {
           ),
           const Gap(4),
           Text(
-            car.ownerStoreName,
+            ownerStoreName,
             style: GoogleFonts.poppins(
               fontSize: 12,
               fontWeight: FontWeight.w500,

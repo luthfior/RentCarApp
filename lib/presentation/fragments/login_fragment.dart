@@ -110,7 +110,7 @@ class LoginFragment extends GetView<LoginViewModel> {
                             await controller.handleLogin(context);
                           } else {
                             const OfflineBanner();
-                            return;
+                            null;
                           }
                         },
                 ),

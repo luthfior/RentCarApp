@@ -255,7 +255,7 @@ class RegisterFragment extends GetView<RegisterViewModel> {
                                 );
                               } else {
                                 const OfflineBanner();
-                                return;
+                                null;
                               }
                             },
                     ),

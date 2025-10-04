@@ -74,7 +74,7 @@ class TopUpViewModel extends GetxController {
         ).format(maxTopUpAmount > 0 ? maxTopUpAmount : 0);
 
         Message.error(
-          'Gagal, saldo maksimal adalah Rp10.000.000. Anda hanya bisa top up maksimal sebesar $formattedMaxTopUp.',
+          'Gagal, saldo maksimal adalah Rp10.000.000. Anda hanya bisa top up maksimal sebesar $formattedMaxTopUp.-',
           fontSize: 12,
         );
         return;

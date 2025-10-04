@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:rent_car_app/core/constants/message.dart';
 import 'package:rent_car_app/data/services/connectivity_service.dart';
 import 'package:rent_car_app/presentation/viewModels/pin_view_model.dart';
 import 'package:rent_car_app/presentation/widgets/button_primary.dart';
@@ -16,20 +18,88 @@ class PinPage extends GetView<PinViewModel> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Stack(
-        children: [
-          SafeArea(
-            child: Column(
-              children: [
-                Obx(() {
-                  final title = controller.isForVerification.value
-                      ? 'Verifikasi PIN Lama'
-                      : 'Masukkan PIN';
-                  return CustomHeader(title: title);
-                }),
-                const Gap(100),
-                Column(
+    return Obx(() {
+      final isLoading = controller.isLoading.value;
+      final titleHeader = controller.isForVerification.value
+          ? 'Verifikasi PIN Lama'
+          : 'Masukkan PIN';
+      final buttonText = controller.isForVerification.value
+          ? 'Verifikasi PIN'
+          : 'Konfirmasi Pembayaran';
+
+      return PopScope(
+        canPop: !isLoading,
+        onPopInvokedWithResult: (didPop, result) {
+          if (!didPop && isLoading) {
+            Message.neutral('Sedang memproses, mohon tunggu...', fontSize: 12);
+          }
+        },
+        child: Scaffold(
+          body: isLoading
+              ? SafeArea(
+                  child: Column(
+                    children: [
+                      CustomHeader(
+                        title: 'Pembayaran',
+                        onBackTap: () {
+                          if (isLoading) {
+                            Message.neutral(
+                              'Sedang memproses, mohon tunggu...',
+                              fontSize: 12,
+                            );
+                            return;
+                          }
+                        },
+                      ),
+                      Expanded(
+                        child: Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const CircularProgressIndicator(
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Color(0xffFF5722),
+                                ),
+                              ),
+                              const Gap(16),
+                              Text(
+                                'Sedang memproses, mohon tunggu...',
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w400,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.secondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              : buildPinContent(context, titleHeader, buttonText),
+        ),
+      );
+    });
+  }
+
+  Widget buildPinContent(
+    BuildContext context,
+    String titleHeader,
+    String buttonText,
+  ) {
+    return Stack(
+      children: [
+        SafeArea(
+          child: Column(
+            children: [
+              CustomHeader(title: titleHeader),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 52),
@@ -48,47 +118,50 @@ class PinPage extends GetView<PinViewModel> {
                     ),
                     const Gap(30),
                     pinLayout(controller),
+                    const Gap(50),
                   ],
                 ),
-              ],
+              ),
+            ],
+          ),
+        ),
+        Align(
+          alignment: Alignment.bottomCenter,
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+            color: Get.isDarkMode
+                ? const Color(0xff070623)
+                : const Color(0xffEFEFF0),
+            child: SafeArea(
+              top: false,
+              child: Obx(
+                () => ButtonPrimary(
+                  onTap:
+                      (controller.isPinComplete.value &&
+                          connectivity.isOnline.value &&
+                          !controller.isLoading.value)
+                      ? () async {
+                          controller.isLoading.value = true;
+                          try {
+                            if (controller.isForVerification.value) {
+                              await controller.verifyOldPin();
+                            } else {
+                              await controller.finishedPayment();
+                            }
+                          } finally {
+                            controller.isLoading.value = false;
+                          }
+                        }
+                      : null,
+                  text: buttonText,
+                ),
+              ),
             ),
           ),
-          const OfflineBanner(),
-        ],
-      ),
-      bottomNavigationBar: Container(
-        padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
-        color: Colors.transparent,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Obx(() {
-              final onPressed =
-                  (controller.isPinComplete.value ||
-                      connectivity.isOnline.value)
-                  ? () async {
-                      if (connectivity.isOnline.value) {
-                        if (controller.isForVerification.value) {
-                          await controller.verifyOldPin();
-                        } else {
-                          await controller.finishedPayment();
-                        }
-                      } else {
-                        const OfflineBanner();
-                        return;
-                      }
-                    }
-                  : null;
-
-              final buttonText = controller.isForVerification.value
-                  ? 'Verifikasi PIN'
-                  : 'Konfirmasi Pembayaran';
-              return ButtonPrimary(onTap: onPressed, text: buttonText);
-            }),
-            const Gap(20),
-          ],
         ),
-      ),
+        const OfflineBanner(),
+      ],
     );
   }
 }

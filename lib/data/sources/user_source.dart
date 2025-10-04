@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cloudinary_public/cloudinary_public.dart';
 import 'package:rent_car_app/core/constants/message.dart';
+import 'package:rent_car_app/data/models/account.dart';
 import 'package:rent_car_app/data/models/booked_car.dart';
 import 'package:rent_car_app/data/models/car.dart';
 import 'package:rent_car_app/data/models/order_detail.dart';
@@ -125,9 +126,6 @@ class UserSource {
         Message.error('Gagal menggugah Gambar');
       }
       await userRef.update({'photoUrl': imageUrl});
-      if (userRole == 'admin' || userRole == 'seller') {
-        await _syncCarsOwnerFields(userId, {'ownerPhotoUrl': imageUrl});
-      }
       log('Gambar profil berhasil diperbarui: $imageUrl');
     } on CloudinaryException catch (e) {
       log('Cloudinary Error: ${e.message}');
@@ -150,9 +148,6 @@ class UserSource {
       final String userCollection = userRole == 'admin' ? 'Admin' : 'Users';
       final userRef = firestore.collection(userCollection).doc(userId);
       await userRef.update({'name': newName});
-      if (userRole == 'admin' || userRole == 'seller') {
-        await _syncCarsOwnerFields(userId, {'ownerFullName': newName});
-      }
       log('Nama berhasil diperbarui menjadi: $newName');
     } on FirebaseException catch (e) {
       log('Firebase Error: ${e.code} - ${e.message}');
@@ -172,9 +167,6 @@ class UserSource {
       final String userCollection = userRole == 'admin' ? 'Admin' : 'Users';
       final userRef = firestore.collection(userCollection).doc(userId);
       await userRef.update({'phoneNumber': phoneNumber});
-      if (userRole == 'admin' || userRole == 'seller') {
-        await _syncCarsOwnerFields(userId, {'ownerPhoneNumber': phoneNumber});
-      }
       log('No.Telp berhasil diperbarui menjadi: $phoneNumber');
     } on FirebaseException catch (e) {
       log('Firebase Error: ${e.code} - ${e.message}');
@@ -210,18 +202,6 @@ class UserSource {
         'latLocation': latLocation,
         'longLocation': longLocation,
       });
-      if (userRole == 'admin' || userRole == 'seller') {
-        await _syncCarsOwnerFields(userId, {
-          'fullAddress': fullAddress,
-          'street': street,
-          'village': village,
-          'district': district,
-          'city': city,
-          'province': province,
-          'latLocation': latLocation,
-          'longLocation': longLocation,
-        });
-      }
       log(
         'Alamat berhasil diperbarui menjadi, alamat lengkap: $fullAddress, jalan: $street, kelurahan: $village, kecamatan: $district, kota: $city, provinsi: $province, latLocation: $latLocation, longLocation: $longLocation',
       );
@@ -306,10 +286,6 @@ class UserSource {
     String resi,
     String customerId,
     String sellerId,
-    String customerFullname,
-    String sellerStoreName,
-    String? customerAddress,
-    String? sellerAddress,
     String sellerRole,
     String paymentMethod,
     String paymentStatus,
@@ -348,13 +324,10 @@ class UserSource {
         'productId': productId,
         'customerId': customerId,
         'sellerId': sellerId,
-        'customerFullname': customerFullname.isNotEmpty ? customerFullname : '',
-        'sellerStoreName': sellerStoreName.isNotEmpty ? sellerStoreName : '',
-        'customerAddress': customerAddress ?? '',
-        'sellerAddress': sellerAddress ?? '',
+        'sellerRole': sellerRole,
         'orderDetail': orderDetail.toJson(),
-        'orderDate': Timestamp.now(),
         'orderStatus': initialOrderStatus,
+        'orderDate': Timestamp.now(),
         'paymentMethod': paymentMethod,
         'paymentStatus': paymentStatus,
       });
@@ -507,18 +480,35 @@ class UserSource {
     });
   }
 
-  Future<void> _syncCarsOwnerFields(
-    String ownerId,
-    Map<String, dynamic> updatedFields,
+  static Future<Map<String, Account>> fetchAccountsByIds(
+    List<dynamic> userIds,
   ) async {
-    final carsQuery = await firestore
-        .collection('Cars')
-        .where('ownerId', isEqualTo: ownerId)
-        .get();
+    if (userIds.isEmpty) return {};
+    final firestore = FirebaseFirestore.instance;
+    Map<String, Account> accountsMap = {};
 
-    for (var doc in carsQuery.docs) {
-      await doc.reference.update(updatedFields);
+    try {
+      final usersSnapshot = await firestore
+          .collection('Users')
+          .where(FieldPath.documentId, whereIn: userIds)
+          .get();
+
+      for (var doc in usersSnapshot.docs) {
+        accountsMap[doc.id] = Account.fromJson(doc.data());
+      }
+
+      final adminsSnapshot = await firestore
+          .collection('Admin')
+          .where(FieldPath.documentId, whereIn: userIds)
+          .get();
+
+      for (var doc in adminsSnapshot.docs) {
+        accountsMap[doc.id] = Account.fromJson(doc.data());
+      }
+    } catch (e) {
+      log('Gagal fetch multiple accounts: $e');
     }
-    log("Berhasil update field owner ke Cars untuk ownerId=$ownerId");
+
+    return accountsMap;
   }
 }

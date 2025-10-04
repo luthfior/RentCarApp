@@ -115,7 +115,7 @@ class OrderFragment extends GetView<OrderViewModel> {
                               );
                             } else {
                               const OfflineBanner();
-                              return;
+                              null;
                             }
                           },
                         );
@@ -135,7 +135,7 @@ class OrderFragment extends GetView<OrderViewModel> {
               return TutorialOverlay(
                 onDismiss: () => controller.dismissTutorial(),
                 message:
-                    "Geser ke kiri atau kanan pada item untuk menampilkan Opsi",
+                    "Geser ke kiri pada item untuk memproses pesanan Anda, geser kanan pada item untuk opsi lain",
                 icon: Icons.swipe,
               );
             }
@@ -173,7 +173,7 @@ class OrderFragment extends GetView<OrderViewModel> {
                         context: context,
                         title: 'Batalkan Pesanan',
                         content:
-                            'Apakah Anda yakin ingin membatalkan pesanan ini?',
+                            'Apakah Anda yakin ingin Batalkan Pesanan ini?',
                         confirmText: 'Ya, Batalkan',
                       );
                       if (confirm == true) {
@@ -205,7 +205,7 @@ class OrderFragment extends GetView<OrderViewModel> {
                         context: context,
                         title: 'Konfirmasi Pesanan',
                         content:
-                            'Apakah Anda yakin ingin mengonfirmasi pesanan ini?',
+                            'Apakah Anda yakin ingin Konfirmasi Pesanan ini?',
                         confirmText: 'Ya, Konfirmasi',
                       );
                       if (confirm == true) {
@@ -264,7 +264,7 @@ class OrderFragment extends GetView<OrderViewModel> {
                     context: context,
                     title: 'Hapus Riwayat Pesanan',
                     content:
-                        'Apakah Anda yakin ingin menghapus riwayat pesanan ini secara permanen?',
+                        'Apakah Anda yakin ingin Hapus riwayat Pesanan ini secara permanen?',
                     confirmText: 'Ya, Hapus',
                   );
                   if (confirm == true) {

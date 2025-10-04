@@ -50,12 +50,14 @@ class DetailViewModel extends GetxController {
     try {
       final data = await CarSource.fetchDetailCar(idProduct);
       if (data == null) {
-        status = '';
+        status = 'empty';
+        car = Car.empty;
         return;
       }
-      status = 'success';
       car = data;
+      await fetchPartner(data.ownerId, data.ownerType);
       await checkFavoriteStatus();
+      status = 'success';
     } catch (e) {
       status = 'error';
       log('Error fetching detail: $e');
@@ -87,11 +89,15 @@ class DetailViewModel extends GetxController {
   }
 
   Future<void> fetchPartner(String id, String role) async {
-    final collection = (role == 'admin') ? 'Admin' : 'Users';
-    final doc = await firestore.collection(collection).doc(id).get();
+    try {
+      final collection = (role == 'admin') ? 'Admin' : 'Users';
+      final doc = await firestore.collection(collection).doc(id).get();
 
-    if (doc.exists) {
-      partner = Account.fromJson(doc.data()!);
+      if (doc.exists) {
+        partner = Account.fromJson(doc.data()!);
+      }
+    } catch (e) {
+      log("Gagal fetch partner/owner: $e");
     }
   }
 
@@ -104,7 +110,7 @@ class DetailViewModel extends GetxController {
 
     await fetchPartner(partnerId, partnerRole);
     if (partner == null) {
-      Message.error('Gagal memulai chat.');
+      Message.error('Tidak dapat memulai chat, coba lagi nanti.', fontSize: 12);
       return;
     }
 

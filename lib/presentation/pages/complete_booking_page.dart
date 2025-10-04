@@ -22,27 +22,27 @@ class CompleteBookingPage extends StatelessWidget {
         body: ListView(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           children: [
-            const Gap(100),
+            const Gap(50),
             Text(
               'Pemesanan Berhasil\nSelamat Menikmati Produk Sewa Anda!',
               textAlign: TextAlign.center,
               style: GoogleFonts.poppins(
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w600,
                 fontSize: 20,
                 color: Theme.of(Get.context!).colorScheme.onSurface,
               ),
             ),
-            const Gap(50),
+            const Gap(24),
             ExtendedImage.network(
               car.imageProduct,
-              width: 220,
+              width: 200,
               height: 200,
               fit: BoxFit.cover,
               loadStateChanged: (state) {
                 switch (state.extendedImageLoadState) {
                   case LoadState.loading:
                     return const SizedBox(
-                      width: 220,
+                      width: 200,
                       height: 200,
                       child: Center(
                         child: CircularProgressIndicator(
@@ -55,20 +55,20 @@ class CompleteBookingPage extends StatelessWidget {
                   case LoadState.completed:
                     return ExtendedImage(
                       image: state.imageProvider,
-                      width: 220,
+                      width: 200,
                       height: 200,
                       fit: BoxFit.cover,
                     );
                   case LoadState.failed:
                     return Image.asset(
                       'assets/splash_screen.png',
-                      width: 220,
+                      width: 200,
                       height: 200,
                     );
                 }
               },
             ),
-            const Gap(50),
+            const Gap(24),
             Text(
               "${car.nameProduct} (${car.releaseProduct})",
               textAlign: TextAlign.center,
@@ -78,12 +78,12 @@ class CompleteBookingPage extends StatelessWidget {
                 color: Theme.of(Get.context!).colorScheme.onSurface,
               ),
             ),
-            const Gap(20),
+            const Gap(8),
             Text(
               car.categoryProduct,
               textAlign: TextAlign.center,
               style: GoogleFonts.poppins(
-                fontWeight: FontWeight.w400,
+                fontWeight: FontWeight.w500,
                 fontSize: 16,
                 color: const Color(0xff838384),
               ),
@@ -97,15 +97,12 @@ class CompleteBookingPage extends StatelessWidget {
                 color: const Color(0xff838384),
               ),
             ),
-            const Gap(50),
+            const Gap(24),
             ButtonPrimary(
               customBackgroundColor: const Color(0xffFF5722),
               text: 'Cari Produk Lainnya',
               onTap: () {
-                Get.offAllNamed(
-                  '/discover',
-                  arguments: {'fragmentIndex': 0, 'bookedCar': car},
-                );
+                Get.offAllNamed('/discover', arguments: {'fragmentIndex': 0});
               },
             ),
             const Gap(12),
@@ -120,6 +117,7 @@ class CompleteBookingPage extends StatelessWidget {
                 Get.offAllNamed('/discover', arguments: {'fragmentIndex': 1});
               },
             ),
+            const Gap(50),
           ],
         ),
       ),

@@ -34,7 +34,7 @@ class AuthSource {
     String? storeName,
   }) async {
     try {
-      if (fullName.toLowerCase().contains('admin')) {
+      if (fullName.trim().toLowerCase().contains('admin')) {
         return Result.failure('Nama pengguna telah digunakan');
       }
 

@@ -255,24 +255,27 @@ class EditProfilePage extends GetView<ProfileViewModel> {
             ],
           );
         }),
-        bottomNavigationBar: Container(
-          padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-          color: Colors.transparent,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ButtonPrimary(
-                onTap: () async {
-                  if (connectivity.isOnline.value) {
-                    await controller.updateProfile();
-                  } else {
-                    const OfflineBanner();
-                    return;
-                  }
-                },
-                text: 'Simpan',
-              ),
-            ],
+        bottomNavigationBar: SafeArea(
+          top: false,
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+            color: Colors.transparent,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ButtonPrimary(
+                  onTap: () async {
+                    if (connectivity.isOnline.value) {
+                      await controller.updateProfile();
+                    } else {
+                      const OfflineBanner();
+                      return;
+                    }
+                  },
+                  text: 'Simpan',
+                ),
+              ],
+            ),
           ),
         ),
       ),

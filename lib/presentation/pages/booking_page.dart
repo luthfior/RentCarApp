@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
@@ -42,6 +40,7 @@ class BookingPage extends GetView<BookingViewModel> {
                         if (controller.car.categoryProduct == 'Mobil' ||
                             controller.car.categoryProduct == 'Truk')
                           buildDriverOption(),
+                        const Gap(20),
                       ],
                     ),
                   ),
@@ -52,24 +51,27 @@ class BookingPage extends GetView<BookingViewModel> {
           const OfflineBanner(),
         ],
       ),
-      bottomNavigationBar: Container(
-        padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-        color: Colors.transparent,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ButtonPrimary(
-              onTap: () async {
-                if (connectivity.isOnline.value) {
-                  await controller.goToCheckout();
-                } else {
-                  const OfflineBanner();
-                  return;
-                }
-              },
-              text: 'Lanjutkan ke Pembayaran',
-            ),
-          ],
+      bottomNavigationBar: SafeArea(
+        top: false,
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+          color: Colors.transparent,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ButtonPrimary(
+                onTap: () async {
+                  if (connectivity.isOnline.value) {
+                    await controller.goToCheckout();
+                  } else {
+                    const OfflineBanner();
+                    return;
+                  }
+                },
+                text: 'Lanjutkan ke Pembayaran',
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -94,7 +96,36 @@ class BookingPage extends GetView<BookingViewModel> {
             controller.car.imageProduct,
             width: 80,
             height: 80,
-            fit: BoxFit.contain,
+            fit: BoxFit.cover,
+            loadStateChanged: (state) {
+              switch (state.extendedImageLoadState) {
+                case LoadState.loading:
+                  return const SizedBox(
+                    width: 80,
+                    height: 80,
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          Color(0xffFF5722),
+                        ),
+                      ),
+                    ),
+                  );
+                case LoadState.completed:
+                  return ExtendedImage(
+                    image: state.imageProvider,
+                    width: 80,
+                    height: 80,
+                    fit: BoxFit.cover,
+                  );
+                case LoadState.failed:
+                  return Image.asset(
+                    'assets/splash_screen.png',
+                    width: 80,
+                    height: 80,
+                  );
+              }
+            },
           ),
           const Gap(5),
           Expanded(
@@ -397,7 +428,6 @@ class BookingPage extends GetView<BookingViewModel> {
                 ),
                 onChanged: (value) {
                   controller.insurancePicked = value;
-                  log('Asuransi yang dipilih: $controller.insurancePicked');
                 },
                 icon: Icon(
                   Icons.keyboard_arrow_down_rounded,

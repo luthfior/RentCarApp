@@ -30,9 +30,16 @@ class FCMService {
     );
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      final notification = message.notification;
-      if (notification != null) {
-        _showLocalNotification(notification, message.data);
+      final notificationData = message.data;
+      if (notificationData['title'] != null &&
+          notificationData['body'] != null) {
+        _showLocalNotification(
+          RemoteNotification(
+            title: notificationData['title'],
+            body: notificationData['body'],
+          ),
+          message.data,
+        );
       }
     });
 
@@ -91,6 +98,25 @@ class FCMService {
       discoverVM.setFragmentIndex(0);
     } else {
       discoverVM.setFragmentIndex(0);
+    }
+  }
+
+  static Future<void> showNotificationFromBackground(
+    RemoteMessage message,
+  ) async {
+    final notification = message.data;
+    if (notification['title'] != null && notification['body'] != null) {
+      const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
+      const initSettings = InitializationSettings(android: androidInit);
+      await _flutterLocalNotificationsPlugin.initialize(initSettings);
+
+      _showLocalNotification(
+        RemoteNotification(
+          title: notification['title'],
+          body: notification['body'],
+        ),
+        message.data,
+      );
     }
   }
 }

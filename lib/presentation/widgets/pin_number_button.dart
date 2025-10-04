@@ -25,7 +25,7 @@ Widget pinNumberButton(PinViewModel pinVm, dynamic input) {
     content = Icon(
       input as IconData,
       color: Theme.of(Get.context!).colorScheme.onSurface,
-      size: 28,
+      size: 24,
     );
     onPressed = () => pinVm.handlePinInput(input);
   }
@@ -37,12 +37,13 @@ Widget pinNumberButton(PinViewModel pinVm, dynamic input) {
         backgroundColor: WidgetStatePropertyAll(
           Theme.of(Get.context!).colorScheme.surface,
         ),
+        shape: WidgetStateProperty.all(const CircleBorder()),
       ),
       constraints: const BoxConstraints(
-        minHeight: 65,
-        minWidth: 65,
-        maxHeight: 65,
-        maxWidth: 65,
+        minHeight: 60,
+        minWidth: 60,
+        maxHeight: 70,
+        maxWidth: 70,
       ),
       icon: content,
     ),

@@ -1,13 +1,12 @@
-import 'dart:developer';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:rent_car_app/core/constants/message.dart';
+import 'package:rent_car_app/data/models/account.dart';
 import 'package:rent_car_app/data/services/connectivity_service.dart';
+import 'package:rent_car_app/presentation/widgets/chat_list_item.dart';
 import 'package:rent_car_app/presentation/widgets/offline_banner.dart';
 
 class ChatListFragment extends StatelessWidget {
@@ -31,6 +30,22 @@ class ChatListFragment extends StatelessWidget {
       return DateFormat.E('id_ID').format(date);
     } else {
       return DateFormat('dd/MM/yy').format(date);
+    }
+  }
+
+  final Rx<Account?> _partner = Rx<Account?>(null);
+  Account? get partner => _partner.value;
+  set partner(Account? value) => _partner.value = value;
+
+  Future<void> fetchPartner(String id, String role) async {
+    final collection = (role == 'admin') ? 'Admin' : 'Users';
+    final doc = await FirebaseFirestore.instance
+        .collection(collection)
+        .doc(id)
+        .get();
+
+    if (doc.exists) {
+      partner = Account.fromJson(doc.data()!);
     }
   }
 
@@ -66,6 +81,7 @@ class ChatListFragment extends StatelessWidget {
                 stream: (role == 'customer')
                     ? servicesRef
                           .where('customerId', isEqualTo: uid)
+                          .orderBy('lastMessageTime', descending: true)
                           .snapshots()
                     : servicesRef.where('ownerId', isEqualTo: uid).snapshots(),
                 builder: (context, snapshot) {
@@ -96,7 +112,7 @@ class ChatListFragment extends StatelessWidget {
                     );
                   }
 
-                  final containerHeight = constraints.maxHeight * 0.85;
+                  final containerHeight = constraints.maxHeight * 0.80;
 
                   return RefreshIndicator(
                     onRefresh: () async {
@@ -128,190 +144,13 @@ class ChatListFragment extends StatelessWidget {
                             indent: 72,
                           ),
                           itemBuilder: (context, index) {
-                            final data = docs[index].data();
-                            final roomId = data['roomId'] as String;
-                            final lastMessage =
-                                data['lastMessage'] as String? ?? '';
-                            final ownerStoreName =
-                                data['ownerStoreName'] as String? ??
-                                'Tidak diketahui';
-                            final ownerPhotoUrl =
-                                data['ownerPhotoUrl'] as String? ?? '';
-                            final ownerType =
-                                data['ownerType'] as String? ?? '';
+                            final serviceData = docs[index].data();
 
-                            String customerUsername;
-                            if (data['customerUsername'] != null &&
-                                (data['customerUsername'] as String).contains(
-                                  '#',
-                                )) {
-                              final parts = (data['customerUsername'] as String)
-                                  .split('#');
-                              final rawName = parts[0].replaceAll('_', ' ');
-                              final suffix = parts[1];
-                              final capitalized = rawName
-                                  .split(' ')
-                                  .map(
-                                    (w) => w.isNotEmpty
-                                        ? "${w[0].toUpperCase()}${w.substring(1)}"
-                                        : w,
-                                  )
-                                  .join(' ');
-                              customerUsername = "$capitalized #$suffix";
-                            } else {
-                              customerUsername =
-                                  data['customerFullname'] ?? 'Tidak diketahui';
-                            }
-                            final customerPhotoUrl =
-                                data['customerPhotoUrl'] as String? ?? '';
-                            final lastTimestamp =
-                                data['lastMessageTime'] as Timestamp?;
-                            final formattedTime = formatChatTime(lastTimestamp);
-
-                            final parts = roomId.split('_');
-                            final buyerId = parts[0];
-                            final ownerId = parts.length > 1 ? parts[1] : '';
-
-                            final chatName = (role == 'customer')
-                                ? ownerStoreName
-                                : customerUsername;
-                            final chatPhotoUrl = (role == 'customer')
-                                ? ownerPhotoUrl
-                                : customerPhotoUrl;
-
-                            final unreadCount = (role == 'customer')
-                                ? (data['unreadCountCustomer'] as int? ?? 0)
-                                : (data['unreadCountOwner'] as int? ?? 0);
-
-                            return ListTile(
-                              dense: true,
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 8,
-                              ),
-                              leading: CircleAvatar(
-                                radius: 22,
-                                backgroundImage:
-                                    (chatPhotoUrl.isNotEmpty
-                                            ? NetworkImage(chatPhotoUrl)
-                                            : const AssetImage(
-                                                'assets/profile.png',
-                                              ))
-                                        as ImageProvider,
-                              ),
-                              title: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      chatName,
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                        color: Theme.of(
-                                          context,
-                                        ).colorScheme.onSurface,
-                                      ),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                  Text(
-                                    formattedTime,
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w400,
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.secondary,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              subtitle: Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      lastMessage,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w400,
-                                        color: Theme.of(
-                                          context,
-                                        ).colorScheme.secondary,
-                                      ),
-                                    ),
-                                  ),
-                                  if (unreadCount > 0) ...[
-                                    const SizedBox(height: 4),
-                                    Container(
-                                      padding: const EdgeInsets.all(6),
-                                      decoration: const BoxDecoration(
-                                        color: Color(0xffFF5722),
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: Text(
-                                        unreadCount.toString(),
-                                        style: const TextStyle(
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                              onTap: () async {
-                                if (connectivity.isOnline.value) {
-                                  Get.dialog(
-                                    const Center(
-                                      child: CircularProgressIndicator(
-                                        valueColor:
-                                            AlwaysStoppedAnimation<Color>(
-                                              Color(0xffFF5722),
-                                            ),
-                                      ),
-                                    ),
-                                    barrierDismissible: false,
-                                  );
-                                  try {
-                                    final roomRef = FirebaseFirestore.instance
-                                        .collection('Services')
-                                        .doc(roomId);
-
-                                    await roomRef.update({
-                                      if (role == 'customer')
-                                        'unreadCountCustomer': 0,
-                                      if (role != 'customer')
-                                        'unreadCountOwner': 0,
-                                    });
-
-                                    Get.back();
-
-                                    Get.toNamed(
-                                      '/chatting',
-                                      arguments: {
-                                        'roomId': roomId,
-                                        'customerId': buyerId,
-                                        'ownerId': ownerId,
-                                        'ownerType': ownerType,
-                                        'from': 'listchat',
-                                      },
-                                    );
-                                  } catch (e) {
-                                    Get.back();
-                                    log('Gagal membuka chat: $e');
-                                    Message.error(
-                                      'Gagal membuka chat. Coba lagi.',
-                                    );
-                                  }
-                                } else {
-                                  null;
-                                }
-                              },
+                            return ChatListItem(
+                              serviceData: serviceData,
+                              currentUserRole: role,
+                              currentUserId: uid,
+                              formatChatTime: formatChatTime,
                             );
                           },
                         ),

@@ -93,30 +93,30 @@ class Account {
     }
 
     return Account(
-      uid: json['uid'] as String,
-      fullName: json['fullName'] as String,
-      username: json['username'] as String,
-      storeName: json['storeName'] as String,
-      email: json['email'] as String,
-      fullAddress: json['fullAddress'] as String?,
-      street: json['street'] as String?,
-      province: json['province'] as String?,
-      city: json['city'] as String?,
-      district: json['district'] as String?,
-      village: json['village'] as String?,
+      uid: json['uid'] as String? ?? '',
+      fullName: json['fullName'] as String? ?? '',
+      username: json['username'] as String? ?? '',
+      storeName: json['storeName'] as String? ?? '',
+      email: json['email'] as String? ?? '',
+      role: json['role'] as String? ?? 'customer',
+      fullAddress: json['fullAddress'] as String? ?? '',
+      street: json['street'] as String? ?? '',
+      province: json['province'] as String? ?? '',
+      city: json['city'] as String? ?? '',
+      district: json['district'] as String? ?? '',
+      village: json['village'] as String? ?? '',
       latLocation: json['latLocation'] as num? ?? 0,
       longLocation: json['longLocation'] as num? ?? 0,
-      photoUrl: json['photoUrl'] as String?,
-      phoneNumber: json['phoneNumber'] as String?,
-      role: json['role'] as String,
+      photoUrl: json['photoUrl'] as String? ?? '',
+      phoneNumber: json['phoneNumber'] as String? ?? '',
       balance: json['balance'] as num? ?? 0,
       income: json['income'] as num? ?? 0,
-      pin: json['pin'] as String?,
+      pin: json['pin'] as String? ?? '',
       favProducts: json['favProducts'] != null
-          ? Map.from(json['favProducts'] as Map<String, dynamic>)
+          ? Map.from(json['favProducts'] as Map)
           : null,
       myOrders: json['myOrders'] != null
-          ? Map.from(json['myOrders'] as Map<String, dynamic>)
+          ? Map.from(json['myOrders'] as Map)
           : null,
       fcmTokens: json['fcmTokens'] != null
           ? List<String>.from(json['fcmTokens'])

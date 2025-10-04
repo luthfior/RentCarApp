@@ -135,24 +135,27 @@ class LocationPage extends GetView<LocationViewModel> {
           const OfflineBanner(),
         ],
       ),
-      bottomNavigationBar: Container(
-        padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
-        color: Colors.transparent,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ButtonPrimary(
-              onTap: () async {
-                if (connectivity.isOnline.value) {
-                  await controller.handleLocation();
-                } else {
-                  const OfflineBanner();
-                  return;
-                }
-              },
-              text: 'Pilih Lokasi',
-            ),
-          ],
+      bottomNavigationBar: SafeArea(
+        top: false,
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+          color: Colors.transparent,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ButtonPrimary(
+                onTap: () async {
+                  if (connectivity.isOnline.value) {
+                    await controller.handleLocation();
+                  } else {
+                    const OfflineBanner();
+                    return;
+                  }
+                },
+                text: 'Pilih Lokasi',
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -255,68 +255,97 @@ class DetailPage extends GetView<DetailViewModel> {
                                       ],
                                     ),
                                     const Gap(8),
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.start,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      children: [
-                                        CircleAvatar(
-                                          radius: 14,
-                                          backgroundImage:
-                                              controller
-                                                  .car
-                                                  .ownerPhotoUrl
-                                                  .isNotEmpty
-                                              ? NetworkImage(
-                                                  controller.car.ownerPhotoUrl,
-                                                )
-                                              : const AssetImage(
-                                                      'assets/profile.png',
-                                                    )
-                                                    as ImageProvider,
-                                        ),
-                                        const Gap(8),
-                                        Text(
-                                          controller.car.ownerStoreName,
-                                          style: GoogleFonts.poppins(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w600,
-                                            color: Theme.of(
-                                              Get.context!,
-                                            ).colorScheme.onSurface,
+                                    Obx(() {
+                                      if (controller.partner == null) {
+                                        return const Row(
+                                          children: [
+                                            CircleAvatar(
+                                              radius: 14,
+                                              backgroundImage:
+                                                  AssetImage(
+                                                        'assets/profile.png',
+                                                      )
+                                                      as ImageProvider,
+                                            ),
+                                            Gap(8),
+                                            SizedBox(
+                                              width: 120,
+                                              height: 16,
+                                              child: ColoredBox(
+                                                color: Colors.grey,
+                                              ),
+                                            ),
+                                          ],
+                                        );
+                                      }
+
+                                      final owner = controller.partner!;
+                                      return Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          CircleAvatar(
+                                            radius: 14,
+                                            backgroundImage:
+                                                (owner.photoUrl != null &&
+                                                    owner.photoUrl!.isNotEmpty)
+                                                ? NetworkImage(owner.photoUrl!)
+                                                : const AssetImage(
+                                                        'assets/profile.png',
+                                                      )
+                                                      as ImageProvider,
                                           ),
-                                        ),
-                                      ],
-                                    ),
-                                    const Gap(8),
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.start,
-                                      children: [
-                                        Icon(
-                                          Icons.location_pin,
-                                          color: Theme.of(
-                                            Get.context!,
-                                          ).colorScheme.secondary,
-                                          size: 20,
-                                        ),
-                                        const Gap(8),
-                                        Expanded(
-                                          child: Text(
-                                            controller.car.fullAddress,
+                                          const Gap(8),
+                                          Text(
+                                            owner.storeName,
                                             style: GoogleFonts.poppins(
                                               fontSize: 14,
-                                              fontWeight: FontWeight.w500,
+                                              fontWeight: FontWeight.w600,
                                               color: Theme.of(
                                                 Get.context!,
                                               ).colorScheme.onSurface,
                                             ),
                                           ),
-                                        ),
-                                        const Gap(10),
-                                      ],
-                                    ),
+                                        ],
+                                      );
+                                    }),
+                                    const Gap(8),
+                                    Obx(() {
+                                      if (controller.partner == null) {
+                                        return const SizedBox(height: 20);
+                                      }
+
+                                      final owner = controller.partner!;
+                                      return Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        children: [
+                                          Icon(
+                                            Icons.location_pin,
+                                            color: Theme.of(
+                                              Get.context!,
+                                            ).colorScheme.secondary,
+                                            size: 20,
+                                          ),
+                                          const Gap(8),
+                                          Expanded(
+                                            child: Text(
+                                              owner.fullAddress ?? '',
+                                              style: GoogleFonts.poppins(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w500,
+                                                color: Theme.of(
+                                                  Get.context!,
+                                                ).colorScheme.onSurface,
+                                              ),
+                                            ),
+                                          ),
+                                          const Gap(10),
+                                        ],
+                                      );
+                                    }),
                                     const Gap(12),
                                     Text(
                                       'Deskripsi',
@@ -358,26 +387,49 @@ class DetailPage extends GetView<DetailViewModel> {
           ],
         );
       }),
-      bottomNavigationBar: Container(
-        padding: const EdgeInsets.fromLTRB(24, 0, 24, 18),
-        color: Theme.of(Get.context!).colorScheme.surface,
-        child: Obx(() {
-          final account = controller.authVM.account.value;
-          if (account == null ||
-              controller.status == 'loading' ||
-              controller.car == Car.empty) {
-            return const SizedBox.shrink();
-          }
+      bottomNavigationBar: SafeArea(
+        top: false,
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(24, 0, 24, 30),
+          color: Theme.of(Get.context!).colorScheme.surface,
+          child: Obx(() {
+            final account = controller.authVM.account.value;
+            if (account == null ||
+                controller.status == 'loading' ||
+                controller.car == Car.empty) {
+              return const SizedBox.shrink();
+            }
 
-          final isAdmin = account.role == 'admin';
-          final isSeller = account.role == 'seller';
-          final isOwner = controller.car.ownerId == account.uid;
+            final isAdmin = account.role == 'admin';
+            final isSeller = account.role == 'seller';
+            final isOwner = controller.car.ownerId == account.uid;
 
-          if (isSeller || (isAdmin && isOwner)) {
-            return buildEditProductButton(controller.car);
-          }
+            if (isSeller || (isAdmin && isOwner)) {
+              return buildEditProductButton(controller.car);
+            }
 
-          if (isAdmin && !isOwner) {
+            if (isAdmin && !isOwner) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  buildCarPrice(controller.car),
+                  const Gap(10),
+                  ButtonChat(
+                    text: 'Chat Sekarang',
+                    customBorderRadius: BorderRadius.circular(20),
+                    customIconSize: 24,
+                    onTap: controller.partner != null
+                        ? () async {
+                            if (connectivity.isOnline.value) {
+                              controller.openChat();
+                            }
+                          }
+                        : null,
+                  ),
+                ],
+              );
+            }
+
             return Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -387,34 +439,18 @@ class DetailPage extends GetView<DetailViewModel> {
                   text: 'Chat Sekarang',
                   customBorderRadius: BorderRadius.circular(20),
                   customIconSize: 24,
-                  onTap: () async {
-                    if (connectivity.isOnline.value) {
-                      controller.openChat();
-                    }
-                  },
+                  onTap: controller.partner != null
+                      ? () async {
+                          if (connectivity.isOnline.value) {
+                            controller.openChat();
+                          }
+                        }
+                      : null,
                 ),
               ],
             );
-          }
-
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              buildCarPrice(controller.car),
-              const Gap(10),
-              ButtonChat(
-                text: 'Chat Sekarang',
-                customBorderRadius: BorderRadius.circular(20),
-                customIconSize: 24,
-                onTap: () async {
-                  if (connectivity.isOnline.value) {
-                    controller.openChat();
-                  }
-                },
-              ),
-            ],
-          );
-        }),
+          }),
+        ),
       ),
     );
   }
@@ -483,7 +519,7 @@ class DetailPage extends GetView<DetailViewModel> {
         car.categoryProduct == 'Motor' ||
         car.categoryProduct == 'Sepeda') {
       items.add({
-        "title": "Bahan Bakar",
+        "title": "Sumber Energi",
         "value": car.energySourceProduct ?? '-',
         "icon": getEnergySourceIcon(),
       });

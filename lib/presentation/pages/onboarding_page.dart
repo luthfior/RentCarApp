@@ -31,19 +31,8 @@ class OnBoardingPage extends GetView<PermissionViewModel> {
                           isDarkMode
                               ? 'assets/logo_text_16_9_dark_mode.png'
                               : 'assets/logo_text_16_9.png',
-                          height: 90,
+                          height: 75,
                         ),
-                        const Gap(10),
-                        Text(
-                          ' ',
-                          style: GoogleFonts.poppins(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                            color: Theme.of(Get.context!).colorScheme.onSurface,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const Gap(20),
                         Transform.translate(
                           offset: Offset(
                             -0.25 * MediaQuery.of(context).size.width,
@@ -55,14 +44,13 @@ class OnBoardingPage extends GetView<PermissionViewModel> {
                             fit: BoxFit.cover,
                           ),
                         ),
-                        const Gap(10),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 24),
                           child: Text(
                             'Nikmati kemudahan menyewa barang apapun yang Anda mau, langsung dari genggamanmu, kapan saja dan di mana saja.',
                             style: GoogleFonts.poppins(
                               fontSize: 16,
-                              fontWeight: FontWeight.w700,
+                              fontWeight: FontWeight.w600,
                               color: Theme.of(
                                 Get.context!,
                               ).colorScheme.onSurface,
@@ -70,7 +58,7 @@ class OnBoardingPage extends GetView<PermissionViewModel> {
                             textAlign: TextAlign.center,
                           ),
                         ),
-                        const Gap(50),
+                        const Gap(30),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 24),
                           child: Obx(() {

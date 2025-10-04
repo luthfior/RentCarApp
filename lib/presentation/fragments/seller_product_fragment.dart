@@ -28,9 +28,9 @@ class SellerProductFragment extends GetView<SellerViewModel> {
           child: Column(
             children: [
               Obx(() {
-                final userRole = (authVM.account.value!.role == 'seller')
-                    ? 'Seller'
-                    : 'Admin';
+                final userRole = authVM.account.value!.storeName.isNotEmpty
+                    ? authVM.account.value!.storeName
+                    : 'Seller';
                 return buildHeader(context, userRole);
               }),
               Expanded(
@@ -56,7 +56,8 @@ class SellerProductFragment extends GetView<SellerViewModel> {
                           ),
                         );
                       }
-                      final userRole = (authVM.account.value!.role == 'seller')
+                      final userStoreName =
+                          (authVM.account.value!.role == 'seller')
                           ? 'Seller'
                           : 'Admin';
                       return ListView(
@@ -66,7 +67,7 @@ class SellerProductFragment extends GetView<SellerViewModel> {
                             if (controller.currentView.value == 'search') {
                               return buildSearchProducts();
                             } else {
-                              return buildHomeView(userRole);
+                              return buildHomeView(userStoreName);
                             }
                           }),
                           const Gap(50),
@@ -93,7 +94,7 @@ class SellerProductFragment extends GetView<SellerViewModel> {
                   controller.goToAddProductPage();
                 } else {
                   const OfflineBanner();
-                  return;
+                  null;
                 }
               },
               child: Icon(
@@ -121,7 +122,7 @@ class SellerProductFragment extends GetView<SellerViewModel> {
     );
   }
 
-  Widget buildHeader(BuildContext context, String userRole) {
+  Widget buildHeader(BuildContext context, String? userRole) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 20, 24, 10),
       child: Row(
@@ -229,13 +230,14 @@ class SellerProductFragment extends GetView<SellerViewModel> {
     );
   }
 
-  Widget buildHomeView(String userRole) {
+  Widget buildHomeView(String userStoreName) {
+    final owner = authVM.account.value;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Gap(10),
         Text(
-          'Halo, Selamat Datang $userRole!',
+          'Halo, Selamat Datang $userStoreName!',
           style: GoogleFonts.poppins(
             fontSize: 18,
             fontWeight: FontWeight.w600,
@@ -296,6 +298,8 @@ class SellerProductFragment extends GetView<SellerViewModel> {
                   return buildSlidableSellerItem(
                     context,
                     car: car,
+                    ownerCity: owner?.city ?? '',
+                    ownerStoreName: owner?.storeName ?? '',
                     onEdit: () {
                       if (connectivity.isOnline.value) {
                         Get.toNamed('/detail', arguments: car.id);
@@ -324,6 +328,7 @@ class SellerProductFragment extends GetView<SellerViewModel> {
   }
 
   Widget buildSearchProducts() {
+    final owner = authVM.account.value;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -368,6 +373,8 @@ class SellerProductFragment extends GetView<SellerViewModel> {
               return buildSlidableSellerItem(
                 context,
                 car: car,
+                ownerCity: owner?.city ?? '',
+                ownerStoreName: owner?.storeName ?? '',
                 onEdit: () {
                   if (connectivity.isOnline.value) {
                     Get.toNamed(
@@ -398,6 +405,8 @@ class SellerProductFragment extends GetView<SellerViewModel> {
   Widget buildSlidableSellerItem(
     BuildContext context, {
     required Car car,
+    required String ownerCity,
+    required String ownerStoreName,
     required VoidCallback onEdit,
     required VoidCallback onDelete,
   }) {
@@ -427,7 +436,7 @@ class SellerProductFragment extends GetView<SellerViewModel> {
           ),
         ],
       ),
-      child: itemGridCar(car, () {
+      child: itemGridCar(car, ownerCity, ownerStoreName, () {
         if (connectivity.isOnline.value) {
           Get.toNamed('/detail', arguments: car.id);
         } else {

@@ -47,7 +47,7 @@ class SettingFragment extends StatelessWidget {
                       child: Column(
                         children: [
                           buildProfile(),
-                          const Gap(40),
+                          const Gap(24),
                           Expanded(
                             child: RefreshIndicator(
                               onRefresh: () async {
@@ -59,196 +59,214 @@ class SettingFragment extends StatelessWidget {
                                 }
                               },
                               color: const Color(0xffFF5722),
-                              child: ListView(
-                                padding: EdgeInsets.zero,
-                                children: [
-                                  buildDarkMode(),
-                                  const Gap(20),
-                                  buildItemSettings(
-                                    icon: Icons.perm_contact_calendar_rounded,
-                                    title: 'Sunting Profil',
-                                    isDisable: !connectivity.isOnline.value,
-                                    onTap: () {
-                                      Get.toNamed(
-                                        '/edit-profile',
-                                        arguments: {'from': 'setting'},
-                                      );
-                                    },
-                                  ),
-                                  const Gap(20),
-                                  Obx(() {
-                                    final account = authVM.account.value;
-                                    if (account == null) {
-                                      return const SizedBox();
-                                    }
-                                    if (account.role == 'seller') {
-                                      return buildItemSettings(
-                                        icon: Icons.wallet,
-                                        title: 'Saldo DompetKu',
-                                        isDisable: !connectivity.isOnline.value,
-                                        onTap: () {
-                                          if (connectivity.isOnline.value) {
-                                            Get.toNamed('/saldo');
+                              child: SingleChildScrollView(
+                                child: Column(
+                                  children: [
+                                    buildDarkMode(),
+                                    const Gap(20),
+                                    buildItemSettings(
+                                      icon: Icons.perm_contact_calendar_rounded,
+                                      title: 'Sunting Profil',
+                                      isDisable: !connectivity.isOnline.value,
+                                      onTap: () {
+                                        Get.toNamed(
+                                          '/edit-profile',
+                                          arguments: {'from': 'setting'},
+                                        );
+                                      },
+                                    ),
+                                    const Gap(20),
+                                    Obx(() {
+                                      final account = authVM.account.value;
+                                      if (account == null) {
+                                        return const SizedBox();
+                                      }
+                                      if (account.role == 'seller') {
+                                        return buildItemSettings(
+                                          icon: Icons.wallet,
+                                          title: 'Saldo DompetKu',
+                                          isDisable:
+                                              !connectivity.isOnline.value,
+                                          onTap: () {
+                                            if (connectivity.isOnline.value) {
+                                              Get.toNamed('/saldo');
+                                            } else {
+                                              const OfflineBanner();
+                                              return;
+                                            }
+                                          },
+                                        );
+                                      } else if (account.role == 'admin') {
+                                        return Column(
+                                          children: [
+                                            buildItemSettings(
+                                              icon: Icons.wallet,
+                                              title: 'Saldo DompetKu',
+                                              isDisable:
+                                                  !connectivity.isOnline.value,
+                                              onTap: () {
+                                                if (connectivity
+                                                    .isOnline
+                                                    .value) {
+                                                  Get.toNamed('/saldo');
+                                                } else {
+                                                  const OfflineBanner();
+                                                  return;
+                                                }
+                                              },
+                                            ),
+                                            const Gap(20),
+                                            buildItemSettings(
+                                              icon: Icons.payments_rounded,
+                                              title: 'Top Up Saldo',
+                                              isDisable:
+                                                  !connectivity.isOnline.value,
+                                              onTap: () {
+                                                if (connectivity
+                                                    .isOnline
+                                                    .value) {
+                                                  Get.toNamed('/top-up');
+                                                } else {
+                                                  const OfflineBanner();
+                                                  return;
+                                                }
+                                              },
+                                            ),
+                                            const Gap(20),
+                                            buildItemSettings(
+                                              icon: Icons.pin,
+                                              title: 'Ganti Pin DompetKu',
+                                              isDisable:
+                                                  !connectivity.isOnline.value,
+                                              onTap: () {
+                                                if (connectivity
+                                                    .isOnline
+                                                    .value) {
+                                                  final pin =
+                                                      authVM.account.value?.pin;
+                                                  if (pin != null &&
+                                                      pin.isNotEmpty) {
+                                                    Get.toNamed(
+                                                      '/pin',
+                                                      arguments: {
+                                                        'isForVerification':
+                                                            true,
+                                                      },
+                                                    );
+                                                  } else {
+                                                    Get.toNamed('/pin-setup');
+                                                  }
+                                                } else {
+                                                  const OfflineBanner();
+                                                  return;
+                                                }
+                                              },
+                                            ),
+                                          ],
+                                        );
+                                      } else {
+                                        return Column(
+                                          children: [
+                                            buildItemSettings(
+                                              icon: Icons.payments_rounded,
+                                              title: 'Top Up Saldo',
+                                              isDisable:
+                                                  !connectivity.isOnline.value,
+                                              onTap: () {
+                                                if (connectivity
+                                                    .isOnline
+                                                    .value) {
+                                                  Get.toNamed('/top-up');
+                                                } else {
+                                                  const OfflineBanner();
+                                                  return;
+                                                }
+                                              },
+                                            ),
+                                            const Gap(20),
+                                            buildItemSettings(
+                                              icon: Icons.pin,
+                                              title:
+                                                  (authVM
+                                                          .account
+                                                          .value!
+                                                          .pin!
+                                                          .isEmpty ||
+                                                      authVM
+                                                              .account
+                                                              .value!
+                                                              .pin ==
+                                                          null)
+                                                  ? 'Buat Pin DompetKu'
+                                                  : 'Ganti Pin DompetKu',
+                                              isDisable:
+                                                  !connectivity.isOnline.value,
+                                              onTap: () {
+                                                if (connectivity
+                                                    .isOnline
+                                                    .value) {
+                                                  final pin =
+                                                      authVM.account.value?.pin;
+                                                  if (pin != null &&
+                                                      pin.isNotEmpty) {
+                                                    Get.toNamed(
+                                                      '/pin',
+                                                      arguments: {
+                                                        'isForVerification':
+                                                            true,
+                                                      },
+                                                    );
+                                                  } else {
+                                                    Get.toNamed('/pin-setup');
+                                                  }
+                                                } else {
+                                                  const OfflineBanner();
+                                                  return;
+                                                }
+                                              },
+                                            ),
+                                          ],
+                                        );
+                                      }
+                                    }),
+                                    const Gap(20),
+                                    buildItemSettings(
+                                      icon: Icons.info_rounded,
+                                      title: 'Tentang',
+                                      isDisable: !connectivity.isOnline.value,
+                                      onTap: () {
+                                        Get.toNamed('/about-app');
+                                      },
+                                    ),
+                                    const Gap(20),
+                                    buildItemSettings(
+                                      icon: Icons.power_settings_new_rounded,
+                                      title: 'Keluar',
+                                      isDisable: !connectivity.isOnline.value,
+                                      onTap: () async {
+                                        if (connectivity.isOnline.value) {
+                                          bool?
+                                          confirm = await showConfirmationDialog(
+                                            context: context,
+                                            title: 'Keluar Akun',
+                                            content:
+                                                'Apakah Anda yakin ingin Keluar Akun?',
+                                            confirmText: 'Ya, Keluar Akun',
+                                          );
+                                          if (confirm == true) {
+                                            authVM.logout();
                                           } else {
-                                            const OfflineBanner();
                                             return;
                                           }
-                                        },
-                                      );
-                                    } else if (account.role == 'admin') {
-                                      return Column(
-                                        children: [
-                                          buildItemSettings(
-                                            icon: Icons.wallet,
-                                            title: 'Saldo DompetKu',
-                                            isDisable:
-                                                !connectivity.isOnline.value,
-                                            onTap: () {
-                                              if (connectivity.isOnline.value) {
-                                                Get.toNamed('/saldo');
-                                              } else {
-                                                const OfflineBanner();
-                                                return;
-                                              }
-                                            },
-                                          ),
-                                          const Gap(20),
-                                          buildItemSettings(
-                                            icon: Icons.payments_rounded,
-                                            title: 'Top Up Saldo',
-                                            isDisable:
-                                                !connectivity.isOnline.value,
-                                            onTap: () {
-                                              if (connectivity.isOnline.value) {
-                                                Get.toNamed('/top-up');
-                                              } else {
-                                                const OfflineBanner();
-                                                return;
-                                              }
-                                            },
-                                          ),
-                                          const Gap(20),
-                                          buildItemSettings(
-                                            icon: Icons.pin,
-                                            title: 'Ganti Pin DompetKu',
-                                            isDisable:
-                                                !connectivity.isOnline.value,
-                                            onTap: () {
-                                              if (connectivity.isOnline.value) {
-                                                final pin =
-                                                    authVM.account.value?.pin;
-                                                if (pin != null &&
-                                                    pin.isNotEmpty) {
-                                                  Get.toNamed(
-                                                    '/pin',
-                                                    arguments: {
-                                                      'isForVerification': true,
-                                                    },
-                                                  );
-                                                } else {
-                                                  Get.toNamed('/pin-setup');
-                                                }
-                                              } else {
-                                                const OfflineBanner();
-                                                return;
-                                              }
-                                            },
-                                          ),
-                                        ],
-                                      );
-                                    } else {
-                                      return Column(
-                                        children: [
-                                          buildItemSettings(
-                                            icon: Icons.payments_rounded,
-                                            title: 'Top Up Saldo',
-                                            isDisable:
-                                                !connectivity.isOnline.value,
-                                            onTap: () {
-                                              if (connectivity.isOnline.value) {
-                                                Get.toNamed('/top-up');
-                                              } else {
-                                                const OfflineBanner();
-                                                return;
-                                              }
-                                            },
-                                          ),
-                                          const Gap(20),
-                                          buildItemSettings(
-                                            icon: Icons.pin,
-                                            title:
-                                                (authVM
-                                                        .account
-                                                        .value!
-                                                        .pin!
-                                                        .isEmpty ||
-                                                    authVM.account.value!.pin ==
-                                                        null)
-                                                ? 'Buat Pin DompetKu'
-                                                : 'Ganti Pin DompetKu',
-                                            isDisable:
-                                                !connectivity.isOnline.value,
-                                            onTap: () {
-                                              if (connectivity.isOnline.value) {
-                                                final pin =
-                                                    authVM.account.value?.pin;
-                                                if (pin != null &&
-                                                    pin.isNotEmpty) {
-                                                  Get.toNamed(
-                                                    '/pin',
-                                                    arguments: {
-                                                      'isForVerification': true,
-                                                    },
-                                                  );
-                                                } else {
-                                                  Get.toNamed('/pin-setup');
-                                                }
-                                              } else {
-                                                const OfflineBanner();
-                                                return;
-                                              }
-                                            },
-                                          ),
-                                        ],
-                                      );
-                                    }
-                                  }),
-                                  const Gap(20),
-                                  buildItemSettings(
-                                    icon: Icons.info_rounded,
-                                    title: 'Tentang',
-                                    isDisable: !connectivity.isOnline.value,
-                                    onTap: () {
-                                      Get.toNamed('/about-app');
-                                    },
-                                  ),
-                                  const Gap(20),
-                                  buildItemSettings(
-                                    icon: Icons.power_settings_new_rounded,
-                                    title: 'Keluar',
-                                    isDisable: !connectivity.isOnline.value,
-                                    onTap: () async {
-                                      if (connectivity.isOnline.value) {
-                                        bool?
-                                        confirm = await showConfirmationDialog(
-                                          context: context,
-                                          title: 'Keluar Akun',
-                                          content:
-                                              'Apakah Anda yakin ingin Keluar?',
-                                          confirmText: 'Ya, Keluar',
-                                        );
-                                        if (confirm == true) {
-                                          authVM.logout();
                                         } else {
+                                          const OfflineBanner();
                                           return;
                                         }
-                                      } else {
-                                        const OfflineBanner();
-                                        return;
-                                      }
-                                    },
-                                  ),
-                                ],
+                                      },
+                                    ),
+                                    const Gap(16),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
@@ -280,14 +298,14 @@ class SettingFragment extends StatelessWidget {
       return Row(
         children: [
           CircleAvatar(
-            radius: 40,
+            radius: 35,
             backgroundColor: Theme.of(Get.context!).colorScheme.secondary,
             backgroundImage:
                 (account.photoUrl != null && account.photoUrl!.isNotEmpty)
                 ? NetworkImage(account.photoUrl!)
                 : const AssetImage('assets/profile.png'),
           ),
-          const Gap(20),
+          const Gap(14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -303,7 +321,7 @@ class SettingFragment extends StatelessWidget {
                 Text(
                   account.email,
                   style: GoogleFonts.poppins(
-                    fontSize: 16,
+                    fontSize: 14,
                     fontWeight: FontWeight.w400,
                     color: Theme.of(Get.context!).colorScheme.secondary,
                   ),
@@ -420,6 +438,7 @@ class SettingFragment extends StatelessWidget {
                 color: Theme.of(Get.context!).colorScheme.onSurface,
               ),
             ),
+            actionsOverflowDirection: VerticalDirection.up,
             actions: <Widget>[
               TextButton(
                 child: Text(

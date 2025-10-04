@@ -18,8 +18,9 @@ import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'core/firebase_options.dart';
 
 @pragma('vm:entry-point')
-Future<void> _background(RemoteMessage m) async {
+Future<void> _background(RemoteMessage message) async {
   await Firebase.initializeApp();
+  await FCMService.showNotificationFromBackground(message);
 }
 
 Future<void> main() async {

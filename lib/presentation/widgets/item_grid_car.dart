@@ -7,7 +7,12 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:rent_car_app/data/models/car.dart';
 
-Widget itemGridCar(Car car, VoidCallback onTap) {
+Widget itemGridCar(
+  Car car,
+  String ownerCity,
+  String ownerStoreName,
+  VoidCallback onTap,
+) {
   return GestureDetector(
     onTap: onTap,
     child: Container(
@@ -28,7 +33,7 @@ Widget itemGridCar(Car car, VoidCallback onTap) {
                 fit: BoxFit.cover,
                 loadStateChanged: (state) {
                   if (state.extendedImageLoadState == LoadState.failed) {
-                    return Image.asset('asssets/splash_screen.dart');
+                    return Image.asset('assets/splash_screen.png');
                   }
                   return null;
                 },
@@ -112,7 +117,7 @@ Widget itemGridCar(Car car, VoidCallback onTap) {
                 child: Text(
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  " ${car.city}",
+                  " $ownerCity",
                   style: GoogleFonts.poppins(
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
@@ -123,7 +128,7 @@ Widget itemGridCar(Car car, VoidCallback onTap) {
             ],
           ),
           Text(
-            car.ownerStoreName,
+            ownerStoreName,
             style: GoogleFonts.poppins(
               fontSize: 12,
               fontWeight: FontWeight.w500,

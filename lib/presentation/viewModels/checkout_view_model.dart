@@ -67,6 +67,7 @@ class CheckoutViewModel extends GetxController {
 
     populateFieldsFromAccount(authVM.account.value);
     ever(authVM.account, (account) => populateFieldsFromAccount(account));
+    fetchPartner(car.ownerId, car.ownerType);
   }
 
   void populateFieldsFromAccount(Account? acc) {
@@ -187,7 +188,7 @@ class CheckoutViewModel extends GetxController {
           log("WebView Midtrans selesai. Navigasi ke halaman complete...");
           await sendNotification();
           Message.success('Pembayaran berhasil. Pesanan telah dibuat!');
-          Get.offAllNamed(
+          await navigateWithLoading(
             '/complete',
             arguments: {'fragmentIndex': 0, 'bookedCar': car},
           );
@@ -335,10 +336,6 @@ class CheckoutViewModel extends GetxController {
           resi,
           authVM.account.value!.uid,
           partner!.uid,
-          authVM.account.value!.fullName,
-          partner!.storeName,
-          authVM.account.value?.fullAddress,
-          partner!.fullAddress,
           partner!.role,
           paymentMethod,
           paymentStatus,
@@ -367,7 +364,7 @@ class CheckoutViewModel extends GetxController {
         }
         await sendNotification();
         Message.success('Pembayaran berhasil. Pesanan telah dibuat!');
-        Get.offAllNamed(
+        await navigateWithLoading(
           '/complete',
           arguments: {'fragmentIndex': 0, 'bookedCar': car},
         );
@@ -381,6 +378,16 @@ class CheckoutViewModel extends GetxController {
         fontSize: 12,
       );
     }
+  }
+
+  Future<void> navigateWithLoading(
+    String route, {
+    Map<String, dynamic>? arguments,
+  }) async {
+    isLoading.value = true;
+    await Future.delayed(const Duration(seconds: 2));
+    isLoading.value = false;
+    Get.offAllNamed(route, arguments: arguments);
   }
 
   Future<String?> createInitialOrder(
@@ -397,10 +404,6 @@ class CheckoutViewModel extends GetxController {
         resi,
         userId,
         partner!.uid,
-        authVM.account.value!.fullName,
-        partner!.storeName,
-        authVM.account.value?.fullAddress,
-        partner!.fullAddress,
         partner!.role,
         paymentMethod,
         paymentStatus,

@@ -60,26 +60,26 @@ class SellerViewModel extends GetxController {
 
   void handleSearchSubmit() {
     final query = searchQuery.trim().toLowerCase();
-    if (query.isNotEmpty) {
-      _currentView.value = 'search';
-      final Map<String, Car> uniqueCarsMap = {};
-      for (var car in _myProducts) {
-        uniqueCarsMap[car.id] = car;
-      }
-      final uniqueList = uniqueCarsMap.values.toList();
-      final filteredResults = uniqueList
-          .where(
-            (car) =>
-                car.nameProduct.toLowerCase().contains(query) ||
-                car.categoryProduct.toLowerCase().contains(query) ||
-                car.brandProduct.toLowerCase().contains(query),
-          )
-          .toList();
-      _searchResults.value = filteredResults;
-    } else {
+    if (query.isEmpty) {
       _currentView.value = 'home';
       _searchResults.clear();
+      return;
     }
+    _currentView.value = 'search';
+    final Map<String, Car> uniqueCarsMap = {};
+    for (var car in _myProducts) {
+      uniqueCarsMap[car.id] = car;
+    }
+    final uniqueList = uniqueCarsMap.values.toList();
+    final filteredResults = uniqueList
+        .where(
+          (car) =>
+              car.nameProduct.toLowerCase().contains(query) ||
+              car.categoryProduct.toLowerCase().contains(query) ||
+              car.brandProduct.toLowerCase().contains(query),
+        )
+        .toList();
+    _searchResults.value = filteredResults;
   }
 
   Future<void> fetchMyProducts() async {
@@ -199,6 +199,7 @@ class SellerViewModel extends GetxController {
                 color: Theme.of(Get.context!).colorScheme.onSurface,
               ),
             ),
+            actionsOverflowDirection: VerticalDirection.up,
             actions: <Widget>[
               TextButton(
                 child: Text(

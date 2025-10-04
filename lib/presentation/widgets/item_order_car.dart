@@ -164,12 +164,18 @@ Widget itemOrderCar(
                           allowHalfRating: true,
                           onRatingUpdate: (value) {},
                         ),
-                        Text(
-                          '(${bookedCar.car.purchasedProduct}x disewa)',
-                          style: GoogleFonts.poppins(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w400,
-                            color: Theme.of(Get.context!).colorScheme.onSurface,
+                        Flexible(
+                          child: Text(
+                            '(${bookedCar.car.purchasedProduct}x disewa)',
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                            style: GoogleFonts.poppins(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w400,
+                              color: Theme.of(
+                                Get.context!,
+                              ).colorScheme.onSurface,
+                            ),
                           ),
                         ),
                       ],
@@ -229,6 +235,7 @@ Widget itemOrderCar(
               Expanded(
                 child: Text(
                   formattedDate,
+                  maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.poppins(
                     fontSize: 12,
@@ -253,6 +260,7 @@ Widget itemOrderCar(
               Expanded(
                 child: Text(
                   bookedCar.order.resi,
+                  maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.poppins(
                     fontSize: 12,
@@ -279,6 +287,7 @@ Widget itemOrderCar(
               Expanded(
                 child: Text(
                   statusText,
+                  maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.poppins(
                     fontSize: 12,

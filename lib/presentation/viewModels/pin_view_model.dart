@@ -30,6 +30,7 @@ class PinViewModel extends GetxController {
   final RxString _newPin = ''.obs;
 
   bool _disposed = false;
+  final RxBool isLoading = false.obs;
 
   @override
   void onInit() {
@@ -99,33 +100,61 @@ class PinViewModel extends GetxController {
       if (userId == null) {
         throw Exception('User tidak terautentikasi');
       }
-
       if (_newPin.value.isEmpty) {
         _newPin.value = pin;
         clearPin();
+        isPinComplete.value = false;
         Message.success('Masukkan PIN sekali lagi untuk konfirmasi.');
         return;
-      } else if (_newPin.value != pin) {
-        clearPin();
-        _newPin.value = '';
-        Message.error('Konfirmasi PIN tidak cocok. Coba lagi');
-        return;
-      }
-
-      if (isChangingPin.value) {
-        await userSource.updatePin(userId, pin);
-        Message.success('Pin berhasil diubah');
-        Get.until((route) => route.settings.name == '/discover');
-        discoverVM.setFragmentIndex(3);
       } else {
-        await userSource.createPin(userId, pin);
-        if (checkoutVm != null) {
-          checkoutVm!.hasPin.value = true;
-          Get.back();
+        if (_newPin.value == pin) {
+          if (isChangingPin.value) {
+            await userSource.updatePin(userId, pin);
+            Message.success('PIN berhasil diubah');
+            Get.until((route) => route.settings.name == '/discover');
+            if (authVM.account.value!.role != 'seller') {
+              discoverVM.setFragmentIndex(4);
+            } else {
+              discoverVM.setFragmentIndex(3);
+            }
+          } else {
+            await userSource.createPin(userId, pin);
+            if (checkoutVm != null) {
+              checkoutVm!.hasPin.value = true;
+              Get.back();
+            } else {
+              Message.success('PIN berhasil dibuat');
+              Get.until((route) => route.settings.name == '/discover');
+              if (authVM.account.value!.role != 'seller') {
+                discoverVM.setFragmentIndex(4);
+              } else {
+                discoverVM.setFragmentIndex(3);
+              }
+            }
+          }
         } else {
-          Message.success('PIN berhasil dibuat');
-          Get.until((route) => route.settings.name == '/discover');
-          discoverVM.setFragmentIndex(4);
+          _failedAttempts.value++;
+          clearPin();
+          isPinComplete.value = false;
+
+          if (_failedAttempts.value >= 3) {
+            _newPin.value = '';
+            _failedAttempts.value = 0;
+            Message.error(
+              'Anda telah 3 kali salah konfirmasi PIN. Silakan ulangi dari awal.',
+            );
+            await Future.delayed(const Duration(seconds: 1));
+            Get.until((route) => route.settings.name == '/discover');
+            if (authVM.account.value!.role != 'seller') {
+              discoverVM.setFragmentIndex(4);
+            } else {
+              discoverVM.setFragmentIndex(3);
+            }
+          } else {
+            Message.error(
+              'Konfirmasi PIN tidak cocok. Anda memiliki ${3 - _failedAttempts.value} kesempatan lagi.',
+            );
+          }
         }
       }
     } catch (e) {
@@ -159,7 +188,11 @@ class PinViewModel extends GetxController {
           );
           await Future.delayed(const Duration(seconds: 2));
           Get.until((route) => route.settings.name == '/discover');
-          discoverVM.setFragmentIndex(3);
+          if (authVM.account.value!.role != 'seller') {
+            discoverVM.setFragmentIndex(4);
+          } else {
+            discoverVM.setFragmentIndex(3);
+          }
         } else {
           Message.error(
             'PIN yang Anda masukkan salah. Anda masih memiliki ${3 - _failedAttempts.value} kali percobaan lagi.',
@@ -174,6 +207,7 @@ class PinViewModel extends GetxController {
   }
 
   Future<void> finishedPayment() async {
+    if (checkoutVm == null) return;
     try {
       final enteredPin = getPin;
       final isPinValid = await userSource.verifyPin(

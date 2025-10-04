@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:rent_car_app/data/models/car.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:rent_car_app/presentation/viewModels/auth_view_model.dart';
 import 'package:rent_car_app/presentation/viewModels/browse_view_model.dart';
 import 'package:rent_car_app/presentation/viewModels/favorite_view_model.dart';
@@ -29,14 +31,9 @@ class DiscoverViewModel extends GetxController {
     final arguments = Get.arguments;
     if (arguments != null) {
       final int? newIndex = arguments['fragmentIndex'];
-      final Car? bookedCar = arguments['bookedCar'];
 
       if (newIndex != null) {
         setFragmentIndex(newIndex);
-      }
-      if (bookedCar != null) {
-        final browseVM = Get.find<BrowseViewModel>();
-        browseVM.bookedCar.value = bookedCar;
       }
     }
   }
@@ -130,5 +127,74 @@ class DiscoverViewModel extends GetxController {
 
           hasNewMessage.value = adaPesanBaru;
         });
+  }
+
+  Future<void> handleAppExit() async {
+    final bool confirmed = await _showExitConfirmationDialog();
+    if (confirmed) {
+      SystemNavigator.pop();
+    }
+  }
+
+  Future<bool> _showExitConfirmationDialog() async {
+    return await Get.dialog<bool>(
+          AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            title: Text(
+              'Keluar Aplikasi',
+              style: GoogleFonts.poppins(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: Theme.of(Get.context!).colorScheme.onSurface,
+              ),
+            ),
+            content: Text(
+              'Apakah Anda yakin ingin keluar dari Aplikasi?',
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: Theme.of(Get.context!).colorScheme.onSurface,
+              ),
+            ),
+            actionsOverflowDirection: VerticalDirection.up,
+            actions: <Widget>[
+              TextButton(
+                child: Text(
+                  'Batal',
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(Get.context!).colorScheme.onSurface,
+                  ),
+                ),
+                onPressed: () {
+                  Get.back(result: false);
+                },
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xffFF5722),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Text(
+                  'Ya, Keluar Aplikasi',
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+                onPressed: () {
+                  Get.back(result: true);
+                },
+              ),
+            ],
+          ),
+        ) ??
+        false;
   }
 }
