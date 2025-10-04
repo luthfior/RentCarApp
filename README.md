@@ -1,6 +1,7 @@
-# Aplikasi Sewa Mobil (RentCar+ App)
+# Aplikasi Penyewaan Kendaraan dan Produk Lainnya (Rentalin+ App)
 
-Aplikasi sewa mobil berbasis Flutter yang memungkinkan pengguna untuk mencari, melihat detail, dan menyewa mobil dengan mudah.  
+Aplikasi untuk untuk melakukan sewa dan \*\*menyewakan berbagai jenis barang dan kendaraan dari berbagai kategori dengan demo pembayaran menggunakan Midtrans Sandbox (untuk berbagai metode pembayaran seperti Gopay, Shopee, Dana, dsb), e-wallet kustom 'DompetKu', dan pembayaran Tunai. Adapun Aplikasi ini memiliki dibuat menggunakan Flutter dan teknologi atau tools pendukung lainnya.
+
 Terdapat 3 Antarmuka Pengguna (User Interface/UI) yang berbeda, yaitu: **Pembeli**, **Penyedia**, dan **Admin** dengan masing-masing fitur yang telah disesuaikan.
 
 ---
@@ -49,22 +50,23 @@ Lihat pratinjau desain interaktif langsung dari Figma.
 ## 🚀 Fitur Utama
 
 - **Splash Screen**: Halaman awal saat aplikasi dibuka.
-- **Onboarding**: Panduan singkat bagi pengguna baru.
+- **Onboarding**: Deskripsi singkat Aplikasi bagi pengguna baru.
 - **Login & Register**: Sistem autentikasi pengguna untuk Masuk atau Daftar Akun sebagai Pembeli atau Penyedia.
 - **Halaman Discover**: Menampilkan daftar Produk Populer dan Terbaru.
 - **Halaman Detail Produk**: Informasi lengkap tentang spesifikasi, deskripsi, atau harga sewa suatu Produk.
 - **Halaman Notifikasi UI**: Menerima notifikasi pada aplikasi untuk menerima chat/pesan masuk, status booking, dan orderan masuk
 - **Sistem Chat**: Fitur chat real-time antara Penyedia Sewa dengan Pembeli atau sebaliknya.
-- **Halaman Pengaturan**: Edit informasi Profil pengguna.
+- **Halaman Pengaturan**: Edit Profil, Ganti/Buat Pin, Top-Up Saldo, Saldo Masuk, Tentang Aplikasi.
 - **Night Mode**: Mengatur Tema Aplikasi menjadi mode malam atau sebaliknya
 
 ### 👤 Fitur Pembeli
 
-- **Halaman Booking**: Memilih tanggal sewa dan opsi tambahan seperti driver.
-- **Halaman Checkout**: Ringkasan pesanan, biaya, dan pilihan metode pembayaran.
-- **Halaman Buat PIN**: Membuat PIN pertama kali untuk pembayaran dengan metode Dompet Digital.
-- **Halaman PIN**: Verifikasi keamanan dengan PIN untuk melanjutkan pembayaran.
+- **Halaman Booking**: Melakukan pemesanan produk.
+- **Halaman Checkout**: Ringkasan pemesanan, biaya, dan pilihan metode pembayaran.
+- **Halaman Pembayaran**: Pilihan metode pembayaran dengan 'DompetKu' (e-wallet kustom), Midtrans Sandbox, dan Tunai
+- **Halaman PIN**: Ganti, Verifikasi, atau Membuat PIN untuk 'DompetKu' (e-wallet kustom).
 - **Halaman Order**: Melihat riwayat dan status pesanan.
+- **Halaman Detail Order**: Melihat detail pemesanan.
 - **Halaman Favorite**: Mengelola produk yang disimpan sebagai favorit pembeli.
 - **Halaman Pengaturan**: Top Up Saldo, Buat atau Ganti PIN.
 
@@ -93,7 +95,12 @@ Proyek ini dikembangkan menggunakan teknologi dan arsitektur berikut:
 - **Framework**: Flutter
 - **Bahasa Pemrograman**: Dart
 - **Manajemen State**: GetX
+- **BackEnd**: Node.js
 - **Arsitektur**: MVVM
+- **Midtrans SandBox**: Simulasi Pembayaran Midtrans Demo
 - **Database**: Firebase Firestore
 - **Autentikasi**: Firebase Authentication
 - **Media Hosting**: Cloudinary
+- **Server**: Railway.
+- **Layanan Lokasi**: LocationIq
+- **Api Wilayah Indonesia**: api.kirimin.id \*shout out to Maftuh Ichsan github.com/maftuh23
